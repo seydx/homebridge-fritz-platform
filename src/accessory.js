@@ -6,6 +6,7 @@ const async = require('async');
 const speedTest = require('speedtest-net');
 const exec = require('child_process').exec;
 const http = require('http');
+const https = require('https');
 const cheerio = require('cheerio');
 const querystring = require('querystring');
 const parseString = require('xml2js').parseString;
@@ -117,7 +118,11 @@ class Fritz_Box {
     accessory.context.serialNo = parameter.serialNo;
     accessory.context.model = parameter.model;
     accessory.context.fakegato = parameter.fakegato;
-
+    accessory.context.token = self.platform.telegram.token||null;
+    accessory.context.chatID = self.platform.telegram.chatID||null;
+    accessory.context.telegramAlarm = self.platform.telegram.alarm||false;
+    accessory.context.telegramCallmonitor = self.platform.telegram.callmonitor||false;
+    accessory.context.telegramReboot = self.platform.telegram.reboot||false;
     accessory.context.options = {
       host: self.config.host||'fritz.box',
       port: self.config.port||49000,
@@ -211,7 +216,7 @@ class Fritz_Box {
           })
           .catch(err => {
             self.logger.error('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
-            self.logger.error(err);
+            self.logger.error(JSON.stringify(err,null,4));
             setTimeout(function(){
               self.logTR064(accessory);
             }, 15000);
@@ -219,7 +224,7 @@ class Fritz_Box {
       })
       .catch(err => {
         self.logger.error('An error occured by initializing repeater: ' + accessory.displayName);
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){
           self.logTR064(accessory);
         }, 15000);
@@ -548,7 +553,7 @@ class Fritz_Box {
                   }
                 } else {
                   self.logger.error(accessory.displayName + 'An error occured by getting device state!');
-                  self.logger.error(err);
+                  self.logger.error(JSON.stringify(err,null,4));
                   callback(null, accessory.context.lastSwitchState);
                 }
               });
@@ -576,6 +581,11 @@ class Fritz_Box {
               });
             }
           });
+        if(accessory.context.reboot&&accessory.context.token&&accessory.context.chatID&&accessory.context.telegramReboot){
+          accessory.context.reboot = false;
+          let message = 'Network reboot completed!';
+          self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+        }
         break;
       case 2:
         service = accessory.getService(Service.MotionSensor);
@@ -587,16 +597,10 @@ class Fritz_Box {
         service.getCharacteristic(Characteristic.EveMotionLastActivation)
           .updateValue(accessory.context.lastActivation);
 
-        for(const i of Object.keys(self.platform.presence)){
-          if(accessory.displayName == i){
-            self.getMotionLastActivation(accessory, service);
-            setTimeout(function(){self.getMotionDetected(accessory, service);},1000); 
-          }
-        }
-        if(Object.keys(self.platform.presence)){
+        if(Object.keys(self.platform.presence).length){
           if(accessory.displayName == 'Anyone'){
             self.getMotionLastActivation(accessory, service);
-            self.getAnyoneMotionDetected(accessory, service);
+            setTimeout(function(){self.getAnyoneMotionDetected(accessory, service)},3000);
           } else {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
@@ -619,7 +623,7 @@ class Fritz_Box {
                   self.logger.info('Turning on ' + accessory.displayName);
                 } else {
                   self.logger.error('An error occured by turning on ' + accessory.displayName);
-                  self.logger.error(err);
+                  self.logger.error(JSON.stringify(err,null,4));
                 }
                 setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
                 callback(null, false);
@@ -726,7 +730,7 @@ class Fritz_Box {
                     }
                   } else {
                     self.logger.error(accessory.displayName + ': An error occured by getting device state!');
-                    self.logger.error(err);
+                    self.logger.error(JSON.stringify(err,null,4));
                     callback(null, accessory.context.lastSwitchState);
                   }
                 });
@@ -862,7 +866,7 @@ class Fritz_Box {
                 callback(null, result);
               } else {
                 self.logger.error(accessory.displayName + ':An error occured by setting Device Lock state!');
-                self.logger.error(err);
+                self.logger.error(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
                 callback(null, accessory.context.lastDeviceLock);
               }
@@ -875,7 +879,7 @@ class Fritz_Box {
 
       } else {
         self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
         callback(null, accessory.context.lastDeviceLock);
       }
@@ -898,7 +902,7 @@ class Fritz_Box {
                 callback(null, result);
               } else {
                 self.logger.error(accessory.displayName + ':An error occured by getting Device Lock state!');
-                self.logger.error(err);
+                self.logger.error(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
                 callback(null, accessory.context.lastDeviceLock);
               }
@@ -907,7 +911,7 @@ class Fritz_Box {
         }).end();
       } else {
         self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
         callback(null, accessory.context.lastDeviceLock);
       }
@@ -964,7 +968,7 @@ class Fritz_Box {
 
       } else {
         self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
       }
@@ -987,7 +991,7 @@ class Fritz_Box {
                 callback(null, result);
               } else {
                 self.logger.error(accessory.displayName + ':An error occured by getting LED state!');
-                self.logger.error(err);
+                self.logger.error(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
                 callback(null, accessory.context.lastLEDState);
               }
@@ -996,7 +1000,7 @@ class Fritz_Box {
         }).end();
       } else {
         self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
       }
@@ -1026,9 +1030,39 @@ class Fritz_Box {
     return message;
   }
 
+  sendTelegram(token,chatID,text){
+    const self = this;
+    let options = {
+      host: 'api.telegram.org',
+      path: '/bot' + token + '/sendMessage',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    let post_data = JSON.stringify(
+      {
+        'chat_id': chatID,
+        'text': text
+      }
+    );
+
+    let req = https.request(options, function(res) {
+	  if(res){
+        self.logger.info('Successfully send telegram notification!');
+      }
+    });
+    req.on('error', function(err) {
+      self.logger.error('An error occured by sending telegram notification!');
+      self.logger.error(JSON.stringify(err,null,4));
+    });
+    req.write(post_data);
+    req.end();
+  }
+
   getContactState(accessory, service){
     const self = this;
-
     self.client.on('error', () => {
       accessory.context.lastContactSensorState = false;
       service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastContactSensorState);
@@ -1037,6 +1071,7 @@ class Fritz_Box {
     self.client.on('data', chunk => {
 
       let data = self.parseMessage(chunk);
+      let text;
       let message;
 
       if(accessory.displayName == 'Callmonitor Incoming'){
@@ -1059,15 +1094,19 @@ class Fritz_Box {
             let skip = false;
             for(const i in phonebook){
               if(message.caller == phonebook[i].number){
-                self.logger.info('Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )');
+                text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
                 skip = true;
               }
             }
             if(!skip){
-              self.logger.info('Incoming call from: ' + message.caller);
+              text = 'Incoming call from: ' + message.caller;
             }
           } else {
-            self.logger.info('Incoming call from: ' + message.caller); 
+            text = 'Incoming call from: ' + message.caller;
+          }
+          self.logger.info(text);
+          if(accessory.context.telegramCallmonitor&&accessory.context.token&&accessory.context.chatID){
+            self.sendTelegram(accessory.context.token,accessory.context.chatID,text);
           }
         }
       }
@@ -1096,16 +1135,17 @@ class Fritz_Box {
             let skip = false;
             for(const i in phonebook){
               if(called == phonebook[i].number){
-                self.logger.info('Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )');
+                text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
                 skip = true;
               }
             }
             if(!skip){
-              self.logger.info('Calling: ' + called);
+              text = 'Calling: ' + called;
             }
           } else {
-            self.logger.info('Calling: ' + called); 
+            text = 'Calling: ' + called;
           }
+          self.logger.info(text);
         }
       }
 
@@ -1154,41 +1194,70 @@ class Fritz_Box {
     const self = this;
     let book = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
     !self.entryID ? self.entryID = 0 : self.entryID;
+    !self.bookIDs ? self.bookIDs = [] : self.bookIDs;
+    !self.currentID ? self.currentID = 0 : self.currentID;
     !self.telBook ? self.telBook = [] : self.telBook;
     if(state){
-      if(self.telBook.length == 0)self.logger.info('Refreshing phone book...');
-      book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:'0'},{name:'NewPhonebookEntryID',value:self.entryID}],function(err, res) {
+	  self.logger.info('Refreshing phone book...');
+	  book.actions.GetPhonebookList(function(err, res) {
+	    if(!err){
+		    self.bookIDs = res.NewPhonebookList.split(",")
+		    self.logger.info("Found " + self.bookIDs.length + " books!")
+		    self.storeEntries(accessory,service)
+	    } else {
+		   self.logger.error("An error occured by getting phone books!");
+		   self.logger.error(JSON.stringify(err,null,4));
+		}
+	  });
+      setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).setValue(false);},500);
+      callback(null, false);
+    } else {
+      callback(null, false);
+    }
+  }
+  
+  storeEntries(accessory, service){
+    const self = this;
+    let book = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
+      book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID},{name:'NewPhonebookEntryID',value:self.entryID}],function(err, res) {
         if(!err&&res){
           parseString(res.NewPhonebookEntryData,{explicitArray: false,}, function (error, result) {
             if(!error){
               self.telBook.push({name: result.contact.person.realName,number:result.contact.telephony.number._});
               self.entryID += 1;
-              setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).setValue(true);},500);
-              callback(null, true);
+              setTimeout(function(){self.storeEntries(accessory,service);},500);
             } else {
               self.logger.error(accessory.displayName + ': An error occured by fetching phone book!');
-              self.logger.error(error);
-              setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).updateValue(false);},500);
-              callback(null, false);
+              self.logger.error(JSON.stringify(error,null,4));
+              self.telBook = [];
+              self.entryID = 0;
+              self.bookIDs = [];
+              self.currentID = 0;
             }
           });
         } else {
           if(err.tr064code == '713'){
-            self.logger.info('Found ' + self.telBook.length + ' entries in telephone book. Setting it to storage!');
-            self.storage.setItem('PhoneBook.js', self.telBook);
-            self.telBook = [];
-            setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).updateValue(false);},500);
-            callback(null, false);
+	        self.entryID = 0;
+		    if(self.currentID < self.bookIDs.length){
+			    self.logger.info("Phone book [" + self.currentID + "] done. Looking for another books!")
+			    setTimeout(function(){self.storeEntries(accessory, service);},500);
+			    self.currentID += 1;
+		    } else if (self.currentID == self.bookIDs.length){
+			    self.logger.info("Found " + self.telBook.length + " entries in phone book [" + self.bookIDs + "]. Setting it to storage!")
+			    self.storage.setItem('PhoneBook.js', self.telBook);
+			    self.currentID = 0;
+			    self.telBook = [];
+		    }
           } else {
             self.logger.error(accessory.displayName + ': An error occured by getting phone book!');
-            setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).updateValue(false);},500);
-            callback(null, false);
+            self.logger.error(JSON.stringify(err,null,4))
+            self.telBook = [];
+            self.entryID = 0;
+            self.bookIDs = [];
+            self.currentID = 0;
           }
         }
       });
-    } else {
-      callback(null, false);
-    }
   }
 
   setWifiTwo(accessory, service, state, callback){
@@ -1203,7 +1272,7 @@ class Fritz_Box {
         callback(null, state);
       } else {
         state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI 2.4 Ghz') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI 2.4 Ghz');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         accessory.context.lastWifiTwoState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiTwo).updateValue(accessory.context.lastWifiTwoState);},500);
         callback(null, accessory.context.lastWifiTwoState);
@@ -1223,7 +1292,7 @@ class Fritz_Box {
         callback(null, state);
       } else {
         state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI 5 Ghz') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI 5 Ghz');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         accessory.context.lastWifiFiveState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiFive).updateValue(accessory.context.lastWifiFiveState);},500);
         callback(null, accessory.context.lastWifiFiveState);
@@ -1248,7 +1317,7 @@ class Fritz_Box {
         callback(null, state);
       } else {
         state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI Guest') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI Guest');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         accessory.context.lastWifiGuestState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);},500);
         callback(null, accessory.context.lastWifiGuestState);
@@ -1269,7 +1338,7 @@ class Fritz_Box {
         callback(null, state);
       } else {
         state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI WPS') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI WPS');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         accessory.context.lastWifiWPSState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiWPS).updateValue(accessory.context.lastWifiWPSState);},500);
         callback(null, accessory.context.lastWifiWPSState);
@@ -1289,7 +1358,7 @@ class Fritz_Box {
         callback(null, state);
       } else {
         state ? self.logger.error(accessory.displayName + ': An error occured by turning on Answering Machine') : self.logger.error(accessory.displayName + ': An error occured by turning off Answering Machine');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         accessory.context.lastAWState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.AnsweringMachine).updateValue(accessory.context.lastAWState);},500);
         callback(null, accessory.context.lastAWState);
@@ -1313,6 +1382,11 @@ class Fritz_Box {
               self.logger.info(accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
               let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
               reboot.actions.Reboot(function() {
+                if(accessory.context.token&&accessory.context.chatID&&accessory.context.telegramReboot){
+                  accessory.context.reboot = true;
+                  let message = 'Network reboot started!';
+                  self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+                }
                 for(const i in self.accessories){
                   if(self.accessories[i].context.type == self.types.repeater){
                     let tr064Repeater = new tr.TR064(self.accessories[i].context.options); 
@@ -1328,12 +1402,12 @@ class Fritz_Box {
                           })
                           .catch(sslerr => {
                             self.logger.error('No reboot possible! An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
-                            self.logger.error(sslerr);
+                            self.logger.error(JSON.stringify(sslerr,null,4));
                           });
                       })
                       .catch(err => {
                         self.logger.error('No reboot possible! An error occured by initializing repeater: ' + self.accessories[i].displayName);
-                        self.logger.error(err);
+                        self.logger.error(JSON.stringify(err,null,4));
                       });
                   }
                 }
@@ -1392,12 +1466,12 @@ class Fritz_Box {
                     })
                     .catch(sslerr => {
                       self.logger.error('An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
-                      self.logger.error(sslerr);
+                      self.logger.error(JSON.stringify(sslerr,null,4));
                     });
                 })
                 .catch(err => {
                   self.logger.error('An error occured by initializing repeater: ' + self.accessories[i].displayName);
-                  self.logger.error(err);
+                  self.logger.error(JSON.stringify(err,null,4));
                 });
             }
           }
@@ -1428,7 +1502,7 @@ class Fritz_Box {
               callback(null, state);
             } else {
               state ? self.logger.error(accessory.displayName + ': An error occured by turning on Deflection') : self.logger.error(accessory.displayName + ': An error occured by turning off Deflection');
-              self.logger.error(err);
+              self.logger.error(JSON.stringify(err,null,4));
               accessory.context.lastDeflectiontate = state ? false : true;
               setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);},500);
               callback(null, accessory.context.lastDeflectionState);
@@ -1443,7 +1517,7 @@ class Fritz_Box {
         }
       } else {
         self.logger.error(accessory.displayName + ': An error occured by setting deflections! Trying again...');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         let backState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(backState);},500);
         callback(null, backState);
@@ -1464,7 +1538,7 @@ class Fritz_Box {
           callback(null, true);
         } else {
           self.logger.error(accessory.displayName + ': An error occured by turning on \'Wake Up\'!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(false);},500);
           callback(null, false);
         }
@@ -1476,7 +1550,7 @@ class Fritz_Box {
           callback(null, false);
         } else {
           self.logger.error(accessory.displayName + ': An error occured by turning off \'Wake Up\'!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(true);},500);
           callback(null, true);
         }
@@ -1490,14 +1564,18 @@ class Fritz_Box {
     if(state){
       alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.alarmNumber}],function(err, result) {
         if(!err||result){
-          self.logger.info(accessory.displayName + ': Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds');
+          let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds';
+          self.logger.info(accessory.displayName + ': ' + message);
+          if(accessory.context.token&&accessory.context.chatID&&accessory.context.telegramAlarm){
+            self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+          }
           self.sleep(accessory.context.alarmDuration).then(() => {
             service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
           });
           callback(null, true);
         } else {
           self.logger.error(accessory.displayName + ': An error occured by turning on \'Alarm\'!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.DialALarm).updateValue(false);},500);
           callback(null, false);
         }
@@ -1509,7 +1587,7 @@ class Fritz_Box {
           callback(null, false);
         } else {
           self.logger.error(accessory.displayName + ': An error occured by turning off \'Alarm\'!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.DialAlarm).updateValue(true);},500);
           callback(null, true);
         }
@@ -1534,7 +1612,7 @@ class Fritz_Box {
           }
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting WIFI 2.4 Ghz state!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiTwoState);
       });
@@ -1556,7 +1634,7 @@ class Fritz_Box {
           }
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting WIFI 5 Ghz state!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiFiveState);
       });
@@ -1583,7 +1661,7 @@ class Fritz_Box {
           }
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting WIFI Guest state!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiGuestState);
       });
@@ -1610,7 +1688,7 @@ class Fritz_Box {
             }
           } else {
             self.logger.error(accessory.displayName + ': An error occured by getting WIFI WPS state!');
-            self.logger.error(err);
+            self.logger.error(JSON.stringify(err,null,4));
           }
           callback(null, accessory.context.lastWifiWPSState);
         });
@@ -1633,7 +1711,7 @@ class Fritz_Box {
           }
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting Answering Machine state!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastAWState);
       });
@@ -1660,7 +1738,7 @@ class Fritz_Box {
                 }
               } else {
                 self.logger.error(accessory.displayName + ': An error occured by getting Deflection state!');
-                self.logger.error(err);
+                self.logger.error(JSON.stringify(err,null,4));
               }
               callback(null, accessory.context.lastDeflectiontate);
             });
@@ -1677,7 +1755,7 @@ class Fritz_Box {
         } else {
           callback(null, accessory.context.lastDeflectiontate);
           self.logger.error(accessory.displayName + ': An error occured by getting Number of Deflactions!');
-          self.logger.error(err);
+          self.logger.error(JSON.stringify(err,null,4));
         }
       });
 
@@ -1708,7 +1786,7 @@ class Fritz_Box {
       })
       .on('error', err => {
         self.logger.error(accessory.displayName + ': An error occured by checking broadband');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         service.getCharacteristic(Characteristic.DownloadSpeed).updateValue(accessory.context.lastDLSpeed);
         service.getCharacteristic(Characteristic.UploadSpeed).updateValue(accessory.context.lastULSpeed);
         service.getCharacteristic(Characteristic.Ping).updateValue(accessory.context.lastPing);
@@ -1827,7 +1905,7 @@ class Fritz_Box {
           if(self.error.presence > 5){
             self.error.presence = 0;
             self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-            self.logger.error(err);
+            self.logger.error(JSON.stringify(err,null,4));
           } else {
             self.error.presence += 1;
           }

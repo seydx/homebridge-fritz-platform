@@ -41,7 +41,7 @@
         "broadband": false,
         "devicelock": true,
         "debug": false,
-        "phoneBook":true,
+        "phoneBook": true,
         "wakeup": {
           "internNr": "**620",
           "duration": 30
@@ -55,6 +55,13 @@
         "on": "sh /var/homebridge/on.sh",
         "off": "sh /var/homebridge/off.sh"
       },
+      "telegram": {
+        "alarm": true,
+        "callmonitor": true,
+        "reboot": true,
+        "token": "TOKEN",
+        "chatID": "CHATID"
+      },
       "repeater": {
         "Fritz Repeater": {
           "disable": false,
@@ -63,7 +70,7 @@
           "username": "MyUsername2",
           "password": "MyPassword2",
           "led": true,
-          "wifi":{
+          "wifi": {
             "2.4ghz": true,
             "5ghz": false,
             "guest": true

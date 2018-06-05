@@ -35,6 +35,7 @@ function FritzPlatform (log, config, api) {
   this.callmonitor = config.callmonitor||{};
   this.wakeup = config.options.wakeup||{};
   this.alarm = config.options.alarm||{};
+  this.telegram = config.telegram||{};
   this.polling = config.polling < 10 ? 10 : config.polling;
   this.HBpath = api.user.storagePath()+'/accessories';
   this.call = {};
@@ -94,7 +95,7 @@ FritzPlatform.prototype = {
           })
           .catch(err => {
             self.logger.error('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
-            self.logger.error(err);
+            self.logger.error(JSON.stringify(err,null,4));
             setTimeout(function(){
               self.didFinishLaunching();
             }, 15000);
@@ -102,7 +103,7 @@ FritzPlatform.prototype = {
       })
       .catch(err => {
         self.logger.error('An error occured by initializing device, trying again...');
-        self.logger.error(err);
+        self.logger.error(JSON.stringify(err,null,4));
         setTimeout(function(){
           self.didFinishLaunching();
         }, 15000);
@@ -125,7 +126,7 @@ FritzPlatform.prototype = {
       } else if (error.errno == 'EHOSTUNREACH'||error.code == 'EHOSTUNREACH') {
         self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
       } else {
-        self.logger.error(error);
+        self.logger.error(JSON.stringify(error,null,4));
       }
       return;
     });
@@ -362,6 +363,11 @@ FritzPlatform.prototype = {
       this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
+      accessory.context.token = self.telegram.token||null;
+      accessory.context.chatID = self.telegram.chatID||null;
+      accessory.context.telegramAlarm = self.telegram.alarm||false;
+      accessory.context.telegramCallmonitor = self.telegram.callmonitor||false;
+      accessory.context.telegramReboot = self.telegram.reboot||false;
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,
