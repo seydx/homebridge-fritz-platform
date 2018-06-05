@@ -1,0 +1,42 @@
+{
+  "name": "homebridge-fritz-platform",
+  "version": "2.1.0",
+  "description": "homebridge-fritz-platform",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SeydX/homebridge-fritz-platform.git"
+  },
+  "author": "SeydX (https://github.com/SeydX/homebridge-fritz-platform)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SeydX/homebridge-fritz-platform/issues"
+  },
+  "homepage": "https://github.com/SeydX/homebridge-fritz-platform#readme",
+  "keywords": [
+    "fritz",
+    "fritzbox",
+    "homebridge",
+    "plugin",
+    "homebridge-plugin",
+    "internet",
+    "dsl"
+  ],
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "@seydx/tr064": "^0.4.1-6",
+    "fakegato-history": "^0.5.1",
+    "moment": "^2.22.2",
+    "async": "2.6.0",
+    "cheerio": "^0.22.0",
+    "speedtest-net": "^1.4.2",
+    "node-persist":"0.0.8"
+  }
+}
