@@ -13,4 +13,4 @@ If you do not have a connected device, you can also do it via the phone book. Ac
 
 
 **2. Enable port via phone book**
-<img src="https://github.com/SeydX/homebridge-fritz-platform/tree/master/docs/images" align="center" alt="Phonebook ports">
+<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/ports_callmonitor.png" align="center" alt="Phonebook ports">
