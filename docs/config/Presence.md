@@ -45,6 +45,7 @@ Optional parameter for Telegram notifications
 | messages.anyone | Message for detected presence from motion sensor |
 | messages.noone | Message for no motion detected |
 
+## In-App Screenshot (Elgato EVE)
 
 **Elgato EVE with Fakegato**
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/eve_motion_fakegato.PNG" align="center" alt="Presence EVE">
