@@ -23,7 +23,3 @@ sudo systemctl stop homebridge-telegram.service
 
 sleep 15
 echo 1
-
-######################################### Telegram Message #############################################
-
-curl -s -X POST https://api.telegram.org/botTOKENHERE/sendMessage -d chat_id=CHATIDHERE -d text="Network reboot starts"
