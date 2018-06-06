@@ -1069,8 +1069,6 @@ class Fritz_Box {
       let data = self.parseMessage(chunk);
       let text;
       let message;
-      let callerName;
-      let callerNr;
 
       if(accessory.displayName == 'Callmonitor Incoming'){
         if (data[1] === 'ring') {
@@ -1093,26 +1091,26 @@ class Fritz_Box {
             for(const i in phonebook){
               if(message.caller == phonebook[i].number){
                 text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
-                callerName = phonebook[i].name;
-                callerNr = phonebook[i].number;
+                self.callerName = phonebook[i].name;
+                self.callerNr = phonebook[i].number;
                 skip = true;
               }
             }
             if(!skip){
               text = 'Incoming call from: ' + message.caller;
-              callerNr = message.caller;
+              self.callerNr = message.caller;
             }
           } else {
             text = 'Incoming call from: ' + message.caller;
-            callerNr = message.caller;
+            self.callerNr = message.caller;
           }
           self.logger.info(text);
           if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
-            if(self.platform.callmonitor.message){
+            if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.incoming){
               let parseInfo;
-              (callerName&&callerNr) ? parseInfo = callerName + ' ( ' + callerNr + ' )' : parseInfo = callerNr + ' ( No name )';
-              text = self.platform.callmonitor.message;
-              text = message.replace('@', parseInfo);
+              (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
+              text = self.platform.callmonitor.messages.incoming;
+              text = text.replace('@', parseInfo);
             }
             self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
           }
@@ -1183,6 +1181,17 @@ class Fritz_Box {
           accessory.context.lastContactSensorState = false;
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastContactSensorState);
           self.logger.info('Call disconnected');
+          if(accessory.displayName == "Callmonitor Incoming"){
+            if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
+              if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected){
+                let parseInfo;
+                (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
+                text = self.platform.callmonitor.messages.disconnected;
+                text = text.replace('@', parseInfo);
+              }
+              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
+            }
+          }
         }
       }
 
@@ -1471,6 +1480,14 @@ class Fritz_Box {
         self.logger.info('Polling werde stopped!');
         accessory.context.stopPolling = true;
         reboot.actions.Reboot(function() {
+          if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
+            let message = 'Network reboot started!';
+            if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on){
+              message = self.platform.options.reboot.messages.on;
+            }
+            accessory.context.reboot = true;
+            self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
+          }
           for(const i in self.accessories){
             self.accessories[i].context.stopPolling = true;
             if(self.accessories[i].context.type == self.types.repeater){
@@ -1807,7 +1824,7 @@ class Fritz_Box {
         self.logger.info('Download: ' + accessory.context.lastDLSpeed + ' Mbps');
         self.logger.info('Upload: ' + accessory.context.lastULSpeed + ' Mbps');
         self.logger.info('Ping: ' + accessory.context.lastPing + ' ms');
-        self.logger.info('Next measurement in ' + accessory.context.broadbandPolling + ' minutes');
+        self.logger.info('Next measurement in ' + (accessory.context.broadbandPolling/60/1000) + ' minutes');
         service.getCharacteristic(Characteristic.DownloadSpeed).updateValue(accessory.context.lastDLSpeed);
         service.getCharacteristic(Characteristic.UploadSpeed).updateValue(accessory.context.lastULSpeed);
         service.getCharacteristic(Characteristic.Ping).updateValue(accessory.context.lastPing);

@@ -31,3 +31,7 @@ sleep 20
 sudo systemctl restart homebridge-fritz-platform
 
 echo 1
+
+########################################### Telegram Message ###############################################
+
+curl -s -X POST https://api.telegram.org/botTOKENHERE/sendMessage -d chat_id=CHATIDHERE -d text="Network reboot is completed"
