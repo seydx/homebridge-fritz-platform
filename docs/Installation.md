@@ -15,8 +15,8 @@ sudo npm install -g homebridge-fritz-platform@latest
 
 Please follow the config instructions to add and start the plugin
 
-   * [Configuring Fritz!Box]()
-   * [Configuring Fritz!Repeater]()
-   * [Configuring Callmonitor]()
-   * [Configuring Presence]()
-   * [Configuring Wake On Lan]()
+   * [Configuring Fritz!Box](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
+   * [Configuring Fritz!Repeater](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Repeater.md)
+   * [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Callmonitor.md)
+   * [Configuring Presence](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Presence.md)
+   * [Configuring Wake On Lan](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/WOL.md)
