@@ -43,8 +43,8 @@
           "token": "TOKENHERE",
           "chatID": "CHATIDHERE",
           "messages": {
-            "activated": "Alarm wurde aktiviert! @ wird angerufen!",
-            "deactivated": "Alarm wurde deaktiviert"
+            "activated": "Alarm activated! Call @!",
+            "deactivated": "Alarm deactivated"
           }
         },
         "reboot": {
@@ -55,8 +55,8 @@
           "token": "TOKENHERE",
           "chatID": "CHATIDHERE",
           "messages": {
-            "on": "Netzwerk wird neugestartet!",
-            "off": "Neustart des Netzwerks wurde erfolgreich abgeschlossen!"
+            "on": "Network reboot started!",
+            "off": "Network reboot completed!"
           }
         }
       },
@@ -67,7 +67,10 @@
         "telegram": true,
         "token": "TOKENHERE",
         "chatID": "CHATIDHERE",
-        "message": "Eingehender Anruf! @"
+        "messages":{
+	        "incoming":"Incoming call! @",
+	        "disconnected":"Incoming call - @ - was disconnected!"
+	    }
       },
       "presence": {
         "Peter": "11:22:33:44:55:66",
@@ -76,16 +79,16 @@
         "token": "TOKENHERE",
         "chatID": "CHATIDHERE",
         "messages": {
-          "anyone": "Willkommen zu Hause @",
-          "noone": "Niemand zu Hause!"
+          "anyone": "Welcome at home @",
+          "noone": "No one at home!"
         }
       },
       "wol": {
-        "Fernseher": "AA:00:BB:11:CC:ZZ",
-        "Computer": "BB:11:ZZ:33:OO:AA"
+	      "Fernseher":"AA:00:BB:11:CC:ZZ",
+	      "Computer":"BB:11:ZZ:33:OO:AA"
       },
       "repeater": {
-        "Fritz Repeater": {
+        "FritzRepeater": {
           "disable": false,
           "ip": "192.168.178.2",
           "port": 49000,
