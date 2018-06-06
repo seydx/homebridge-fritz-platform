@@ -56,5 +56,7 @@ Extra characteristics to show LED and Wifi
 | wifi.5ghz | Switch characteristic to switch on/off Wifi 5Ghz |
 | wifi.guest | Switch characteristic to switch on/off Wifi Guest |
 
+## In-App Screenshots (Elgato EVE)
+
 **Elgato Eve**
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/Repeater.JPG" align="center" alt="Repeater EVE">
