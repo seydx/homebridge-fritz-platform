@@ -114,6 +114,8 @@ Extra chracteristics for other options
 | phoneBook | Switch characteristic to save Fritz!Box Phone Book in storage (needed for show the name of incoming calls) |
 | debug | Switch characteristic to send DEBUG to log |
 
+
+
 **Elgato EVE Overview**
 
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/device_characteristics1.PNG" align="left" alt="Overview" width="45%">
