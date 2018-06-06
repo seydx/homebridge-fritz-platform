@@ -11,6 +11,15 @@ If you want to start wol capable devices with this plugin, you have to put the M
 }
 ```
 
+## New devices
+Parameter to expose new switches
+
+| Attributes | Usage |
+|------------|-------|
+| custom name | Own defined name for Home |
+| mac adress | MAC adresse from the device |
+
+
 The MAC adresse can be found unter Home network > network
 
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/wol_mac.png" align="center" alt="WOL MAC">
