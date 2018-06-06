@@ -81,8 +81,8 @@
         }
       },
       "wol": {
-	      "Fernseher":"AA:00:BB:11:CC:ZZ",
-	      "Computer":"BB:11:ZZ:33:OO:AA"
+        "Fernseher": "AA:00:BB:11:CC:ZZ",
+        "Computer": "BB:11:ZZ:33:OO:AA"
       },
       "repeater": {
         "Fritz Repeater": {
