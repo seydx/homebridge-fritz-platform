@@ -118,11 +118,6 @@ class Fritz_Box {
     accessory.context.serialNo = parameter.serialNo;
     accessory.context.model = parameter.model;
     accessory.context.fakegato = parameter.fakegato;
-    accessory.context.token = self.platform.telegram.token||null;
-    accessory.context.chatID = self.platform.telegram.chatID||null;
-    accessory.context.telegramAlarm = self.platform.telegram.alarm||false;
-    accessory.context.telegramCallmonitor = self.platform.telegram.callmonitor||false;
-    accessory.context.telegramReboot = self.platform.telegram.reboot||false;
     accessory.context.options = {
       host: self.config.host||'fritz.box',
       port: self.config.port||49000,
@@ -331,7 +326,7 @@ class Fritz_Box {
           }
         }
 
-        if(self.platform.options.reboot){
+        if(Object.keys(self.platform.reboot).length&&!self.platform.reboot.disable){
           if (!service.testCharacteristic(Characteristic.Reboot)){
             self.logger.info('Adding Reboot Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.Reboot);
@@ -415,7 +410,7 @@ class Fritz_Box {
           }
         }
 
-        if(self.platform.options.broadband){
+        if(Object.keys(self.platform.broadband).length&&!self.platform.broadband.disable){
           if (!service.testCharacteristic(Characteristic.DownloadSpeed)){
             self.logger.info('Adding Download Speed Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.DownloadSpeed);
@@ -431,6 +426,8 @@ class Fritz_Box {
             service.addCharacteristic(Characteristic.Ping);
             accessory.context.lastPing = 0;
           }
+          accessory.context.maxTime = self.platform.broadband.maxTime*1000||5000;
+          accessory.context.broadbandPolling = self.platform.broadband.polling*60*1000||60*60*1000;
           service.getCharacteristic(Characteristic.DownloadSpeed)
             .updateValue(accessory.context.lastDLSpeed);
           service.getCharacteristic(Characteristic.UploadSpeed)
@@ -475,8 +472,6 @@ class Fritz_Box {
             if (!service.testCharacteristic(Characteristic.WakeUp)){
               self.logger.info('Adding Wake Up Characteristic to ' + accessory.displayName);
               service.addCharacteristic(Characteristic.WakeUp);
-              accessory.context.wakeupDuration = self.platform.wakeup.duration*1000||30000;
-              accessory.context.internNr = self.platform.wakeup.internNr;
             }
             accessory.context.wakeupDuration = self.platform.wakeup.duration*1000||30000;
             accessory.context.internNr = self.platform.wakeup.internNr;
@@ -501,8 +496,6 @@ class Fritz_Box {
             if (!service.testCharacteristic(Characteristic.DialAlarm)){
               self.logger.info('Adding Alarm Characteristic to ' + accessory.displayName);
               service.addCharacteristic(Characteristic.DialAlarm);
-              accessory.context.alarmDuration = self.platform.alarm.duration*1000||30000;
-              accessory.context.alarmNumber = self.platform.alarm.telNr;
             }
             accessory.context.alarmDuration = self.platform.alarm.duration*1000||30000;
             accessory.context.alarmNumber = self.platform.alarm.telNr;
@@ -581,10 +574,13 @@ class Fritz_Box {
               });
             }
           });
-        if(accessory.context.reboot&&accessory.context.token&&accessory.context.chatID&&accessory.context.telegramReboot){
-          accessory.context.reboot = false;
+        if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&accessory.context.reboot){
           let message = 'Network reboot completed!';
-          self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+          if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
+            message = self.platform.options.reboot.messages.off;
+          }
+          accessory.context.reboot = false;
+          self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
         }
         break;
       case 2:
@@ -600,7 +596,7 @@ class Fritz_Box {
         if(Object.keys(self.platform.presence).length){
           if(accessory.displayName == 'Anyone'){
             self.getMotionLastActivation(accessory, service);
-            setTimeout(function(){self.getAnyoneMotionDetected(accessory, service)},3000);
+            setTimeout(function(){self.getAnyoneMotionDetected(accessory, service);},3000);
           } else {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
@@ -1049,7 +1045,7 @@ class Fritz_Box {
     );
 
     let req = https.request(options, function(res) {
-	  if(res){
+      if(res){
         self.logger.info('Successfully send telegram notification!');
       }
     });
@@ -1073,6 +1069,8 @@ class Fritz_Box {
       let data = self.parseMessage(chunk);
       let text;
       let message;
+      let callerName;
+      let callerNr;
 
       if(accessory.displayName == 'Callmonitor Incoming'){
         if (data[1] === 'ring') {
@@ -1095,19 +1093,30 @@ class Fritz_Box {
             for(const i in phonebook){
               if(message.caller == phonebook[i].number){
                 text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                callerName = phonebook[i].name;
+                callerNr = phonebook[i].number;
                 skip = true;
               }
             }
             if(!skip){
               text = 'Incoming call from: ' + message.caller;
+              callerNr = message.caller;
             }
           } else {
             text = 'Incoming call from: ' + message.caller;
+            callerNr = message.caller;
           }
           self.logger.info(text);
-          if(accessory.context.telegramCallmonitor&&accessory.context.token&&accessory.context.chatID){
-            self.sendTelegram(accessory.context.token,accessory.context.chatID,text);
+          if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
+            if(self.platform.callmonitor.message){
+              let parseInfo;
+              (callerName&&callerNr) ? parseInfo = callerName + ' ( ' + callerNr + ' )' : parseInfo = callerNr + ' ( No name )';
+              text = self.platform.callmonitor.message;
+              text = message.replace('@', parseInfo);
+            }
+            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
           }
+
         }
       }
 
@@ -1198,66 +1207,75 @@ class Fritz_Box {
     !self.currentID ? self.currentID = 0 : self.currentID;
     !self.telBook ? self.telBook = [] : self.telBook;
     if(state){
-	  self.logger.info('Refreshing phone book...');
-	  book.actions.GetPhonebookList(function(err, res) {
-	    if(!err){
-		    self.bookIDs = res.NewPhonebookList.split(",")
-		    self.logger.info("Found " + self.bookIDs.length + " books!")
-		    self.storeEntries(accessory,service)
-	    } else {
-		   self.logger.error("An error occured by getting phone books!");
-		   self.logger.error(JSON.stringify(err,null,4));
-		}
-	  });
+      self.logger.info('Refreshing phone book...');
+      book.actions.GetPhonebookList(function(err, res) {
+        if(!err){
+          self.bookIDs = res.NewPhonebookList.split(',');
+          self.logger.info('Found ' + self.bookIDs.length + ' books! Fetching entries...');
+          self.storeEntries(accessory,service);
+        } else {
+          self.logger.error('An error occured by getting phone books!');
+          self.logger.error(JSON.stringify(err,null,4));
+        }
+      });
       setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).setValue(false);},500);
       callback(null, false);
     } else {
       callback(null, false);
     }
   }
-  
+
   storeEntries(accessory, service){
     const self = this;
     let book = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-      book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID},{name:'NewPhonebookEntryID',value:self.entryID}],function(err, res) {
-        if(!err&&res){
-          parseString(res.NewPhonebookEntryData,{explicitArray: false,}, function (error, result) {
-            if(!error){
-              self.telBook.push({name: result.contact.person.realName,number:result.contact.telephony.number._});
-              self.entryID += 1;
-              setTimeout(function(){self.storeEntries(accessory,service);},500);
+    book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID},{name:'NewPhonebookEntryID',value:self.entryID}],function(err, res) {
+      if(!err&&res){
+        parseString(res.NewPhonebookEntryData,{explicitArray: false,}, function (error, result) {
+          if(!error){
+            let numbers = result.contact.telephony.number;
+            if(numbers.length){
+              for(const i in numbers){
+                let telnr = numbers[i]._.replace('+49', '0').replace(/\D/g,'');
+                self.telBook.push({name: result.contact.person.realName,number:telnr});
+              }
             } else {
-              self.logger.error(accessory.displayName + ': An error occured by fetching phone book!');
-              self.logger.error(JSON.stringify(error,null,4));
-              self.telBook = [];
-              self.entryID = 0;
-              self.bookIDs = [];
-              self.currentID = 0;
+              let telnr = numbers._.replace('+49', '0').replace(/\D/g,'');
+              self.telBook.push({name: result.contact.person.realName,number:telnr});
             }
-          });
-        } else {
-          if(err.tr064code == '713'){
-	        self.entryID = 0;
-		    if(self.currentID < self.bookIDs.length){
-			    self.logger.info("Phone book [" + self.currentID + "] done. Looking for another books!")
-			    setTimeout(function(){self.storeEntries(accessory, service);},500);
-			    self.currentID += 1;
-		    } else if (self.currentID == self.bookIDs.length){
-			    self.logger.info("Found " + self.telBook.length + " entries in phone book [" + self.bookIDs + "]. Setting it to storage!")
-			    self.storage.setItem('PhoneBook.js', self.telBook);
-			    self.currentID = 0;
-			    self.telBook = [];
-		    }
+            self.entryID += 1;
+            setTimeout(function(){self.storeEntries(accessory,service);},500);
           } else {
-            self.logger.error(accessory.displayName + ': An error occured by getting phone book!');
-            self.logger.error(JSON.stringify(err,null,4))
+            self.logger.error(accessory.displayName + ': An error occured by fetching phone book!');
+            self.logger.error(JSON.stringify(error,null,4));
             self.telBook = [];
             self.entryID = 0;
             self.bookIDs = [];
             self.currentID = 0;
           }
+        });
+      } else {
+        if(err.tr064code == '713'){
+          self.entryID = 0;
+          if(self.currentID < self.bookIDs.length){
+            self.logger.info('Phone book [' + self.currentID + '] done. Looking for another books!');
+            setTimeout(function(){self.storeEntries(accessory, service);},500);
+            self.currentID += 1;
+          } else if (self.currentID == self.bookIDs.length){
+            self.logger.info('Found ' + self.telBook.length + ' entries in phone book [' + self.bookIDs + ']. Setting it to storage!');
+            self.storage.setItem('PhoneBook.js', self.telBook);
+            self.currentID = 0;
+            self.telBook = [];
+          }
+        } else {
+          self.logger.error(accessory.displayName + ': An error occured by getting phone book!');
+          self.logger.error(JSON.stringify(err,null,4));
+          self.telBook = [];
+          self.entryID = 0;
+          self.bookIDs = [];
+          self.currentID = 0;
         }
-      });
+      }
+    });
   }
 
   setWifiTwo(accessory, service, state, callback){
@@ -1369,23 +1387,26 @@ class Fritz_Box {
   setReboot(accessory, service, state, callback){
     const self = this;
     if(state){
-      if(self.config.cmd.on&&self.config.cmd.off){
+      if(self.platform.reboot.cmd_on&&self.platform.reboot.cmd_off){
         self.logger.info(accessory.displayName + ': Initialising reboot...');
         accessory.context.stopPolling = true;
         for(const i in self.accessories){
           self.accessories[i].context.stopPolling = true;
         }
         self.logger.info(accessory.displayName + ': Polling were stopped!');
-        exec(self.config.cmd.on, function (error, stdout, stderr) {
+        exec(self.platform.reboot.cmd_on, function (error, stdout, stderr) {
           if(!error){
             if(stdout == 1){
               self.logger.info(accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
               let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
               reboot.actions.Reboot(function() {
-                if(accessory.context.token&&accessory.context.chatID&&accessory.context.telegramReboot){
-                  accessory.context.reboot = true;
+                if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
                   let message = 'Network reboot started!';
-                  self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+                  if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on){
+                    message = self.platform.options.reboot.messages.on;
+                  }
+                  accessory.context.reboot = true;
+                  self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                 }
                 for(const i in self.accessories){
                   if(self.accessories[i].context.type == self.types.repeater){
@@ -1413,7 +1434,7 @@ class Fritz_Box {
                 }
                 self.logger.info(accessory.displayName + ': Homebridge instances will be restarted automatically in 5 minutes!');
                 self.logger.info(accessory.displayName + ': Rebooting...'); 
-                exec(self.config.cmd.off, function (error, stdout, stderr) {
+                exec(self.platform.reboot.cmd_off, function (error, stdout, stderr) {
                   if(!error){
                     self.logger.info(accessory.displayName + ': All homebridge instances were restarted!');
                     error = null;
@@ -1566,8 +1587,12 @@ class Fritz_Box {
         if(!err||result){
           let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds';
           self.logger.info(accessory.displayName + ': ' + message);
-          if(accessory.context.token&&accessory.context.chatID&&accessory.context.telegramAlarm){
-            self.sendTelegram(accessory.context.token,accessory.context.chatID,message); 
+          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token){
+            if(self.platform.alarm.messages && typeof self.platform.alarm.messages.activated != 'undefined'){
+              message = self.platform.alarm.messages.activated;
+              message = message.replace('@', accessory.context.alarmNumber);
+            }
+            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message); 
           }
           self.sleep(accessory.context.alarmDuration).then(() => {
             service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
@@ -1583,7 +1608,12 @@ class Fritz_Box {
     } else {
       alarm.actions['X_AVM-DE_DialHangup'](function(err, result) {
         if(!err||result){
-          self.logger.info(accessory.displayName + ': Stop calling. Turning off \'Alarm\'');
+          let message = 'Stop calling. Turning off \'Alarm\'';
+          self.logger.info(accessory.displayName + ': ' + message);
+          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token){
+            if(self.platform.alarm.messages && typeof self.platform.alarm.messages.deactivated != 'undefined')message = self.platform.alarm.messages.deactivated;
+            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message); 
+          }
           callback(null, false);
         } else {
           self.logger.error(accessory.displayName + ': An error occured by turning off \'Alarm\'!');
@@ -1768,7 +1798,7 @@ class Fritz_Box {
     const self = this;
     self.logger.info('Starting broadband measurement...');
     speedTest({
-      maxTime: 5000
+      maxTime: accessory.context.maxTime
     })
       .on('data', data => {
         accessory.context.lastDLSpeed = data.speeds.download;
@@ -1777,12 +1807,13 @@ class Fritz_Box {
         self.logger.info('Download: ' + accessory.context.lastDLSpeed + ' Mbps');
         self.logger.info('Upload: ' + accessory.context.lastULSpeed + ' Mbps');
         self.logger.info('Ping: ' + accessory.context.lastPing + ' ms');
+        self.logger.info('Next measurement in ' + accessory.context.broadbandPolling + ' minutes');
         service.getCharacteristic(Characteristic.DownloadSpeed).updateValue(accessory.context.lastDLSpeed);
         service.getCharacteristic(Characteristic.UploadSpeed).updateValue(accessory.context.lastULSpeed);
         service.getCharacteristic(Characteristic.Ping).updateValue(accessory.context.lastPing);
         setTimeout(function() {
           self.getMeasurement(accessory, service);
-        }, 60 * 60 * 1000); //60 minutes
+        }, accessory.context.broadbandPolling); //60 minutes
       })
       .on('error', err => {
         self.logger.error(accessory.displayName + ': An error occured by checking broadband');
@@ -1941,9 +1972,30 @@ class Fritz_Box {
     switch (type) {
       case 2:
         if(accessory.displayName != 'Anyone'){
-          value.newValue ? self.logger.info('Welcome at home ' + accessory.displayName) : self.logger.info('Bye bye ' + accessory.displayName);
+          if(value.newValue){
+            let message = 'Welcome at home ' + accessory.displayName;
+            self.logger.info(message);
+            if(self.platform.presence&&self.platform.presence.telegram&&self.platform.presence.chatID&&self.platform.presence.token){
+              if(self.platform.presence.messages && typeof self.platform.presence.messages.anyone != 'undefined'){
+                message = self.platform.presence.messages.anyone;
+                message = message.replace('@', accessory.displayName);
+              }
+              self.sendTelegram(self.platform.presence.token,self.platform.presence.chatID,message); 
+            }
+          } else {
+            self.logger.info('Bye bye ' + accessory.displayName);
+          }
         } else {
-          if(!value.newValue)self.logger.info('No one at home!');
+          if(!value.newValue){
+            let message = 'No one at home!';
+            self.logger.info(message);
+            if(self.platform.presence&&self.platform.presence.telegram&&self.platform.presence.chatID&&self.platform.presence.token){
+              if(self.platform.presence.messages && typeof self.platform.presence.messages.noone != 'undefined'){
+                message = self.platform.presence.messages.noone;
+              }
+              self.sendTelegram(self.platform.presence.token,self.platform.presence.chatID,message); 
+            }
+          }
         }
         accessory.context.fakegatoService.addEntry({
           time: moment().unix(),

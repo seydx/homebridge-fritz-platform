@@ -12,8 +12,8 @@
       "host": "fritz.box",
       "port": 49000,
       "timeout": 5,
-      "username": "MyName",
-      "password": "MyPassword",
+      "username": "USERNAME",
+      "password": "PASSWORD",
       "polling": 10,
       "wifi": {
         "2.4ghz": true,
@@ -21,54 +21,76 @@
         "guest": true,
         "wps": true
       },
-      "callmonitor": {
-        "disable": false,
-        "ip": "192.168.178.1",
-        "port": 1012
-      },
-      "presence": {
-        "Peter": "01:02:03:04:05:06",
-        "Melanie": "06:05:04:03:02:01"
-      },
-      "wol": {
-        "Fernseher": "00:11:22:33:44:55",
-        "Computer": "11:21:32:43:54:65"
-      },
       "options": {
         "deflection": true,
-        "reboot": true,
         "answeringMachine": true,
-        "broadband": false,
         "devicelock": true,
         "debug": false,
         "phoneBook": true,
+        "broadband": {
+          "disable": true,
+          "maxTime": 5,
+          "polling": 60
+        },
         "wakeup": {
           "internNr": "**620",
           "duration": 30
         },
         "alarm": {
-          "telNr": "015212345678",
-          "duration": 30
+          "telNr": "01234567890",
+          "duration": 30,
+          "telegram": true,
+          "token": "TOKENHERE",
+          "chatID": "CHATIDHERE",
+          "messages": {
+            "activated": "Alarm wurde aktiviert! @ wird angerufen!",
+            "deactivated": "Alarm wurde deaktiviert"
+          }
+        },
+        "reboot": {
+          "disable": false,
+          "cmd_on": "sh /var/homebridge-fritz-platform/reboot-start.sh",
+          "cmd_off": "sh /var/homebridge-fritz-platform/reboot-finished.sh",
+          "telegram": true,
+          "token": "TOKENHERE",
+          "chatID": "CHATIDHERE",
+          "messages": {
+            "on": "Netzwerk wird neugestartet!",
+            "off": "Neustart des Netzwerks wurde erfolgreich abgeschlossen!"
+          }
         }
       },
-      "cmd": {
-        "on": "sh /var/homebridge/on.sh",
-        "off": "sh /var/homebridge/off.sh"
+      "callmonitor": {
+        "disable": false,
+        "ip": "192.168.178.1",
+        "port": 1012,
+        "telegram": true,
+        "token": "TOKENHERE",
+        "chatID": "CHATIDHERE",
+        "message": "Eingehender Anruf! @"
       },
-      "telegram": {
-        "alarm": true,
-        "callmonitor": true,
-        "reboot": true,
-        "token": "TOKEN",
-        "chatID": "CHATID"
+      "presence": {
+        "Peter": "11:22:33:44:55:66",
+        "Manfred": "99:88:77:66:55:44",
+        "telegram": true,
+        "token": "TOKENHERE",
+        "chatID": "CHATIDHERE",
+        "messages": {
+          "anyone": "Willkommen zu Hause @",
+          "noone": "Niemand zu Hause!"
+        }
+      },
+      "wol": {
+	      "Fernseher":"AA:00:BB:11:CC:ZZ",
+	      "Computer":"BB:11:ZZ:33:OO:AA"
       },
       "repeater": {
         "Fritz Repeater": {
           "disable": false,
           "ip": "192.168.178.2",
           "port": 49000,
-          "username": "MyUsername2",
-          "password": "MyPassword2",
+          "username": "USERNAME2",
+          "password": "PASSWORD2",
           "led": true,
           "wifi": {
             "2.4ghz": true,

@@ -36,6 +36,8 @@ function FritzPlatform (log, config, api) {
   this.wakeup = config.options.wakeup||{};
   this.alarm = config.options.alarm||{};
   this.telegram = config.telegram||{};
+  this.broadband = config.options.broadband||{};
+  this.reboot = config.options.reboot||{};
   this.polling = config.polling < 10 ? 10 : config.polling;
   this.HBpath = api.user.storagePath()+'/accessories';
   this.call = {};
@@ -166,45 +168,47 @@ FritzPlatform.prototype = {
         let userArray = [];
         let skipAnyone = false;
         for(const i of Object.keys(this.presence)) {
-          skip = false;
-          userArray.push(this.presence[i]);
-          for (const j in this.accessories) {
-            if (this.accessories[j].context.mac == this.presence[i] && this.accessories[j].context.type == this.types.presence) {
-              skip = true;
+          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'){
+            skip = false;
+            userArray.push(this.presence[i]);
+            for (const j in this.accessories) {
+              if (this.accessories[j].context.mac == this.presence[i] && this.accessories[j].context.type == this.types.presence) {
+                skip = true;
+              }
+              if (this.accessories[j].displayName == 'Anyone' && this.accessories[j].context.type == this.types.presence) {
+                skipAnyone = true;
+              }
             }
-            if (this.accessories[j].displayName == 'Anyone' && this.accessories[j].context.type == this.types.presence) {
-              skipAnyone = true;
+            if (!skip) {
+              let serial = this.presence[i];
+              while (serial.indexOf(':') > -1) {
+                serial = serial.replace(':', '');
+              }
+              let parameter = {
+                name: i,
+                serialNo: serial + '-' + this.types.presence,
+                type: this.types.presence,
+                model: 'Presence Sensor',
+                mac: this.presence[i],
+                fakegato: true,
+                fakegatoType: 'motion',
+                fakegatoTimer: true
+              };
+              new Device(this, parameter, true);
             }
-          }
-          if (!skip) {
-            let serial = this.presence[i];
-            while (serial.indexOf(':') > -1) {
-              serial = serial.replace(':', '');
+            if (!skipAnyone) {
+              let parameter = {
+                name: 'Anyone',
+                serialNo: '1234567890-' + this.types.presence,
+                type: this.types.presence,
+                model: 'Anyone Sensor',
+                mac: '000000000000',
+                fakegato: true,
+                fakegatoType: 'motion',
+                fakegatoTimer: true
+              };
+              new Device(this, parameter, true);
             }
-            let parameter = {
-              name: i,
-              serialNo: serial + '-' + this.types.presence,
-              type: this.types.presence,
-              model: 'Presence Sensor',
-              mac: this.presence[i],
-              fakegato: true,
-              fakegatoType: 'motion',
-              fakegatoTimer: true
-            };
-            new Device(this, parameter, true);
-          }
-          if (!skipAnyone) {
-            let parameter = {
-              name: 'Anyone',
-              serialNo: '1234567890-' + this.types.presence,
-              type: this.types.presence,
-              model: 'Anyone Sensor',
-              mac: '000000000000',
-              fakegato: true,
-              fakegatoType: 'motion',
-              fakegatoTimer: true
-            };
-            new Device(this, parameter, true);
           }
         }
         for(const i in this.accessories){
@@ -363,11 +367,6 @@ FritzPlatform.prototype = {
       this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
-      accessory.context.token = self.telegram.token||null;
-      accessory.context.chatID = self.telegram.chatID||null;
-      accessory.context.telegramAlarm = self.telegram.alarm||false;
-      accessory.context.telegramCallmonitor = self.telegram.callmonitor||false;
-      accessory.context.telegramReboot = self.telegram.reboot||false;
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,
