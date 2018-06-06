@@ -44,7 +44,7 @@ Required parameter
 | port | Port from callmonitor (Default: 1012) |
 
 ## Optional
-Optional parameter for Telegram notificstions
+Optional parameter for Telegram notifications
 
 | Attributes | Usage |
 |------------|-------|
