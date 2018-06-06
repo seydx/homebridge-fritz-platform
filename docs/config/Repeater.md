@@ -35,5 +35,26 @@ The Plugin can also expose all available Wifi frequences and guest wifi access a
 }
 ```
 
+## Base
+Required settings
+
+| Attributes | Usage |
+|------------|-------|
+| disable | If true, Fritz!Repeater will be removed  |
+| ip | Ip adress from repeater |
+| port | Port for TR064 API (Default: 49000) |
+| username | Username for Fritz!Repeater |
+| password | Password for Fritz!Repeater |
+
+## Options
+Extra characteristics to show LED and Wifi 
+
+| Attributes | Usage |
+|------------|-------|
+| LED | Switch characteristic to switch on/off LED |
+| wifi.2.4ghz | Switch characteristic to switch on/off Wifi 2.4Ghz |
+| wifi.5ghz | Switch characteristic to switch on/off Wifi 5Ghz |
+| wifi.guest | Switch characteristic to switch on/off Wifi Guest |
+
 **Elgato Eve**
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/Repeater.JPG" align="center" alt="Repeater EVE">
