@@ -2,6 +2,25 @@
 
 Fritz!Box supports the listening of incoming and outgoing calls via the port 1012. This can be used to create automations that immediately contact you when you receive a call, even if you are not at home. Via the built-in Telegram Notifications service, you can also conveniently send push notifications with your own text which can be created over the config.json
 
+# Example Config
+
+```
+"callmonitor": {
+  "disable": false,
+  "ip": "192.168.178.1",
+  "port": 1012,
+  "telegram": true,
+  "token": "TOKENHERE",
+  "chatID": "CHATIDHERE",
+  "messages":{
+    "incoming":"Incoming call! @",
+    "disconnected":"Incoming call - @ - was disconnected!"
+  }
+}
+```
+_('@' defines the are where dynamic content lik caller information - name and number - will come)_
+
+
 # First steps
 
 Before you can use Callmonitor you have to activate port 1012. You do that by calling the number "#95*5*" with the phone which is connected to the Fritz!Box. That's it. (Port can be closed again at any time via the number "#95*4*")
