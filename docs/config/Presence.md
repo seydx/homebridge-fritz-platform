@@ -32,7 +32,7 @@ Parameter to expose new motion sensors
 | Attributes | Usage |
 |------------|-------|
 | custom name | Own definef name for Home |
-| mac adress | MAC adresse from the device
+| mac adress | MAC adresse from the device |
 
 ## Optional
 Optional parameter for Telegram notifications
