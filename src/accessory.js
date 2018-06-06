@@ -1181,7 +1181,7 @@ class Fritz_Box {
           accessory.context.lastContactSensorState = false;
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastContactSensorState);
           self.logger.info('Call disconnected');
-          if(accessory.displayName == "Callmonitor Incoming"){
+          if(accessory.displayName == 'Callmonitor Incoming'){
             if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
               if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected){
                 let parseInfo;
@@ -1795,9 +1795,6 @@ class Fritz_Box {
             accessory.context.lastDeflectiontate = false;
             self.ignorePosted = 1;
             service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectiontate);
-            setTimeout(function(){
-              self.checkDeflection(accessory, service);
-            }, (Math.random() * ((self.polling+5) - self.polling) + self.polling)*1000);
           }
         } else {
           callback(null, accessory.context.lastDeflectiontate);
@@ -1882,7 +1879,7 @@ class Fritz_Box {
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
             setTimeout(function(){
               self.getMotionDetected(accessory, service);
-            }, (Math.random() * ((self.polling+5) - self.polling) + self.polling)*1000);
+            }, self.polling);
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
@@ -1943,7 +1940,7 @@ class Fritz_Box {
               if(!accessory.context.stopPolling){
                 setTimeout(function(){
                   self.getMotionDetected(accessory, service);
-                }, (Math.random() * ((self.polling+5) - self.polling) + self.polling)*1000);
+                }, self.polling);
               }
             });
           }
@@ -1960,14 +1957,14 @@ class Fritz_Box {
           service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
           setTimeout(function(){
             self.getMotionDetected(accessory, service);
-          }, (Math.random() * ((self.polling+5) - self.polling) + self.polling)*1000);
+          }, self.polling);
         }
       });
     } else {
       service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
       setTimeout(function(){
         self.getMotionDetected(accessory, service);
-      }, (Math.random() * ((self.polling+5) - self.polling) + self.polling)*1000);
+      }, self.polling);
     }
   }
 
