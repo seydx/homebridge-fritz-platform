@@ -18,6 +18,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
 
 - [Supported HomeKit Apps](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Apps.md)
 - [Tested Devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Supported.md)
+- [Common issues & FAQs](https://github.com/SeydX/homebridge-fritz-platform/blob/master/FAQ.md)
 - [Installation instruction](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)
    * [Configuring Fritz!Box](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
    * [Configuring Fritz!Repeater](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Repeater.md)
