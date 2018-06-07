@@ -53,11 +53,12 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
     "chatID": "CHATIDHERE",
     "messages": {
       "on": "Network reboot started!",
-      "off": "Network reboot completed!"
+      "off": "Network reboot completed! @ "
     }
   }
 }
 ```
+_('@' means dynamic content, @ will be replaced by "IP:123.123.123.123" to show new external ip adress after reboot finished or call number by "alarm")_
 
 ## Options.Broadband
 Extra characteristics to show broadband measurements (download, speed and ping)
