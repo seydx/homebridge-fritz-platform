@@ -1,6 +1,6 @@
 # Fritz!Box
 
-This plugin uses the TR 064 interface of the router to communicate with it. Host can be the local address (fritz.box) or ip adresse. Port is 49000. So that the plugin runs perfectly, please enter the access data from FritzBox web interface in the config.json. Timeout defines the maximum time a request can take (in seconds). Polling is the time span when the data should be refreshed.
+This plugin uses the TR 064 interface of the router to communicate with it. Host can be the local address (fritz.box) or ip adresse. Port is 49000. So that the plugin runs perfectly, please enter the access data from FritzBox web interface in the config.json. Timeout defines the maximum time a request can take (in seconds). Polling is the time span when the data should be refreshed. Type is required if you are using cable router like Fritz!Box 6490 etc. In this case, you need to put "type":"cable" in the config.json
 
 # Example Config
 
@@ -9,6 +9,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
   "name": "FritzBox",
   "host": "fritz.box",
   "port": 49000,
+  "type": "dsl",
   "timeout": 5,
   "username": "USERNAME",
   "password": "PASSWORD",
@@ -65,9 +66,10 @@ Extra characteristics to show broadband measurements (download, speed and ping)
 
 | Attributes | Usage |
 |------------|-------|
-| disable | If true, broadband characteristics will be removed  |
-| maxTime | The maximum length of a single test run in seconds (Default: 5s)  |
-| polling | Interval for checking the broadband in mins (Default: 60min)  |
+| disable | If true, broadband characteristics will be removed |
+| maxTime | The maximum length of a single test run in seconds (Default: 5s) |
+| polling | Interval for checking the broadband in mins (Default: 60min) |
+| type | The type of your router (dsl or cable - Default: dsl) |
 
 ## Options.Wakeup
 Extra characteristics to call a in the config setted **intern** handset device
