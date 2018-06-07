@@ -33,11 +33,11 @@ function FritzPlatform (log, config, api) {
   this.repeater = config.repeater||{};
   this.cmd = config.cmd||{};
   this.callmonitor = config.callmonitor||{};
-  this.wakeup = config.options.wakeup||{};
-  this.alarm = config.options.alarm||{};
+  this.wakeup = this.options.wakeup||{};
+  this.alarm = this.options.alarm||{};
   this.telegram = config.telegram||{};
-  this.broadband = config.options.broadband||{};
-  this.reboot = config.options.reboot||{};
+  this.broadband = this.options.broadband||{};
+  this.reboot = this.options.reboot||{};
   this.polling = config.polling < 10 ? 10*1000 : config.polling*1000;
   this.HBpath = api.user.storagePath()+'/accessories';
   this.call = {};
@@ -86,7 +86,7 @@ FritzPlatform.prototype = {
         result.startEncryptedCommunication()
           .then(device => {
             self.logger.info('Encrypted communication started with: ' + result.meta.friendlyName); 
-            if(!self.config.callmonitor.disabled){
+            if(self.config.callmonitor&&!self.config.callmonitor.disabled){
               self.callMonitor(result.meta.friendlyName, device);
             } else {
               self.time = moment().unix();
@@ -321,7 +321,7 @@ FritzPlatform.prototype = {
         }
       }
 
-      if(!self.callmonitor.disabled){
+      if(Object.keys(self.callmonitor).length&&!self.callmonitor.disabled){
         let skip = false;
         for (const i in this.accessories) {
           if (this.accessories[i].context.type == this.types.callmonitor) {
