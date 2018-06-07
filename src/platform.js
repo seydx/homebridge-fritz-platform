@@ -168,7 +168,7 @@ FritzPlatform.prototype = {
         let userArray = [];
         let skipAnyone = false;
         for(const i of Object.keys(this.presence)) {
-          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'){
+          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'){
             skip = false;
             userArray.push(this.presence[i]);
             for (const j in this.accessories) {
@@ -192,7 +192,8 @@ FritzPlatform.prototype = {
                 mac: this.presence[i],
                 fakegato: true,
                 fakegatoType: 'motion',
-                fakegatoTimer: true
+                fakegatoTimer: true,
+                delay: self.presence.delay*1000||0
               };
               new Device(this, parameter, true);
             }
@@ -205,7 +206,8 @@ FritzPlatform.prototype = {
                 mac: '000000000000',
                 fakegato: true,
                 fakegatoType: 'motion',
-                fakegatoTimer: true
+                fakegatoTimer: true,
+                delay: self.presence.delay*1000||0
               };
               new Device(this, parameter, true);
             }
@@ -367,6 +369,7 @@ FritzPlatform.prototype = {
       this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
+      if(self.types.presence)accessory.context.delay=self.presence.delay*1000||0;
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,

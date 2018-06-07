@@ -134,6 +134,7 @@ class Fritz_Box {
         accessory.context.lastMotionState = [];
         accessory.context.lastActivation = 0;
         accessory.context.mac = parameter.mac;
+        accessory.context.delay = parameter.delay;
         break;
       case 3:
         accessory.context.mac = parameter.mac;
@@ -1953,17 +1954,28 @@ class Fritz_Box {
                 callback(null, accessory.context.lastMotionState);
               }
             };
-            async.concat(repeater, checkPresenceFunction, function(err, values) {
-              if(!err){
+            async.concat(repeater, checkPresenceFunction, function(asyncerr, values) {
+              if(!asyncerr){
                 if(values.includes(true)){
                   accessory.context.lastMotionState = true;
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
                 } else {
-                  accessory.context.lastMotionState = false;
-                  service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+                  !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer;
+                  if(accessory.context.delay>0&&accessory.context.lastMotionState&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+                    if(!self.info){
+                      self.logger.info(accessory.displayName + ': No motion/presence detected! The presence delay is active.');
+                      self.logger.info(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to \'no movement/presence\'');
+                      self.info = true;
+                    }
+                  } else {
+                    self.presenceTimer = false;
+                    accessory.context.lastMotionState = false;
+                    service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+                  }
                 }
               } else {
-                self.logger.error('An error occured by checking presence state from repeater!');
+                self.logger.error(accessory.displayName + ': An error occured by checking presence state, trying again...');
+                self.logger.error(JSON.stringify(asyncerr,null,4));
               }
               if(!accessory.context.stopPolling){
                 setTimeout(function(){
@@ -1972,16 +1984,9 @@ class Fritz_Box {
               }
             });
           }
-          self.error.presence = 0;
         } else {
-          !self.error.presence ? self.error.presence = 0 : self.error.presence;
-          if(self.error.presence > 5){
-            self.error.presence = 0;
-            self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-            self.logger.error(JSON.stringify(err,null,4));
-          } else {
-            self.error.presence += 1;
-          }
+          self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
+          self.logger.error(JSON.stringify(err,null,4));
           service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
           setTimeout(function(){
             self.getMotionDetected(accessory, service);
