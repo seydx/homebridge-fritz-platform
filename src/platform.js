@@ -25,6 +25,7 @@ function FritzPlatform (log, config, api) {
   this.logger = new LogUtil(null, log);
   this.accessories = [];
   this.config = config;
+  this.boxType = config.type||'dsl';
   this.presence = config.presence||{};
   this.wol = config.wol||{};
   this.options = config.options||{};

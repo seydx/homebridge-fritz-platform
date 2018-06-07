@@ -534,7 +534,10 @@ class Fritz_Box {
         service.getCharacteristic(Characteristic.On)
           .updateValue(accessory.context.lastSwitchState)
           .on('get', function(callback){
-            let dsl = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+            let dsl;
+            self.platform.boxType == 'dsl' ? 
+             dsl = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+             dsl = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
             if(!accessory.context.stopPolling){
               dsl.actions.GetStatusInfo(function(err, result) {
                 if(!err){
@@ -556,7 +559,10 @@ class Fritz_Box {
             }
           })
           .on('set', function(state, callback) {
-            let reconnect = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+            let reconnect;
+            self.platform.boxType == 'dsl' ? 
+             reconnect = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+             reconnect = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
             if(state){
               self.logger.info(accessory.displayName + ': Please wait a moment, internet is reconnecting...');
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
@@ -573,7 +579,10 @@ class Fritz_Box {
         
         if(accessory.context.reboot){
           accessory.context.reboot = false;
-          let ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+          let ppp;
+            self.platform.boxType == 'dsl' ? 
+             ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+             ppp = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
           ppp.actions.GetExternalIPAddress(function(err, res) {
             if(!err){
               let message = 'Network reboot completed. New External IP adress: ' + res.NewExternalIPAddress;
@@ -775,7 +784,10 @@ class Fritz_Box {
   
   getIP(accessory,service){
     const self = this;
-    let ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+    let ppp;
+    self.platform.boxType == 'dsl' ? 
+      ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+      ppp = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
     ppp.actions.GetExternalIPAddress(function(err, res) {
       if(!err){
         self.logger.info(accessory.displayName + ': Reconnect successfull. New external ip adress is: ' + res.NewExternalIPAddress);
