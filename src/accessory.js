@@ -561,19 +561,15 @@ class Fritz_Box {
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
             } else {
-              reconnect.actions.ForceTermination(function(err) {
-                if(!err){
-                  self.logger.warn(accessory.displayName + ': Reconnecting internet...');
-                  accessory.context.lastSwitchState = false;
-                  callback(null, false);
-                } else {
-                  self.logger.warn(accessory.displayName + ': Reconnecting internet...');
-                  accessory.context.lastSwitchState = true;
-                  callback(null, false);
-                }
+              reconnect.actions.ForceTermination(function(err,res) {
+                self.logger.warn(accessory.displayName + ': Reconnecting internet...');
+                accessory.context.lastSwitchState = false;
+                setTimeout(function(){self.getIP(accessory,service);},15000);
+                callback(null, false);
               });
             }
           });
+        
         if(accessory.context.reboot){
           accessory.context.reboot = false;
           let ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
@@ -774,6 +770,20 @@ class Fritz_Box {
       default:
         break;
     }
+  }
+  
+  getIP(accessory,service){
+    const self = this;
+    let ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+    ppp.actions.GetExternalIPAddress(function(err, res) {
+      if(!err){
+        self.logger.info(accessory.displayName + ': Reconnect successfull. New external ip adress is: ' + res.NewExternalIPAddress);
+      }else{
+        self.logger.info(accessory.displayName + ': Reconnect successfull');
+      }
+      accessory.context.lastSwitchState = true;
+      service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+    });
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
