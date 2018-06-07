@@ -574,13 +574,31 @@ class Fritz_Box {
               });
             }
           });
-        if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&accessory.context.reboot){
-          let message = 'Network reboot completed!';
-          if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
-            message = self.platform.options.reboot.messages.off;
-          }
+        if(accessory.context.reboot){
           accessory.context.reboot = false;
-          self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
+          let ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'];
+          ppp.actions.GetExternalIPAddress(function(err, res) {
+            if(!err){
+              let message = 'Network reboot completed. New External IP adress: ' + res.NewExternalIPAddress;
+              self.logger.info(message);
+              if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
+                if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
+                  message = self.platform.options.reboot.messages.off;
+                  message = message.replace('@', 'IP: ' + res.NewExternalIPAddress);
+                }
+                self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
+              }
+            }else{
+              let message = 'Network reboot completed';
+              self.logger.info(message);
+              if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&accessory.context.reboot){
+                if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
+                  message = self.platform.options.reboot.messages.off;
+                }
+                self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
+              }
+            }
+          });
         }
         break;
       case 2:
