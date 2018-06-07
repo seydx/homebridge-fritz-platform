@@ -56,7 +56,7 @@
           "chatID": "CHATIDHERE",
           "messages": {
             "on": "Network reboot started!",
-            "off": "Network reboot completed!"
+            "off": "Network reboot completed! @"
           }
         }
       },
