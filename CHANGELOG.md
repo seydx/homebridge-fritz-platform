@@ -16,4 +16,5 @@
 # Functions in progress
 - [ ] Fritz!SmartHome device implementations
 - [ ] Ring lock
-- [ ] Debug mode
+- [ ] Debug tool
+- [ ] Support for cable router like Fritz!Box 6490 etc
