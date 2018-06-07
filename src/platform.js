@@ -86,7 +86,7 @@ FritzPlatform.prototype = {
         result.startEncryptedCommunication()
           .then(device => {
             self.logger.info('Encrypted communication started with: ' + result.meta.friendlyName); 
-            if(self.config.callmonitor&&!self.config.callmonitor.disabled){
+            if(self.config.callmonitor&&!self.config.callmonitor.disable){
               self.callMonitor(result.meta.friendlyName, device);
             } else {
               self.time = moment().unix();
@@ -321,7 +321,7 @@ FritzPlatform.prototype = {
         }
       }
 
-      if(Object.keys(self.callmonitor).length&&!self.callmonitor.disabled){
+      if(Object.keys(self.callmonitor).length&&!self.callmonitor.disable){
         let skip = false;
         for (const i in this.accessories) {
           if (this.accessories[i].context.type == this.types.callmonitor) {

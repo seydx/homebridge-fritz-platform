@@ -765,7 +765,7 @@ class Fritz_Box {
         service = accessory.getService(Service.ContactSensor);
         service.getCharacteristic(Characteristic.ContactSensorState)
           .updateValue(accessory.context.lastContactSensorState);
-        if(self.config.callmonitor&&!self.config.callmonitor.disabled)self.getContactState(accessory, service);
+        if(self.config.callmonitor&&!self.config.callmonitor.disable)self.getContactState(accessory, service);
         break;
       default:
         break;
