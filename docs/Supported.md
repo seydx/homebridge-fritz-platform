@@ -3,6 +3,7 @@
 ## Fritz!Box
 - [x] Fritz!Box 7590
 - [x] Fritz!Box 7490
+- [x] Fritz!Box 7360
 
 ## Fritz!Repeater
 - [x] Fritz!Wlan Repeater 310
