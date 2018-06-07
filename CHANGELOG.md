@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.3.0 - 2018-06-07
+- Added "delay" option to presence
+- Bugfixes (callmonitor)
+- Fixed a bug with initializing config.json
+
 ## v2.2.7 - 2018-06-07
 - Added ip information for Reboot and Reconnect
 - Clean up code
