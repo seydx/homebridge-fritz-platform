@@ -28,6 +28,6 @@ Below, i have listed some frequently asked questions and errors that may be appe
 }
 ```
 
-**Fix:** You need to set the right router type in your config.json. If you are using a cable modung, please put "type":"cable" in your config.json otherwise it is by default "type":"dsl"
+**Fix:** You need to set the right router type in your config.json. If you are using a cable router, please put "type":"cable" in your config.json otherwise it is by default "type":"dsl"
 
 <hr>
