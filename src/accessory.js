@@ -636,11 +636,12 @@ class Fritz_Box {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
                 if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
-                if(accessory.context.mac){
+                setTimeout(function(){self.getMotionDetected(accessory, service);},(Math.random() * (4 - 1) + 1)*1000);
+                /*if(accessory.context.mac){
                   setTimeout(function(){self.getMotionDetected(accessory, service);},500);
                 } else {
                   setTimeout(function(){self.getMotionDetected(accessory, service);},1500); 
-                }
+                }*/
               }
             }
           }
@@ -2036,8 +2037,21 @@ class Fritz_Box {
                   }
                 }
               } else {
-                self.logger.error(accessory.displayName + ': An error occured by checking presence state, trying again...');
-                self.logger.error(JSON.stringify(asyncerr,null,4));
+                if(asyncerr.tr064){
+                  if(asyncerr.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
+                    //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
+                    accessory.context.lastMotionState = false;
+                    accessory.context.accType == 'motion' ? 
+                      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                      service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+                  } else {
+                    self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
+                    self.logger.error(JSON.stringify(asyncerr,null,4));
+                  }
+                } else {
+                  self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
+                  self.logger.error(JSON.stringify(asyncerr,null,4));
+                }
               }
               if(!accessory.context.stopPolling){
                 setTimeout(function(){
@@ -2047,14 +2061,19 @@ class Fritz_Box {
             });
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-          if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
+          if(err.tr064){
+            if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
             //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
-            accessory.context.lastMotionState = false;
-            accessory.context.accType == 'motion' ? 
-              service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
-              service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+              accessory.context.lastMotionState = false;
+              accessory.context.accType == 'motion' ? 
+                service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+            } else {
+              self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
+              self.logger.error(JSON.stringify(err,null,4));
+            }
           } else {
+            self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
             self.logger.error(JSON.stringify(err,null,4));
           }
           accessory.context.accType == 'motion' ? 
