@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.3.3 - 2018-06-08
+- Changed presence structure (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
+- An error has been fixed that caused the presence sensors not to switch correctly (if no presence detected)
+- Improved presence adresse detection
+- Possiblitiy to add ip adress to presence
 
 ## v2.3.2 - 2018-06-08
 - Added "type" option to presence sensors (motion/occupancy)
@@ -27,4 +32,4 @@
 - [ ] Fritz!SmartHome device implementations
 - [ ] Ring lock
 - [ ] Debug tool
-- [ ] Support for cable router like Fritz!Box 6490 etc
+- [x] Support for cable router like Fritz!Box 6490 etc
