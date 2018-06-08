@@ -128,10 +128,13 @@ FritzPlatform.prototype = {
         self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - Dial #96*5 to enable port 1012');
       } else if (error.errno == 'EHOSTUNREACH'||error.code == 'EHOSTUNREACH') {
         self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
+      } else if(error.errno == 'ENETUNREACH') {
+        self.logger.warn('Network currently not reachable!')
       } else {
         self.logger.error(JSON.stringify(error,null,4));
       }
-      return;
+      self.logger.info("Trying again in 30 seconds..");
+      setTimeout(function(){self.callMonitor(name,device)},30*1000)
     });
     self.client.on('end', () => {
       self.logger.warn('Callmonitor connection were closed!');
@@ -169,11 +172,11 @@ FritzPlatform.prototype = {
         let userArray = [];
         let skipAnyone = false;
         for(const i of Object.keys(this.presence)) {
-          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'){
+          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'&&i!='type'){
             skip = false;
-            userArray.push(this.presence[i]);
+            userArray.push(i,this.presence[i]);
             for (const j in this.accessories) {
-              if (this.accessories[j].context.mac == this.presence[i] && this.accessories[j].context.type == this.types.presence) {
+              if (this.accessories[j].context.mac == this.presence[i] && this.accessories[j].context.type == this.types.presence && this.accessories[j].displayName == i) {
                 skip = true;
               }
               if (this.accessories[j].displayName == 'Anyone' && this.accessories[j].context.type == this.types.presence) {
@@ -189,11 +192,12 @@ FritzPlatform.prototype = {
                 name: i,
                 serialNo: serial + '-' + this.types.presence,
                 type: this.types.presence,
+                accType: self.presence.type||'motion',
                 model: 'Presence Sensor',
                 mac: this.presence[i],
-                fakegato: true,
-                fakegatoType: 'motion',
-                fakegatoTimer: true,
+                fakegato: self.presence.type == 'motion' ? true : false,
+                fakegatoType: self.presence.type == 'motion' ? 'motion' : null,
+                fakegatoTimer: self.presence.type == 'motion' ? true : null,
                 delay: self.presence.delay*1000||0
               };
               new Device(this, parameter, true);
@@ -205,9 +209,10 @@ FritzPlatform.prototype = {
                 type: this.types.presence,
                 model: 'Anyone Sensor',
                 mac: '000000000000',
-                fakegato: true,
-                fakegatoType: 'motion',
-                fakegatoTimer: true,
+                accType: self.presence.type||'motion',
+                fakegato: self.presence.type == 'motion' ? true : false,
+                fakegatoType: self.presence.type == 'motion' ? 'motion' : null,
+                fakegatoTimer: self.presence.type == 'motion' ? true : null,
                 delay: self.presence.delay*1000||0
               };
               new Device(this, parameter, true);
@@ -216,7 +221,7 @@ FritzPlatform.prototype = {
         }
         for(const i in this.accessories){
           if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName != 'Anyone'){
-            if(!userArray.includes(this.accessories[i].context.mac)){
+            if(!userArray.includes(this.accessories[i].context.mac)&&!!userArray.includes(this.accessories[i].displayName)){
               self.removeAccessory(self.accessories[i]);
             }
           }
@@ -370,7 +375,14 @@ FritzPlatform.prototype = {
       this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
-      if(self.types.presence)accessory.context.delay=self.presence.delay*1000||0;
+      
+      if(accessory.context.type == self.types.presence){
+	      accessory.context.delay=self.presence.delay*1000||0;
+	      if(accessory.context.accType != self.presence.type){
+		      self.logger.warn("New accessory type for presence sensor detected!")
+		      self.removeAccessory(accessory);
+	      }
+	  }
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,

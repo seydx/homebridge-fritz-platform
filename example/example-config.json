@@ -75,6 +75,8 @@
       "presence": {
         "Peter": "11:22:33:44:55:66",
         "Manfred": "99:88:77:66:55:44",
+        "delay":60,
+        "type":"motions",
         "telegram": true,
         "token": "TOKENHERE",
         "chatID": "CHATIDHERE",

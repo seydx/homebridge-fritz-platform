@@ -46,6 +46,8 @@ class Fritz_Box {
     this.error = {};
     this.client = platform.client;
     this.call = {};
+    this.info = false;
+    this.presenceTimer = false;
 
     //Sleep function
     this.sleep = function(time) {
@@ -84,7 +86,7 @@ class Fritz_Box {
         break;
       case 2:
         deviceType = Accessory.Categories.SENSOR;
-        accessoryType = Service.MotionSensor;
+        parameter.accType == 'motion' ? accessoryType = Service.MotionSensor : accessoryType = Service.OccupancySensor;
         break;
       case 3:
         deviceType = Accessory.Categories.SWITCH;
@@ -135,6 +137,7 @@ class Fritz_Box {
         accessory.context.lastActivation = 0;
         accessory.context.mac = parameter.mac;
         accessory.context.delay = parameter.delay;
+        accessory.context.accType = parameter.accType;
         break;
       case 3:
         accessory.context.mac = parameter.mac;
@@ -536,8 +539,8 @@ class Fritz_Box {
           .on('get', function(callback){
             let dsl;
             self.platform.boxType == 'dsl' ? 
-             dsl = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
-             dsl = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
+              dsl = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+              dsl = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
             if(!accessory.context.stopPolling){
               dsl.actions.GetStatusInfo(function(err, result) {
                 if(!err){
@@ -561,8 +564,8 @@ class Fritz_Box {
           .on('set', function(state, callback) {
             let reconnect;
             self.platform.boxType == 'dsl' ? 
-             reconnect = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
-             reconnect = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
+              reconnect = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+              reconnect = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
             if(state){
               self.logger.info(accessory.displayName + ': Please wait a moment, internet is reconnecting...');
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
@@ -580,9 +583,9 @@ class Fritz_Box {
         if(accessory.context.reboot){
           accessory.context.reboot = false;
           let ppp;
-            self.platform.boxType == 'dsl' ? 
-             ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
-             ppp = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
+          self.platform.boxType == 'dsl' ? 
+            ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
+            ppp = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
           ppp.actions.GetExternalIPAddress(function(err, res) {
             if(!err){
               let message = 'Network reboot completed. New External IP adress: ' + res.NewExternalIPAddress;
@@ -608,23 +611,30 @@ class Fritz_Box {
         }
         break;
       case 2:
-        service = accessory.getService(Service.MotionSensor);
-        service.getCharacteristic(Characteristic.MotionDetected)
-          .updateValue(accessory.context.lastMotionState)
-          .on('change', self.changeValue.bind(this, accessory, service, type, 'motion'));
-
-        if (!service.testCharacteristic(Characteristic.EveMotionLastActivation))service.addCharacteristic(Characteristic.EveMotionLastActivation);
-        service.getCharacteristic(Characteristic.EveMotionLastActivation)
-          .updateValue(accessory.context.lastActivation);
+        if(accessory.context.accType == 'motion'){
+	      service = accessory.getService(Service.MotionSensor)
+          service.getCharacteristic(Characteristic.MotionDetected)
+            .updateValue(accessory.context.lastMotionState)
+            .on('change', self.changeValue.bind(this, accessory, service, type, 'motion'));
+  
+          if (!service.testCharacteristic(Characteristic.EveMotionLastActivation))service.addCharacteristic(Characteristic.EveMotionLastActivation);
+          service.getCharacteristic(Characteristic.EveMotionLastActivation)
+            .updateValue(accessory.context.lastActivation);
+        } else {
+	      service = accessory.getService(Service.OccupancySensor);
+          service.getCharacteristic(Characteristic.OccupancyDetected)
+            .updateValue(accessory.context.lastMotionState)
+            .on('change', self.changeValue.bind(this, accessory, service, type, 'motion'));
+        }
 
         if(Object.keys(self.platform.presence).length){
           if(accessory.displayName == 'Anyone'){
-            self.getMotionLastActivation(accessory, service);
+            if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
             setTimeout(function(){self.getAnyoneMotionDetected(accessory, service);},3000);
           } else {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
-                self.getMotionLastActivation(accessory, service);
+                if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
                 setTimeout(function(){self.getMotionDetected(accessory, service);},1000); 
               }
             }
@@ -1892,7 +1902,9 @@ class Fritz_Box {
     let motion = 0;
     for(const i in allAccessories){
       if(allAccessories[i].context.type == self.types.presence && allAccessories[i].displayName != 'Anyone'){
-        let state = allAccessories[i].getService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected).value;
+        let state = accessory.context.accType == 'motion' ? 
+          allAccessories[i].getService(Service.MotionSensor).getCharacteristic(Characteristic.MotionDetected).value :
+          allAccessories[i].getService(Service.OccupancySensor).getCharacteristic(Characteristic.OccupancyDetected).value;
         if(state){
           motion += 1;
         }
@@ -1903,7 +1915,9 @@ class Fritz_Box {
     } else {
       accessory.context.lastMotionState = false;
     }
-    service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+    accessory.context.accType == 'motion' ? 
+      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+      service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
     setTimeout(function(){self.getAnyoneMotionDetected(accessory, service);},1000);
   }
 
@@ -1917,7 +1931,14 @@ class Fritz_Box {
         if(!err){
           if(result.NewActive == '1'){
             accessory.context.lastMotionState = true;
-            service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+            accessory.context.accType == 'motion' ? 
+              service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+              service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+            if(self.info||self.presenceTimer){
+              self.logger.info('Presence detected again for ' + accessory.displayName + ' on ' + self.device.friendlyName);
+              self.info = false;
+              self.presenceTimer = false;
+            }
             setTimeout(function(){
               self.getMotionDetected(accessory, service);
             }, self.polling);
@@ -1970,19 +1991,29 @@ class Fritz_Box {
               if(!asyncerr){
                 if(values.includes(true)){
                   accessory.context.lastMotionState = true;
-                  service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+                  accessory.context.accType == 'motion' ? 
+                    service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                    service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+                  if(self.info||self.presenceTimer){
+                    self.logger.info('Presence detected again for ' + accessory.displayName);
+                    self.info = false;
+                    self.presenceTimer = false;
+                  }
                 } else {
                   !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer;
                   if(accessory.context.delay>0&&accessory.context.lastMotionState&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
                     if(!self.info){
-                      self.logger.info(accessory.displayName + ': No motion/presence detected! The presence delay is active.');
-                      self.logger.info(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to \'no movement/presence\'');
+                      self.logger.info(accessory.displayName + ': No presence! Presence delay is active.');
+                      self.logger.info(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
                       self.info = true;
                     }
                   } else {
-                    self.presenceTimer = false;
                     accessory.context.lastMotionState = false;
-                    service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+                    accessory.context.accType == 'motion' ? 
+                      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                      service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+                    self.info = false;
+                    self.presenceTimer = false;
                   }
                 }
               } else {
@@ -1999,14 +2030,18 @@ class Fritz_Box {
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
           self.logger.error(JSON.stringify(err,null,4));
-          service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+          accessory.context.accType == 'motion' ? 
+            service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+            service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
           setTimeout(function(){
             self.getMotionDetected(accessory, service);
           }, self.polling);
         }
       });
     } else {
-      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState);
+      accessory.context.accType == 'motion' ? 
+        service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+        service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
       setTimeout(function(){
         self.getMotionDetected(accessory, service);
       }, self.polling);
@@ -2056,10 +2091,12 @@ class Fritz_Box {
             }
           }
         }
-        accessory.context.fakegatoService.addEntry({
-          time: moment().unix(),
-          status: value.newValue ? 1:0
-        });
+        if(accessory.context.accType == 'motion'){
+          accessory.context.fakegatoService.addEntry({
+            time: moment().unix(),
+            status: value.newValue ? 1:0
+          });
+        }
         break;
       default:
         break;

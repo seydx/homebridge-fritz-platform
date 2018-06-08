@@ -1,6 +1,6 @@
  {
    "name": "homebridge-fritz-platform",
-   "version": "2.3.1",
+   "version": "2.3.2",
    "description": "homebridge-fritz-platform",
    "main": "index.js",
    "devDependencies": {},
@@ -31,7 +31,7 @@
      "homebridge": ">=0.2.0"
    },
    "dependencies": {
-     "@seydx/tr064": "^0.4.1-7",
+     "@seydx/tr064": "^0.4.1-8",
      "fakegato-history": "^0.5.1",
      "moment": "^2.22.2",
      "async": "2.6.0",

@@ -4,7 +4,7 @@ If you add new devices (MAC addresses) under 'presence' in the config.json, they
 
 The presence is carried out via WiFi detection. If you connect with the Wlan, the accessory will switch to "motion detected", otherwise it switches to "no motion"
 
-There is also a possibility to set a delay. This prevents the motion sensor from going to "no movement" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the motion sensor goes to "no movement". If delay = 0 or removed, this option is deactivated
+There is also a possibility to set a delay. This prevents the motion sensor from going to "no movement" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the motion sensor goes to "no movement". If delay = 0 or removed, this option is deactivated. Type defines the accessory type (motion sensor or occupancy sensor)
 
 Presence also supports the Telegram notification service, via config.json it is possible to add your own chatID and add your own texts for **anyone** and **noone**
 
@@ -17,7 +17,8 @@ noone means: If all motion sensors are on "no motion"
 "presence": {
   "John":"01:02:03:04:05:06",
   "Maria":"11:22:33:44:55:66",
-  "delay":30
+  "delay":30,
+  "type":"motion",
   "telegram": true,
   "token": "TOKENHERE",
   "chatID": "CHATIDHERE",
@@ -42,6 +43,7 @@ Optional parameter for Telegram notifications
 
 | Attributes | Usage |
 |------------|-------|
+| type | If setted to "motion", plugin will expose a motion sensor to HomeKit with FakeGato, otherwise it exposes occupancy sensor without FakeGato |
 | delay | If delay > 0, a delay will be set to avoid wrong motion updates |
 | telegram | If true, push notifications of detected presence (motion) |
 | token | Token from your bot |
