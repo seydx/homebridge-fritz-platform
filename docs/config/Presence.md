@@ -1,6 +1,6 @@
 # Presence
 
-If you add new devices (MAC addresses) under 'presence' in the config.json, they will be added to HomeKit as motion sensors with FakeGato support.
+If you add new devices (MAC addresse or IP addresse) under 'presence.devices' in the config.json, they will be added to HomeKit as motion sensors with FakeGato support.
 
 The presence is carried out via WiFi detection. If you connect with the Wlan, the accessory will switch to "motion detected", otherwise it switches to "no motion"
 
@@ -15,8 +15,6 @@ noone means: If all motion sensors are on "no motion"
 
 ```
 "presence": {
-  "John":"01:02:03:04:05:06",
-  "Maria":"11:22:33:44:55:66",
   "delay":30,
   "type":"motion",
   "telegram": true,
@@ -25,6 +23,10 @@ noone means: If all motion sensors are on "no motion"
   "messages":{
     "anyone":"Welcome at home @",
     "noone":"No one at home!"
+  },
+  "devices":{
+    "Peter":"00:11:22:33:44.55",
+    "Maria":"123.456.123.1"
   }
 }
 ```
@@ -36,7 +38,7 @@ Parameter to expose new motion sensors
 | Attributes | Usage |
 |------------|-------|
 | custom name | Own definef name for Home |
-| mac adress | MAC adresse from the device |
+| adress | MAC addresse  or IP addresse from the device |
 
 ## Optional
 Optional parameter for Telegram notifications
