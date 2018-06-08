@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.6 - 2018-06-08
+- Fixed Auth. failure (presence)
+- Fixed Telegram push notification (presence)
+
 ## v2.3.4 - 2018-06-08
 - Fixed Auth. failure (presence)
 
@@ -34,5 +38,5 @@
 # Functions in progress
 - [ ] Fritz!SmartHome device implementations
 - [ ] Ring lock
-- [ ] Debug tool
+- [ ] Debug tool (in work)
 - [x] Support for cable router like Fritz!Box 6490 etc
