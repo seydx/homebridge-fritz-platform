@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.3.4 - 2018-06-08
+- Fixed Auth. failure (presence)
+
 ## v2.3.3 - 2018-06-08
 - Changed presence structure (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
 - An error has been fixed that caused the presence sensors not to switch correctly (if no presence detected)
