@@ -73,8 +73,6 @@
 	    }
       },
       "presence": {
-        "Peter": "11:22:33:44:55:66",
-        "Manfred": "99:88:77:66:55:44",
         "delay":60,
         "type":"motion",
         "telegram": true,
@@ -83,7 +81,11 @@
         "messages": {
           "anyone": "Welcome at home @",
           "noone": "No one at home!"
-        }
+        },
+	"devices":{
+	  "Peter":"00:11:22:33:44:55",
+	  "Maria":"123.456.123.12"
+	}
       },
       "wol": {
 	  "Fernseher":"AA:00:BB:11:CC:ZZ",
