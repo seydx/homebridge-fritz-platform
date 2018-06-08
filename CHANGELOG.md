@@ -1,5 +1,12 @@
 # Changelog
 
+
+## v2.3.2 - 2018-06-08
+- Added "type" option to presence sensors (motion/occupancy)
+- Fixed a bug with presence delay
+- Update dependencies
+- Clean up code
+
 ## v2.3.1 - 2018-06-07
 - Added type to config.json to support cable router _("type":"cable" , Default: "type":"dsl")_
 
