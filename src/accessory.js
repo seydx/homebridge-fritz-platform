@@ -612,7 +612,7 @@ class Fritz_Box {
         break;
       case 2:
         if(accessory.context.accType == 'motion'){
-	      service = accessory.getService(Service.MotionSensor)
+          service = accessory.getService(Service.MotionSensor);
           service.getCharacteristic(Characteristic.MotionDetected)
             .updateValue(accessory.context.lastMotionState)
             .on('change', self.changeValue.bind(this, accessory, service, type, 'motion'));
@@ -621,7 +621,7 @@ class Fritz_Box {
           service.getCharacteristic(Characteristic.EveMotionLastActivation)
             .updateValue(accessory.context.lastActivation);
         } else {
-	      service = accessory.getService(Service.OccupancySensor);
+          service = accessory.getService(Service.OccupancySensor);
           service.getCharacteristic(Characteristic.OccupancyDetected)
             .updateValue(accessory.context.lastMotionState)
             .on('change', self.changeValue.bind(this, accessory, service, type, 'motion'));
@@ -1935,7 +1935,7 @@ class Fritz_Box {
               service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
               service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
             if(self.info||self.presenceTimer){
-              self.logger.info('Presence detected again for ' + accessory.displayName + ' on ' + self.device.friendlyName);
+              self.logger.info('Presence detected again for ' + accessory.displayName);
               self.info = false;
               self.presenceTimer = false;
             }

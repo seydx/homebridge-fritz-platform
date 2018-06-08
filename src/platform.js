@@ -129,12 +129,12 @@ FritzPlatform.prototype = {
       } else if (error.errno == 'EHOSTUNREACH'||error.code == 'EHOSTUNREACH') {
         self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
       } else if(error.errno == 'ENETUNREACH') {
-        self.logger.warn('Network currently not reachable!')
+        self.logger.warn('Network currently not reachable!');
       } else {
         self.logger.error(JSON.stringify(error,null,4));
       }
-      self.logger.info("Trying again in 30 seconds..");
-      setTimeout(function(){self.callMonitor(name,device)},30*1000)
+      self.logger.info('Trying again in 30 seconds..');
+      setTimeout(function(){self.callMonitor(name,device);},30*1000);
     });
     self.client.on('end', () => {
       self.logger.warn('Callmonitor connection were closed!');
@@ -176,11 +176,13 @@ FritzPlatform.prototype = {
             skip = false;
             userArray.push(i,this.presence[i]);
             for (const j in this.accessories) {
-              if (this.accessories[j].context.mac == this.presence[i] && this.accessories[j].context.type == this.types.presence && this.accessories[j].displayName == i) {
-                skip = true;
-              }
-              if (this.accessories[j].displayName == 'Anyone' && this.accessories[j].context.type == this.types.presence) {
-                skipAnyone = true;
+              if(this.accessories[j].context.type == this.types.presence){
+                if (this.accessories[j].context.mac == this.presence[i] || this.accessories[j].displayName == i) {
+                  skip = true;
+                }
+                if (this.accessories[j].displayName == 'Anyone') {
+                  skipAnyone = true;
+                }
               }
             }
             if (!skip) {
@@ -221,7 +223,7 @@ FritzPlatform.prototype = {
         }
         for(const i in this.accessories){
           if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName != 'Anyone'){
-            if(!userArray.includes(this.accessories[i].context.mac)&&!!userArray.includes(this.accessories[i].displayName)){
+            if(!userArray.includes(this.accessories[i].context.mac)||!userArray.includes(this.accessories[i].displayName)){
               self.removeAccessory(self.accessories[i]);
             }
           }
@@ -377,12 +379,12 @@ FritzPlatform.prototype = {
       accessory.context.stopPolling = false;
       
       if(accessory.context.type == self.types.presence){
-	      accessory.context.delay=self.presence.delay*1000||0;
-	      if(accessory.context.accType != self.presence.type){
-		      self.logger.warn("New accessory type for presence sensor detected!")
-		      self.removeAccessory(accessory);
-	      }
-	  }
+        accessory.context.delay=self.presence.delay*1000||0;
+        if(accessory.context.accType != self.presence.type){
+          self.logger.warn('New accessory type for presence sensor detected!');
+          self.removeAccessory(accessory);
+        }
+      }
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,
