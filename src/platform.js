@@ -26,7 +26,8 @@ function FritzPlatform (log, config, api) {
   this.accessories = [];
   this.config = config;
   this.boxType = config.type||'dsl';
-  this.presence = config.presence||{};
+  this.presenceOptions = config.presence||{};
+  this.presence = this.presenceOptions.devices||{};
   this.wol = config.wol||{};
   this.options = config.options||{};
   this.wifi = config.wifi||{};
@@ -43,6 +44,8 @@ function FritzPlatform (log, config, api) {
   this.HBpath = api.user.storagePath()+'/accessories';
   this.call = {};
   this.client;
+  this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
+  this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
   this.devOptions = {
     host: this.config.host||'fritz.box',
@@ -172,12 +175,13 @@ FritzPlatform.prototype = {
         let userArray = [];
         let skipAnyone = false;
         for(const i of Object.keys(this.presence)) {
-          if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'&&i!='type'){
+          if(self.validIP.test(this.presence[i])||self.validMAC.test(this.presence[i])){
+          //if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'&&i!='type'){
             skip = false;
             userArray.push(i,this.presence[i]);
             for (const j in this.accessories) {
               if(this.accessories[j].context.type == this.types.presence){
-                if (this.accessories[j].context.mac == this.presence[i] || this.accessories[j].displayName == i) {
+                if (this.accessories[j].context.mac == this.presence[i] || this.accessories[j].context.ip == this.presence[i] || this.accessories[j].displayName == i) {
                   skip = true;
                 }
                 if (this.accessories[j].displayName == 'Anyone') {
@@ -187,20 +191,27 @@ FritzPlatform.prototype = {
             }
             if (!skip) {
               let serial = this.presence[i];
-              while (serial.indexOf(':') > -1) {
-                serial = serial.replace(':', '');
+              if(self.validIP.test(this.presence[i])){
+                while (serial.indexOf('.') > -1) {
+                  serial = serial.replace('.', '');
+                }
+              } else {
+                while (serial.indexOf(':') > -1) {
+                  serial = serial.replace(':', '');
+                }
               }
               let parameter = {
                 name: i,
                 serialNo: serial + '-' + this.types.presence,
                 type: this.types.presence,
-                accType: self.presence.type||'motion',
+                accType: self.presenceOptions.type||'motion',
                 model: 'Presence Sensor',
-                mac: this.presence[i],
-                fakegato: self.presence.type == 'motion' ? true : false,
-                fakegatoType: self.presence.type == 'motion' ? 'motion' : null,
-                fakegatoTimer: self.presence.type == 'motion' ? true : null,
-                delay: self.presence.delay*1000||0
+                mac: self.validMAC.test(this.presence[i]) ? this.presence[i] : false,
+                ip: self.validIP.test(this.presence[i]) ? this.presence[i] : false,
+                fakegato: self.presenceOptions.type == 'motion' ? true : false,
+                fakegatoType: self.presenceOptions.type == 'motion' ? 'motion' : null,
+                fakegatoTimer: self.presenceOptions.type == 'motion' ? true : null,
+                delay: self.presenceOptions.delay*1000||0
               };
               new Device(this, parameter, true);
             }
@@ -211,11 +222,12 @@ FritzPlatform.prototype = {
                 type: this.types.presence,
                 model: 'Anyone Sensor',
                 mac: '000000000000',
-                accType: self.presence.type||'motion',
-                fakegato: self.presence.type == 'motion' ? true : false,
-                fakegatoType: self.presence.type == 'motion' ? 'motion' : null,
-                fakegatoTimer: self.presence.type == 'motion' ? true : null,
-                delay: self.presence.delay*1000||0
+                ip: '0.0.0.0.0',
+                accType: self.presenceOptions.type||'motion',
+                fakegato: self.presenceOptions.type == 'motion' ? true : false,
+                fakegatoType: self.presenceOptions.type == 'motion' ? 'motion' : null,
+                fakegatoTimer: self.presenceOptions.type == 'motion' ? true : null,
+                delay: self.presenceOptions.delay*1000||0
               };
               new Device(this, parameter, true);
             }
@@ -223,7 +235,7 @@ FritzPlatform.prototype = {
         }
         for(const i in this.accessories){
           if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName != 'Anyone'){
-            if(!userArray.includes(this.accessories[i].context.mac)||!userArray.includes(this.accessories[i].displayName)){
+            if(!userArray.includes(this.accessories[i].context.mac ? this.accessories[i].context.mac : this.accessories[i].context.ip)||!userArray.includes(this.accessories[i].displayName)){
               self.removeAccessory(self.accessories[i]);
             }
           }
@@ -377,14 +389,6 @@ FritzPlatform.prototype = {
       this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
-      
-      if(accessory.context.type == self.types.presence){
-        accessory.context.delay=self.presence.delay*1000||0;
-        if(accessory.context.accType != self.presence.type){
-          self.logger.warn('New accessory type for presence sensor detected!');
-          self.removeAccessory(accessory);
-        }
-      }
       accessory.context.options = {
         host: self.config.host||'fritz.box',
         port: self.config.port||49000,
@@ -392,6 +396,13 @@ FritzPlatform.prototype = {
         password: self.config.password,
         timeout: self.config.timeout*1000||5000
       }; 
+      if(accessory.context.type == self.types.presence){
+        accessory.context.delay=self.presenceOptions.delay*1000||0;
+        if(accessory.context.accType != self.presenceOptions.type){
+          self.logger.warn('New accessory type for presence sensor detected!');
+          self.removeAccessory(accessory);
+        }
+      }
       if(accessory.context.fakegato){
         accessory.context.fakegatoOptions = {storage:'fs',path:self.HBpath, disableTimer: true};
         accessory.context.fakegatoService = new FakeGatoHistoryService(accessory.context.fakegatoType,accessory,accessory.context.fakegatoOptions);

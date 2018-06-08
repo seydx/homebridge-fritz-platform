@@ -136,6 +136,7 @@ class Fritz_Box {
         accessory.context.lastMotionState = [];
         accessory.context.lastActivation = 0;
         accessory.context.mac = parameter.mac;
+        accessory.context.ip = parameter.ip;
         accessory.context.delay = parameter.delay;
         accessory.context.accType = parameter.accType;
         break;
@@ -635,7 +636,11 @@ class Fritz_Box {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
                 if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
-                setTimeout(function(){self.getMotionDetected(accessory, service);},1000); 
+                if(accessory.context.mac){
+                  setTimeout(function(){self.getMotionDetected(accessory, service);},500);
+                } else {
+                  setTimeout(function(){self.getMotionDetected(accessory, service);},1500); 
+                }
               }
             }
           }
@@ -1925,9 +1930,22 @@ class Fritz_Box {
     const self = this;
     let allAccessories = self.accessories;
     let repeater = [];
+    let actionName;
+    let actionVal;
+    let adress;
     let user = self.device.services['urn:dslforum-org:service:Hosts:1'];
+    if(accessory.context.mac){
+      actionName = 'X_AVM-DE_GetSpecificHostEntryExt';
+      actionVal = 'NewMACAddress';
+      adress = accessory.context.mac;
+    } else {
+      actionName = 'X_AVM-DE_GetSpecificHostEntryByIP';
+      actionVal = 'NewIPAddress';
+      adress = accessory.context.ip;
+    }
     if(!accessory.context.stopPolling){
-      user.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, result) {
+      user.actions[actionName]([{name:actionVal, value:adress}],function(err, result) {
+      //user.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, result) {
         if(!err){
           if(result.NewActive == '1'){
             accessory.context.lastMotionState = true;
@@ -1964,7 +1982,8 @@ class Fritz_Box {
                       .then(device => {
                         device.login(options.username, options.password);
                         let userRepeater = device.services['urn:dslforum-org:service:Hosts:1'];
-                        userRepeater.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, res) {
+                        userRepeater.actions[actionName]([{name:actionVal, value:adress}],function(err, res) {
+                        //userRepeater.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, res) {
                           if(!err){
                             if(res.NewActive == '1'){
                               callback(null, true);
@@ -2029,7 +2048,15 @@ class Fritz_Box {
           }
         } else {
           self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-          self.logger.error(JSON.stringify(err,null,4));
+          if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
+            //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
+            accessory.context.lastMotionState = false;
+            accessory.context.accType == 'motion' ? 
+              service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+              service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
+          } else {
+            self.logger.error(JSON.stringify(err,null,4));
+          }
           accessory.context.accType == 'motion' ? 
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
             service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
