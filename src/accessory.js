@@ -153,6 +153,7 @@ class Fritz_Box {
         accessory.context.wifi2 = parameter.wifi2;
         accessory.context.wifi5 = parameter.wifi5;
         accessory.context.wifiGuest = parameter.wifiGuest;
+        accessory.context.led = parameter.led;
         accessory.context.options = {
           host: parameter.host,
           port: parameter.port||49000,
