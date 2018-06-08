@@ -1936,7 +1936,8 @@ class Fritz_Box {
     let adress;
     let user = self.device.services['urn:dslforum-org:service:Hosts:1'];
     if(accessory.context.mac){
-      actionName = 'X_AVM-DE_GetSpecificHostEntryExt';
+      //actionName = 'X_AVM-DE_GetSpecificHostEntryExt';
+      actionName = 'GetSpecificHostEntry';
       actionVal = 'NewMACAddress';
       adress = accessory.context.mac;
     } else {
@@ -2115,12 +2116,12 @@ class Fritz_Box {
           if(value.newValue){
             let message = 'Welcome at home ' + accessory.displayName;
             self.logger.info(message);
-            if(self.platform.presence&&self.platform.presence.telegram&&self.platform.presence.chatID&&self.platform.presence.token){
-              if(self.platform.presence.messages && typeof self.platform.presence.messages.anyone != 'undefined'){
-                message = self.platform.presence.messages.anyone;
+            if(self.platform.presenceOptions&&self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token){
+              if(self.platform.presenceOptions.messages && typeof self.platform.presenceOptions.messages.anyone != 'undefined'){
+                message = self.platform.presenceOptions.messages.anyone;
                 message = message.replace('@', accessory.displayName);
               }
-              self.sendTelegram(self.platform.presence.token,self.platform.presence.chatID,message); 
+              self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
             }
           } else {
             self.logger.info('Bye bye ' + accessory.displayName);
@@ -2129,11 +2130,11 @@ class Fritz_Box {
           if(!value.newValue){
             let message = 'No one at home!';
             self.logger.info(message);
-            if(self.platform.presence&&self.platform.presence.telegram&&self.platform.presence.chatID&&self.platform.presence.token){
-              if(self.platform.presence.messages && typeof self.platform.presence.messages.noone != 'undefined'){
-                message = self.platform.presence.messages.noone;
+            if(self.platform.presenceOptions&&self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token){
+              if(self.platform.presenceOptions.messages && typeof self.platform.presenceOptions.messages.noone != 'undefined'){
+                message = self.platform.presenceOptions.messages.noone;
               }
-              self.sendTelegram(self.platform.presence.token,self.platform.presence.chatID,message); 
+              self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
             }
           }
         }
