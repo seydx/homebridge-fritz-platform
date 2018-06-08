@@ -402,6 +402,7 @@ FritzPlatform.prototype = {
           self.logger.warn('New accessory type for presence sensor detected!');
           self.removeAccessory(accessory);
         }
+        accessory.context.accType = self.presenceOptions.type||'motion';
       }
       if(accessory.context.fakegato){
         accessory.context.fakegatoOptions = {storage:'fs',path:self.HBpath, disableTimer: true};
