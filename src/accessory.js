@@ -1157,10 +1157,12 @@ class Fritz_Box {
             if(!skip){
               text = 'Incoming call from: ' + message.caller;
               self.callerNr = message.caller;
+              self.callerName = false;
             }
           } else {
             text = 'Incoming call from: ' + message.caller;
             self.callerNr = message.caller;
+            self.callerName = false;
           }
           self.logger.info(text);
           if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
@@ -2043,9 +2045,6 @@ class Fritz_Box {
                   if(asyncerr.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
                     //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
                     accessory.context.lastMotionState = false;
-                    accessory.context.accType == 'motion' ? 
-                      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
-                      service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
                   } else {
                     self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
                     self.logger.error(JSON.stringify(asyncerr,null,4));
@@ -2067,9 +2066,6 @@ class Fritz_Box {
             if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
             //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
               accessory.context.lastMotionState = false;
-              accessory.context.accType == 'motion' ? 
-                service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
-                service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
             } else {
               self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
               self.logger.error(JSON.stringify(err,null,4));
