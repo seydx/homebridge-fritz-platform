@@ -30,6 +30,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
    * [Multiple instances (for Reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
    * [Telegram Notification instructions](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/Telegram.md)
+- [Fritz!Platform Debug util](https://github.com/SeydX/fritzplatform-util)
 
 ## Contributing
 
