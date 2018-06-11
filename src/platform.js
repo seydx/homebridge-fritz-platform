@@ -230,11 +230,11 @@ FritzPlatform.prototype = {
               };
               new Device(this, parameter, true);
             } else if(!self.presenceOptions.anyoneSensor){
-		        for(const i in this.accessories){
-		          if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName == 'Anyone'){
-		            self.removeAccessory(self.accessories[i]);
-		          }
-		        }
+              for(const i in this.accessories){
+                if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName == 'Anyone'){
+                  self.removeAccessory(self.accessories[i]);
+                }
+              }
             }
           }
         }
