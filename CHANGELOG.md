@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.3.7 - 2018-06-11
+- Better presence detection
+- Changed telegram notification for presence (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
+- Polling limit reduced from 10s to 5s
+- Bugfixes
+
 ## v2.3.6 - 2018-06-08
 - Fixed Auth. failure (presence)
 - Fixed Telegram push notification (presence)
