@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.8 - 2018-06-11
+- Changed presence polling
+- Added possibility to remove/add "Anyone" sensor from config.json (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
+
 ## v2.3.7 - 2018-06-11
 - Better presence detection
 - Changed telegram notification for presence (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
