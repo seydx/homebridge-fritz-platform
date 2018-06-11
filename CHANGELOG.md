@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.3.9 - 2018-06-11
+## v2.4.0 - 2018-06-11
 - Fixed telegram notification for callmonitor
 
 ## v2.3.8 - 2018-06-11
