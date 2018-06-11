@@ -5,6 +5,7 @@
 - Changed telegram notification for presence (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
 - Polling limit reduced from 10s to 5s
 - Bugfixes
+- New [Debug tool](https://github.com/SeydX/fritzplatform-util)
 
 ## v2.3.6 - 2018-06-08
 - Fixed Auth. failure (presence)
@@ -44,5 +45,5 @@
 # Functions in progress
 - [ ] Fritz!SmartHome device implementations
 - [ ] Ring lock
-- [ ] Debug tool (in work)
+- [x] Debug tool (in work)
 - [x] Support for cable router like Fritz!Box 6490 etc
