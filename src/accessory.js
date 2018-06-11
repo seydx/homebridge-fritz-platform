@@ -1059,27 +1059,8 @@ class Fritz_Box {
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Callmonitor
+  // Telegram
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  fritzboxDateToUnix(string) {
-    let d = string.match(/[0-9]{2}/g);
-    let result = '';
-    result += '20' + d[2] + '-' + d[1] + '-' + d[0];
-    result += ' ' + d[3] + ':' + d[4] + ':' + d[5];
-    return Math.floor(new Date(result).getTime() / 1000);
-  }
-
-  parseMessage(buffer) {
-    const self = this;
-    let message = buffer.toString()
-      .toLowerCase()
-      .replace(/[\n\r]$/, '')
-      .replace(/;$/, '')
-      .split(';');
-    message[0] = self.fritzboxDateToUnix(message[0]);
-    return message;
-  }
 
   sendTelegram(token,chatID,text){
     const self = this;
@@ -1110,6 +1091,29 @@ class Fritz_Box {
     });
     req.write(post_data);
     req.end();
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+  // Callmonitor
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+  fritzboxDateToUnix(string) {
+    let d = string.match(/[0-9]{2}/g);
+    let result = '';
+    result += '20' + d[2] + '-' + d[1] + '-' + d[0];
+    result += ' ' + d[3] + ':' + d[4] + ':' + d[5];
+    return Math.floor(new Date(result).getTime() / 1000);
+  }
+
+  parseMessage(buffer) {
+    const self = this;
+    let message = buffer.toString()
+      .toLowerCase()
+      .replace(/[\n\r]$/, '')
+      .replace(/;$/, '')
+      .split(';');
+    message[0] = self.fritzboxDateToUnix(message[0]);
+    return message;
   }
 
   getContactState(accessory, service){
@@ -1162,13 +1166,13 @@ class Fritz_Box {
             self.callerName = false;
           }
           self.logger.info(text);
-          if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
-            if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.incoming&&self.platform.callmonitor.messages.incoming!=''){
+          if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token&&self.platform.callmonitor.messages){
+            if(self.platform.callmonitor.messages.incoming&&self.platform.callmonitor.messages.incoming!=''){
               let parseInfo;
               (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
               text = self.platform.callmonitor.messages.incoming;
               text = text.replace('@', parseInfo);
-              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
+              self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.callmonitor,text); 
             }
           }
 
@@ -1239,13 +1243,13 @@ class Fritz_Box {
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastContactSensorState);
           self.logger.info('Call disconnected');
           if(accessory.displayName == 'Callmonitor Incoming'){
-            if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
-              if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected&&self.platform.callmonitor.messages.disconnected!=''){
+            if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token&&self.platform.callmonitor.messages){
+              if(self.platform.callmonitor.messages.disconnected&&self.platform.callmonitor.messages.disconnected!=''){
                 let parseInfo;
                 (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
                 text = self.platform.callmonitor.messages.disconnected;
                 text = text.replace('@', parseInfo);
-                self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
+                self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
               }
             }
           }
