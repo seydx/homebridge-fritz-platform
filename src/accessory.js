@@ -573,7 +573,7 @@ class Fritz_Box {
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
             } else {
-              reconnect.actions.ForceTermination(function(err,res) {
+              reconnect.actions.ForceTermination(function() {
                 self.logger.warn(accessory.displayName + ': Reconnecting internet...');
                 accessory.context.lastSwitchState = false;
                 setTimeout(function(){self.getIP(accessory,service);},15000);
@@ -592,21 +592,21 @@ class Fritz_Box {
             if(!err){
               let message = 'Network reboot completed. New External IP adress: ' + res.NewExternalIPAddress;
               self.logger.info(message);
-              if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
-                if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
+              if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&self.platform.options.reboot.messages){
+                if(self.platform.options.reboot.messages.off && self.platform.options.reboot.messages.off != ''){
                   message = self.platform.options.reboot.messages.off;
                   message = message.replace('@', 'IP: ' + res.NewExternalIPAddress);
+                  self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                 }
-                self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
               }
             }else{
               let message = 'Network reboot completed';
               self.logger.info(message);
               if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&accessory.context.reboot){
-                if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off){
+                if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.off&&self.platform.options.reboot.messages.off!=''){
                   message = self.platform.options.reboot.messages.off;
+                  self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                 }
-                self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
               }
             }
           });
@@ -637,12 +637,7 @@ class Fritz_Box {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
                 if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
-                setTimeout(function(){self.getMotionDetected(accessory, service);},(Math.random() * (4 - 1) + 1)*1000);
-                /*if(accessory.context.mac){
-                  setTimeout(function(){self.getMotionDetected(accessory, service);},500);
-                } else {
-                  setTimeout(function(){self.getMotionDetected(accessory, service);},1500); 
-                }*/
+                setTimeout(function(){self.getMotionDetected(accessory, service);},1000);
               }
             }
           }
@@ -1166,13 +1161,13 @@ class Fritz_Box {
           }
           self.logger.info(text);
           if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
-            if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.incoming){
+            if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.incoming&&self.platform.callmonitor.messages.incoming!=''){
               let parseInfo;
               (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
               text = self.platform.callmonitor.messages.incoming;
               text = text.replace('@', parseInfo);
+              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
             }
-            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
           }
 
         }
@@ -1243,13 +1238,13 @@ class Fritz_Box {
           self.logger.info('Call disconnected');
           if(accessory.displayName == 'Callmonitor Incoming'){
             if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
-              if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected){
+              if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected&&self.platform.callmonitor.messages.disconnected!=''){
                 let parseInfo;
                 (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
                 text = self.platform.callmonitor.messages.disconnected;
                 text = text.replace('@', parseInfo);
+                self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
               }
-              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
             }
           }
         }
@@ -1304,7 +1299,7 @@ class Fritz_Box {
             let numbers = result.contact.telephony.number;
             if(numbers.length){
               for(const i in numbers){
-                let telnr = numbers[i]._.replace('+49', '0').replace(/\D/g,'');
+                let telnr = numbers[i]._.replace('+49', '0').replace('+90', '0090').replace(/\D/g,'');
                 self.telBook.push({name: result.contact.person.realName,number:telnr});
               }
             } else {
@@ -1470,12 +1465,11 @@ class Fritz_Box {
               let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
               reboot.actions.Reboot(function() {
                 if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
-                  let message = 'Network reboot started!';
-                  if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on){
-                    message = self.platform.options.reboot.messages.on;
+                  if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on&&self.platform.options.reboot.messages.on!=''){
+                    let message = self.platform.options.reboot.messages.on;
+                    self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                   }
                   accessory.context.reboot = true;
-                  self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                 }
                 for(const i in self.accessories){
                   if(self.accessories[i].context.type == self.types.repeater){
@@ -1541,12 +1535,11 @@ class Fritz_Box {
         accessory.context.stopPolling = true;
         reboot.actions.Reboot(function() {
           if(self.platform.options.reboot&&self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token){
-            let message = 'Network reboot started!';
-            if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on){
-              message = self.platform.options.reboot.messages.on;
+            if(self.platform.options.reboot.messages&&self.platform.options.reboot.messages.on&&self.platform.options.reboot.messages.on!=''){
+              let message = self.platform.options.reboot.messages.on;
+              self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message);
             }
             accessory.context.reboot = true;
-            self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
           }
           for(const i in self.accessories){
             self.accessories[i].context.stopPolling = true;
@@ -1664,12 +1657,12 @@ class Fritz_Box {
         if(!err||result){
           let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds';
           self.logger.info(accessory.displayName + ': ' + message);
-          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token){
-            if(self.platform.alarm.messages && typeof self.platform.alarm.messages.activated != 'undefined'){
+          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token&&self.platform.alarm.messages){
+            if(self.platform.alarm.messages.activated && self.platform.alarm.messages.activated!=''){
               message = self.platform.alarm.messages.activated;
               message = message.replace('@', accessory.context.alarmNumber);
+              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message); 
             }
-            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message); 
           }
           self.sleep(accessory.context.alarmDuration).then(() => {
             service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
@@ -1687,9 +1680,11 @@ class Fritz_Box {
         if(!err||result){
           let message = 'Stop calling. Turning off \'Alarm\'';
           self.logger.info(accessory.displayName + ': ' + message);
-          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token){
-            if(self.platform.alarm.messages && typeof self.platform.alarm.messages.deactivated != 'undefined')message = self.platform.alarm.messages.deactivated;
-            self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message); 
+          if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token&&self.platform.alarm.messages){
+            if(self.platform.alarm.messages.deactivated&&self.platform.alarm.messages.deactivated!=''){
+              message = self.platform.alarm.messages.deactivated;
+              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,message);
+            }
           }
           callback(null, false);
         } else {
@@ -1932,6 +1927,7 @@ class Fritz_Box {
 
   getMotionDetected(accessory, service){
     const self = this;
+    if(self.presenceTimeout)clearTimeout(self.presenceTimeout);
     let allAccessories = self.accessories;
     let repeater = [];
     let actionName;
@@ -1939,7 +1935,6 @@ class Fritz_Box {
     let adress;
     let user = self.device.services['urn:dslforum-org:service:Hosts:1'];
     if(accessory.context.mac){
-      //actionName = 'X_AVM-DE_GetSpecificHostEntryExt';
       actionName = 'GetSpecificHostEntry';
       actionVal = 'NewMACAddress';
       adress = accessory.context.mac;
@@ -1950,35 +1945,28 @@ class Fritz_Box {
     }
     if(!accessory.context.stopPolling){
       user.actions[actionName]([{name:actionVal, value:adress}],function(err, result) {
-      //user.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, result) {
         if(!err){
           if(result.NewActive == '1'){
             accessory.context.lastMotionState = true;
             accessory.context.accType == 'motion' ? 
               service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
               service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-            if(self.info||self.presenceTimer){
-              self.logger.info('Presence detected again for ' + accessory.displayName);
-              self.info = false;
-              self.presenceTimer = false;
-            }
-            setTimeout(function(){
-              self.getMotionDetected(accessory, service);
-            }, self.polling);
+            if(self.info||self.presenceTimer)self.logger.info('Presence detected again for ' + accessory.displayName);
+            self.info = false;
+            self.presenceTimer = false;
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
-                repeater.push([{
+                repeater.push({
                   host: allAccessories[i].context.options.host,
                   port: allAccessories[i].context.options.port,
                   username: allAccessories[i].context.options.username,
                   password: allAccessories[i].context.options.password,
                   timeout: allAccessories[i].context.options.timeout,
-                }]);
+                });
               }
             }
             let checkPresenceFunction = function(options, callback){
-              options = options[0];
               if(!accessory.context.stopPolling){
                 let tr064Repeater = new tr.TR064(options); 
                 tr064Repeater.initDevice('TR064')
@@ -1988,7 +1976,6 @@ class Fritz_Box {
                         device.login(options.username, options.password);
                         let userRepeater = device.services['urn:dslforum-org:service:Hosts:1'];
                         userRepeater.actions[actionName]([{name:actionVal, value:adress}],function(err, res) {
-                        //userRepeater.actions.GetSpecificHostEntry([{name:'NewMACAddress', value:accessory.context.mac}],function(err, res) {
                           if(!err){
                             if(res.NewActive == '1'){
                               callback(null, true);
@@ -2015,36 +2002,51 @@ class Fritz_Box {
               if(!asyncerr){
                 if(values.includes(true)){
                   accessory.context.lastMotionState = true;
-                  accessory.context.accType == 'motion' ? 
-                    service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
-                    service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-                  if(self.info||self.presenceTimer){
-                    self.logger.info('Presence detected again for ' + accessory.displayName);
-                    self.info = false;
-                    self.presenceTimer = false;
-                  }
+                  if(self.info||self.presenceTimer)self.logger.info('Presence detected again for ' + accessory.displayName);
+                  self.info = false;
+                  self.presenceTimer = false;
                 } else {
-                  !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer;
-                  if(accessory.context.delay>0&&accessory.context.lastMotionState&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+                  !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
+                  if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+                    accessory.context.lastMotionState = true;
                     if(!self.info){
-                      self.logger.info(accessory.displayName + ': No presence! Presence delay is active.');
-                      self.logger.info(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
+                      self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
+                      self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
                       self.info = true;
                     }
                   } else {
                     accessory.context.lastMotionState = false;
-                    accessory.context.accType == 'motion' ? 
-                      service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
-                      service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-                    self.info = false;
-                    self.presenceTimer = false;
+                    if(self.info){
+                      self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
+                      self.logger.warn(accessory.displayName + ': Switching to no presence');
+                      self.info = false;
+                      self.presenceTimer = false;
+                    }
                   }
                 }
+                accessory.context.accType == 'motion' ? 
+                  service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                  service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
               } else {
                 if(asyncerr.tr064){
-                  if(asyncerr.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
-                    //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
-                    accessory.context.lastMotionState = false;
+                  if(asyncerr.tr064=='NoSuchEntryInArray'||err.tr064code=='714'||err.tr064=='SpecifiedArrayIndexInvalid'||err.tr064code=='713'){
+                    !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
+                    if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+                      accessory.context.lastMotionState = true;
+                      if(!self.info){
+                        self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
+                        self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
+                        self.info = true;
+                      }
+                    } else {
+                      accessory.context.lastMotionState = false;
+                      if(self.info){
+                        self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
+                        self.logger.warn(accessory.displayName + ': Switching to no presence');
+                        self.info = false;
+                        self.presenceTimer = false;
+                      }
+                    }
                   } else {
                     self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
                     self.logger.error(JSON.stringify(asyncerr,null,4));
@@ -2053,19 +2055,37 @@ class Fritz_Box {
                   self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
                   self.logger.error(JSON.stringify(asyncerr,null,4));
                 }
-              }
-              if(!accessory.context.stopPolling){
-                setTimeout(function(){
-                  self.getMotionDetected(accessory, service);
-                }, self.polling);
+                accessory.context.accType == 'motion' ? 
+                  service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
+                  service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
               }
             });
           }
+          if(!accessory.context.stopPolling){
+            self.presenceTimeout = setTimeout(function(){
+              self.getMotionDetected(accessory, service);
+            }, self.polling);
+          }
         } else {
           if(err.tr064){
-            if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'){
-            //self.logger.warn(accessory.displayName + ": Can't find the MAC adresse in the list! Please try with the ip adresse");
-              accessory.context.lastMotionState = false;
+            if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'||err.tr064=='SpecifiedArrayIndexInvalid'||err.tr064code=='713'){
+              !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
+              if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+                accessory.context.lastMotionState = true;
+                if(!self.info){
+                  self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
+                  self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
+                  self.info = true;
+                }
+              } else {
+                accessory.context.lastMotionState = false;
+                if(self.info){
+                  self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
+                  self.logger.warn(accessory.displayName + ': Switching to no presence');
+                  self.info = false;
+                  self.presenceTimer = false;
+                }
+              }
             } else {
               self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
               self.logger.error(JSON.stringify(err,null,4));
@@ -2077,7 +2097,7 @@ class Fritz_Box {
           accessory.context.accType == 'motion' ? 
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
             service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-          setTimeout(function(){
+          self.presenceTimeout = setTimeout(function(){
             self.getMotionDetected(accessory, service);
           }, self.polling);
         }
@@ -2086,7 +2106,7 @@ class Fritz_Box {
       accessory.context.accType == 'motion' ? 
         service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
         service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-      setTimeout(function(){
+      self.presenceTimeout = setTimeout(function(){
         self.getMotionDetected(accessory, service);
       }, self.polling);
     }
@@ -2113,25 +2133,42 @@ class Fritz_Box {
           if(value.newValue){
             let message = 'Welcome at home ' + accessory.displayName;
             self.logger.info(message);
-            if(self.platform.presenceOptions&&self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token){
-              if(self.platform.presenceOptions.messages && typeof self.platform.presenceOptions.messages.anyone != 'undefined'){
-                message = self.platform.presenceOptions.messages.anyone;
+            if(self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token&&self.platform.presenceOptions.messages){
+              if(self.platform.presenceOptions.messages.sensorOn&&self.platform.presenceOptions.messages.sensorOn != ''){
+                message = self.platform.presenceOptions.messages.sensorOn;
                 message = message.replace('@', accessory.displayName);
+                self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
               }
-              self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
             }
           } else {
-            self.logger.info('Bye bye ' + accessory.displayName);
+            let message = 'Bye bye ' + accessory.displayName;
+            self.logger.info(message);
+            if(self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token&&self.platform.presenceOptions.messages){
+              if(self.platform.presenceOptions.messages.sensorOff&&self.platform.presenceOptions.messages.sensorOff != ''){
+                message = self.platform.presenceOptions.messages.sensorOff;
+                message = message.replace('@', accessory.displayName);
+                self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
+              }
+            }
           }
         } else {
           if(!value.newValue){
             let message = 'No one at home!';
             self.logger.info(message);
-            if(self.platform.presenceOptions&&self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token){
-              if(self.platform.presenceOptions.messages && typeof self.platform.presenceOptions.messages.noone != 'undefined'){
-                message = self.platform.presenceOptions.messages.noone;
+            if(self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token&&self.platform.presenceOptions.messages){
+              if(self.platform.presenceOptions.messages.anyoneOff&&self.platform.presenceOptions.messages.anyoneOff != ''){
+                message = self.platform.presenceOptions.messages.anyoneOff;
+                self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message);
               }
-              self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message); 
+            }
+          } else {
+            let message = 'Presence detected at home!';
+            self.logger.info(message);
+            if(self.platform.presenceOptions.telegram&&self.platform.presenceOptions.chatID&&self.platform.presenceOptions.token&&self.platform.presenceOptions.messages){
+              if(self.platform.presenceOptions.messages.anyoneOn&&self.platform.presenceOptions.messages.anyoneOn != ''){
+                message = self.platform.presenceOptions.messages.anyoneOn;
+                self.sendTelegram(self.platform.presenceOptions.token,self.platform.presenceOptions.chatID,message);
+              }
             }
           }
         }

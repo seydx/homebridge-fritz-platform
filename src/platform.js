@@ -40,7 +40,7 @@ function FritzPlatform (log, config, api) {
   this.telegram = config.telegram||{};
   this.broadband = this.options.broadband||{};
   this.reboot = this.options.reboot||{};
-  this.polling = config.polling < 10 ? 10*1000 : config.polling*1000;
+  this.polling = config.polling < 5 ? 5*1000 : config.polling*1000;
   this.HBpath = api.user.storagePath()+'/accessories';
   this.call = {};
   this.client;
