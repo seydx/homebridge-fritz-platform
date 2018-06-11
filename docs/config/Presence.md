@@ -4,6 +4,8 @@ If you add new devices (MAC addresse or IP addresse) under 'presence.devices' in
 
 The presence is carried out via WiFi detection. If you connect with the Wlan, the accessory will switch to "motion detected", otherwise it switches to "no motion"
 
+You can also add a "Anyone" sensor to HomeKit for checking presence at home to create automations based on "if anyone at home / not at home)
+
 There is also a possibility to set a delay. This prevents the motion sensor from going to "no movement" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the motion sensor goes to "no movement". If delay = 0 or removed, this option is deactivated. Type defines the accessory type (motion sensor or occupancy sensor)
 
 Presence also supports the Telegram notification service, via config.json it is possible to add your own chatID and add your own notification.
@@ -12,6 +14,7 @@ Presence also supports the Telegram notification service, via config.json it is 
 
 ```
 "presence": {
+  "anyoneSensor":true,
   "delay":30,
   "type":"motion",
   "telegram": true,
@@ -44,6 +47,7 @@ Optional parameter for Telegram notifications
 
 | Attributes | Usage |
 |------------|-------|
+| anyoneSensor | Exposes new "Anyone" sensor to HomeKit for detecting presence at home |
 | type | If setted to "motion", plugin will expose a motion sensor to HomeKit with FakeGato, otherwise it exposes occupancy sensor without FakeGato |
 | delay | If delay > 0, a delay will be set to avoid wrong motion updates |
 | telegram | If true, push notifications of detected presence (motion) |
