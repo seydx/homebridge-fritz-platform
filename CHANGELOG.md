@@ -3,6 +3,7 @@
 ## v2.3.7 - 2018-06-11
 - Better presence detection
 - Changed telegram notification for presence (see [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json))
+- Changed telegram function (possibility to choose which message should pushed as notification, if any message field = "" or not exist, you will not receive any notification for only this function without affecting other functions)
 - Polling limit reduced from 10s to 5s
 - Bugfixes
 - New [Debug tool](https://github.com/SeydX/fritzplatform-util)
