@@ -73,6 +73,7 @@
 	    }
       },
       "presence": {
+	"anyoneSensor":true,
         "delay":60,
         "type":"motion",
         "telegram": true,
