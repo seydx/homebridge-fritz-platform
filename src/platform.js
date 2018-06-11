@@ -176,7 +176,6 @@ FritzPlatform.prototype = {
         let skipAnyone = false;
         for(const i of Object.keys(this.presence)) {
           if(self.validIP.test(this.presence[i])||self.validMAC.test(this.presence[i])){
-          //if(i!='telegram'&&i!='token'&&i!='chatID'&&i!='messages'&&i!='delay'&&i!='type'){
             skip = false;
             userArray.push(i,this.presence[i]);
             for (const j in this.accessories) {
@@ -215,7 +214,7 @@ FritzPlatform.prototype = {
               };
               new Device(this, parameter, true);
             }
-            if (!skipAnyone) {
+            if (!skipAnyone&&self.presenceOptions.anyoneSensor) {
               let parameter = {
                 name: 'Anyone',
                 serialNo: '1234567890-' + this.types.presence,
@@ -230,6 +229,12 @@ FritzPlatform.prototype = {
                 delay: self.presenceOptions.delay*1000||0
               };
               new Device(this, parameter, true);
+            } else if(!self.presenceOptions.anyoneSensor){
+		        for(const i in this.accessories){
+		          if(this.accessories[i].context.type == this.types.presence && this.accessories[i].displayName == 'Anyone'){
+		            self.removeAccessory(self.accessories[i]);
+		          }
+		        }
             }
           }
         }

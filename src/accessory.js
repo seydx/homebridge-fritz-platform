@@ -631,8 +631,10 @@ class Fritz_Box {
 
         if(Object.keys(self.platform.presence).length){
           if(accessory.displayName == 'Anyone'){
-            if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
-            setTimeout(function(){self.getAnyoneMotionDetected(accessory, service);},3000);
+	        if(self.platform.presenceOptions.anyoneSensor){
+              if(accessory.context.accType == 'motion')self.getMotionLastActivation(accessory, service);
+              setTimeout(function(){self.getAnyoneMotionDetected(accessory, service);},3000);
+            }
           } else {
             for(const i of Object.keys(self.platform.presence)){
               if(accessory.displayName == i){
@@ -1954,6 +1956,12 @@ class Fritz_Box {
             if(self.info||self.presenceTimer)self.logger.info('Presence detected again for ' + accessory.displayName);
             self.info = false;
             self.presenceTimer = false;
+          if(!accessory.context.stopPolling){
+            self.presenceTimeout = setTimeout(function(){
+              self.getMotionDetected(accessory, service);
+            }, self.polling);
+          }
+
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
@@ -2002,9 +2010,11 @@ class Fritz_Box {
               if(!asyncerr){
                 if(values.includes(true)){
                   accessory.context.lastMotionState = true;
-                  if(self.info||self.presenceTimer)self.logger.info('Presence detected again for ' + accessory.displayName);
-                  self.info = false;
-                  self.presenceTimer = false;
+                  if(self.info||self.presenceTimer){
+                  self.logger.info('Presence detected again for ' + accessory.displayName);
+                      self.info = false;
+                      self.presenceTimer = false;
+              }
                 } else {
                   !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
                   if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
@@ -2024,6 +2034,11 @@ class Fritz_Box {
                     }
                   }
                 }
+          if(!accessory.context.stopPolling){
+            self.presenceTimeout = setTimeout(function(){
+              self.getMotionDetected(accessory, service);
+            }, self.polling);
+          }
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
@@ -2058,13 +2073,14 @@ class Fritz_Box {
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-              }
-            });
-          }
           if(!accessory.context.stopPolling){
             self.presenceTimeout = setTimeout(function(){
               self.getMotionDetected(accessory, service);
             }, self.polling);
+          }
+
+              }
+            });
           }
         } else {
           if(err.tr064){
