@@ -21,8 +21,10 @@ noone means: If all motion sensors are on "no motion"
   "token": "TOKENHERE",
   "chatID": "CHATIDHERE",
   "messages":{
-    "anyone":"Welcome at home @",
-    "noone":"No one at home!"
+    "sensorOn":"Welcome at home @",
+    "sensorOff":"Bye bye @",
+    "anyoneOn":"Prsence detected at home!",
+    "anyoneOff":"No one at home!"
   },
   "devices":{
     "Peter":"00:11:22:33:44.55",
@@ -50,8 +52,10 @@ Optional parameter for Telegram notifications
 | telegram | If true, push notifications of detected presence (motion) |
 | token | Token from your bot |
 | chatID | Token from chatID where the notification will go |
-| messages.anyone | Message for detected presence from motion sensor |
-| messages.noone | Message for no motion detected |
+| messages.sensorOn | Push telegram notification if sensor from device detects presence |
+| messages.sensorOff | Push telegram notification if sensor from device detects no presence |
+| messages.anyoneOn | Push telegram notification if 'Anyone' sensor detects presence |
+| messages.anyoneOff | Push telegram notification if 'Anyone' sensor detects no presence |
 
 ## In-App Screenshot (Elgato EVE)
 
