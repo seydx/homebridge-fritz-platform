@@ -1172,7 +1172,7 @@ class Fritz_Box {
               (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
               text = self.platform.callmonitor.messages.incoming;
               text = text.replace('@', parseInfo);
-              self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.callmonitor,text); 
+              self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
             }
           }
 
