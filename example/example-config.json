@@ -14,7 +14,7 @@
       "timeout": 5,
       "username": "USERNAME",
       "password": "PASSWORD",
-      "polling": 10,
+      "polling": 5,
       "wifi": {
         "2.4ghz": true,
         "5ghz": true,
@@ -79,8 +79,10 @@
         "token": "TOKENHERE",
         "chatID": "CHATIDHERE",
         "messages": {
-          "anyone": "Welcome at home @",
-          "noone": "No one at home!"
+          "sensorOn": "Welcome at home @",
+          "sensorOff": "Bye bye @",
+          "anyoneOn": "Presence detected at home!",
+          "anyoneOff": "No one at home!"
         },
 	"devices":{
 	  "Peter":"00:11:22:33:44:55",
