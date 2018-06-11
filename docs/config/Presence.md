@@ -6,10 +6,7 @@ The presence is carried out via WiFi detection. If you connect with the Wlan, th
 
 There is also a possibility to set a delay. This prevents the motion sensor from going to "no movement" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the motion sensor goes to "no movement". If delay = 0 or removed, this option is deactivated. Type defines the accessory type (motion sensor or occupancy sensor)
 
-Presence also supports the Telegram notification service, via config.json it is possible to add your own chatID and add your own texts for **anyone** and **noone**
-
-anyone means: If a motion sensor (except Anyone sensor) detects motion
-noone means: If all motion sensors are on "no motion"
+Presence also supports the Telegram notification service, via config.json it is possible to add your own chatID and add your own notification.
 
 # Example Config
 
