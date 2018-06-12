@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.4.1 - 2018-06-12
+- Updated dependencies
+- Fixed a bug in TR064 module that caused "Auth. Failed" by multiple requests
+
 ## v2.4.0 - 2018-06-11
 - Fixed telegram notification for callmonitor
 
