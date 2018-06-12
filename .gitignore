@@ -63,3 +63,8 @@ typings/
 images/
 docs/
 example/
+CHANGELOG.md 
+CONTRIBUTING.md
+FAQ.md  
+README.md
+.eslintrc.json
