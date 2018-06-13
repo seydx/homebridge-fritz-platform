@@ -52,7 +52,7 @@ function FritzPlatform (log, config, api) {
     port: this.config.port||49000,
     username: this.config.username,
     password: this.config.password,
-    timeout: this.config.timeout*1000||5000
+    timeout: this.config.timeout < 10 ? 10000 : this.config.timeout
   };
 
   this.tr064 = new tr.TR064(this.devOptions);
@@ -86,10 +86,10 @@ FritzPlatform.prototype = {
     const self = this;
     this.tr064.initDevice('TR064')
       .then(result => {
-        self.logger.info('Device initialized: ' + result.meta.friendlyName); 
+        self.logger.initinfo('Device initialized: ' + result.meta.friendlyName); 
         result.startEncryptedCommunication()
           .then(device => {
-            self.logger.info('Encrypted communication started with: ' + result.meta.friendlyName); 
+            self.logger.initinfo('Encrypted communication started with: ' + result.meta.friendlyName); 
             if(self.config.callmonitor&&!self.config.callmonitor.disable){
               self.callMonitor(result.meta.friendlyName, device);
             } else {
@@ -100,16 +100,16 @@ FritzPlatform.prototype = {
             }
           })
           .catch(err => {
-            self.logger.error('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
-            self.logger.error(JSON.stringify(err,null,4));
+            self.logger.errorinfo('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
+            self.logger.errorinfo(JSON.stringify(err,null,4));
             setTimeout(function(){
               self.didFinishLaunching();
             }, 15000);
           });
       })
       .catch(err => {
-        self.logger.error('An error occured by initializing device, trying again...');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo('An error occured by initializing device, trying again...');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){
           self.didFinishLaunching();
         }, 15000);
@@ -119,28 +119,28 @@ FritzPlatform.prototype = {
   callMonitor: function(name, device){
     const self = this;
     self.client = net.createConnection(self.callmonitor.port, self.callmonitor.ip, function(){
-      self.logger.info('Callmonitor connection established with: ' + name);
+      self.logger.initinfo('Callmonitor connection established with: ' + name);
       self.time = moment().unix();
       self.device = device;
       self.device.login(self.config.username, self.config.password);
       self.initPlatform();
     });
     self.client.on('error', error => {
-      self.logger.error('An error occured by connecting to callmonitor!');
+      self.logger.errorinfo('An error occured by connecting to callmonitor!');
       if(error.errno == 'ECONNREFUSED'||error.code == 'ECONNREFUSED'){
-        self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - Dial #96*5 to enable port 1012');
+        self.logger.warninfo('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - Dial #96*5 to enable port 1012');
       } else if (error.errno == 'EHOSTUNREACH'||error.code == 'EHOSTUNREACH') {
-        self.logger.warn('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
+        self.logger.warninfo('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
       } else if(error.errno == 'ENETUNREACH') {
-        self.logger.warn('Network currently not reachable!');
+        self.logger.warninfo('Network currently not reachable!');
       } else {
-        self.logger.error(JSON.stringify(error,null,4));
+        self.logger.errorinfo(JSON.stringify(error,null,4));
       }
       self.logger.info('Trying again in 30 seconds..');
       setTimeout(function(){self.callMonitor(name,device);},30*1000);
     });
     self.client.on('end', () => {
-      self.logger.warn('Callmonitor connection were closed!');
+      self.logger.warninfo('Callmonitor connection were closed!');
     });
   },
 
@@ -381,7 +381,7 @@ FritzPlatform.prototype = {
         }
       }
 
-      this.logger.info('Platform initialization finished');
+      this.logger.initinfo('Platform initialization finished');
     } else {
       setTimeout(function(){self.initPlatform();},1000);
     }
@@ -391,7 +391,7 @@ FritzPlatform.prototype = {
     const self = this;
     if(this.device){
       self.configured = true;
-      this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
+      this.logger.initinfo('Configuring accessory from cache: ' + accessory.displayName);
       accessory.reachable = true; 
       accessory.context.stopPolling = false;
       accessory.context.options = {
@@ -399,12 +399,12 @@ FritzPlatform.prototype = {
         port: self.config.port||49000,
         username: self.config.username,
         password: self.config.password,
-        timeout: self.config.timeout*1000||5000
+        timeout: self.devOptions.timeout
       }; 
       if(accessory.context.type == self.types.presence){
         accessory.context.delay=self.presenceOptions.delay*1000||0;
         if(accessory.context.accType != self.presenceOptions.type){
-          self.logger.warn('New accessory type for presence sensor detected!');
+          self.logger.warninfo('New accessory type for presence sensor detected!');
           self.removeAccessory(accessory);
         }
         accessory.context.accType = self.presenceOptions.type||'motion';
@@ -432,7 +432,7 @@ FritzPlatform.prototype = {
               port: accessory.context.port,
               username: accessory.context.username,
               password: accessory.context.password,
-              timeout: self.config.timeout*1000||5000
+              timeout: self.devOptions.timeout
             };
           }
         }
@@ -446,7 +446,7 @@ FritzPlatform.prototype = {
 
   removeAccessory: function (accessory) {
     if (accessory) {
-      this.logger.warn('Removing accessory: ' + accessory.displayName + '. No longer configured.');
+      this.logger.warninfo('Removing accessory: ' + accessory.displayName + '. No longer configured.');
       this.api.unregisterPlatformAccessories(pluginName, platformName, [accessory]);
       delete this.accessories[accessory.displayName];
     }
