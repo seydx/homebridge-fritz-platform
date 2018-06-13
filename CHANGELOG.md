@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.4.2 - 2018-06-13
+- Bugfixes
+- Added called nr to callmonitor and telegram (% in config.messages.incoming as dynamic input)
+- Added more flags to LogUtil
+- Increased min timeout limit from 5s to 10s
+- Better error handling
+
 ## v2.4.1 - 2018-06-12
 - Updated dependencies
 - Fixed a bug in TR064 module that caused "Auth. Failed" by multiple requests
