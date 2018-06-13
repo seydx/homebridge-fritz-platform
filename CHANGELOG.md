@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.4.3 - 2018-06-13
+- Bugfixes
+- Clean up code
+
 ## v2.4.2 - 2018-06-13
 - Bugfixes
 - Added called nr to callmonitor and telegram (% in config.messages.incoming as dynamic input)
