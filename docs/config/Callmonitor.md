@@ -27,12 +27,12 @@ If you do not have a connected device, you can also do it via the phone book. Ac
   "token": "TOKENHERE",
   "chatID": "CHATIDHERE",
   "messages":{
-    "incoming":"Incoming call! @",
-    "disconnected":"Incoming call - @ - was disconnected!"
+    "incoming":"Incoming call from @ to %",
+    "disconnected":"Incoming call from @ was disconnected!"
   }
 }
 ```
-_('@' defines the are where dynamic content lik caller information - name and number - will come)_
+_('@' and '%' defines the area where dynamic content like caller/called information - name and number - will come)_
 
 ## Base
 Required parameter
