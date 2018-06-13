@@ -104,7 +104,7 @@ class Fritz_Box {
         break;
     }
 
-    this.logger.info('Publishing new accessory: ' + name);
+    this.logger.initinfo('Publishing new accessory: ' + name);
 
     accessory = this.accessories[name];
     const uuid = UUIDGen.generate(name);
@@ -125,7 +125,7 @@ class Fritz_Box {
       port: self.config.port||49000,
       username: self.config.username,
       password: self.config.password,
-      timeout: self.config.timeout*1000||5000
+      timeout: self.platform.devOptions.timeout
     };
 
     switch(type){
@@ -159,7 +159,7 @@ class Fritz_Box {
           port: parameter.port||49000,
           username: parameter.username,
           password: parameter.password,
-          timeout: self.config.timeout*1000||5000
+          timeout: self.platform.devOptions.timeout
         };
         break;
       case 5:
@@ -207,25 +207,25 @@ class Fritz_Box {
     this.tr064 = new tr.TR064(accessory.context.options); 
     this.tr064.initDevice('TR064')
       .then(result => {
-        self.logger.info('Repeater initialized: ' + result.meta.friendlyName);
+        self.logger.initinfo('Repeater initialized: ' + result.meta.friendlyName);
         result.startEncryptedCommunication()
           .then(device => {
-            self.logger.info('Encrypted communication started with: ' + result.meta.friendlyName); 
+            self.logger.initinfo('Encrypted communication started with: ' + result.meta.friendlyName); 
             self.device = device;
             self.device.login(accessory.context.options.username, accessory.context.options.password);
             self.getService(accessory);
           })
           .catch(err => {
-            self.logger.error('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
-            self.logger.error(JSON.stringify(err,null,4));
+            self.logger.errorinfo('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
+            self.logger.errorinfo(JSON.stringify(err,null,4));
             setTimeout(function(){
               self.logTR064(accessory);
             }, 15000);
           });
       })
       .catch(err => {
-        self.logger.error('An error occured by initializing repeater: ' + accessory.displayName);
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo('An error occured by initializing repeater: ' + accessory.displayName);
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){
           self.logTR064(accessory);
         }, 15000);
@@ -262,7 +262,7 @@ class Fritz_Box {
 
         if(self.platform.wifi['2.4ghz']){
           if (!service.testCharacteristic(Characteristic.WifiTwo)){
-            self.logger.info('Adding WIFI 2.4 Ghz Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding WIFI 2.4 Ghz Characteristic to ' + accessory.displayName);
             accessory.context.lastWifiTwoState = false;
             service.addCharacteristic(Characteristic.WifiTwo);
           }
@@ -272,7 +272,7 @@ class Fritz_Box {
             .on('get', self.checkWifiTwo.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.WifiTwo)){
-            self.logger.info('Removing WIFI 2.4 Ghz from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI 2.4 Ghz from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiTwo));
           }
         }
@@ -280,7 +280,7 @@ class Fritz_Box {
         if(self.platform.wifi['5ghz']){
           if(self.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
             if (!service.testCharacteristic(Characteristic.WifiFive)){
-              self.logger.info('Adding WIFI 5 Ghz Characteristic to ' + accessory.displayName);
+              self.logger.initinfo('Adding WIFI 5 Ghz Characteristic to ' + accessory.displayName);
               accessory.context.lastWifiFiveState = false;
               service.addCharacteristic(Characteristic.WifiFive);
             }
@@ -289,18 +289,18 @@ class Fritz_Box {
               .on('set', self.setWifiFive.bind(this, accessory, service))
               .on('get', self.checkWifiFive.bind(this, accessory, service));
           } else {
-            self.logger.warn(accessory.displayName + ': Can not add WIFI 5 Ghz, not supported by this device!');
+            self.logger.warninfo(accessory.displayName + ': Can not add WIFI 5 Ghz, not supported by this device!');
           }
         } else {
           if(service.testCharacteristic(Characteristic.WifiFive)){
-            self.logger.info('Removing WIFI 5 Ghz from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI 5 Ghz from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiFive));
           }
         }
 
         if(self.platform.wifi.guest){
           if (!service.testCharacteristic(Characteristic.WifiGuest)){
-            self.logger.info('Adding WIFI Guest Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding WIFI Guest Characteristic to ' + accessory.displayName);
             accessory.context.lastWifiGuestState = false;
             service.addCharacteristic(Characteristic.WifiGuest);
           }
@@ -310,14 +310,14 @@ class Fritz_Box {
             .on('get', self.checkWifiGuest.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.WifiGuest)){
-            self.logger.info('Removing WIFI Guest from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI Guest from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiGuest));
           }
         }
 
         if(self.platform.wifi.wps){
           if (!service.testCharacteristic(Characteristic.WifiWPS)){
-            self.logger.info('Adding WIFI WPS Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding WIFI WPS Characteristic to ' + accessory.displayName);
             accessory.context.lastWifiWPSState = false;
             service.addCharacteristic(Characteristic.WifiWPS);
           }
@@ -327,14 +327,14 @@ class Fritz_Box {
             .on('get', self.checkWifiWPS.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.WifiWPS)){
-            self.logger.info('Removing WIFI WPS from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI WPS from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiWPS));
           }
         }
 
         if(Object.keys(self.platform.reboot).length&&!self.platform.reboot.disable){
           if (!service.testCharacteristic(Characteristic.Reboot)){
-            self.logger.info('Adding Reboot Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Reboot Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.Reboot);
           }
           service.getCharacteristic(Characteristic.Reboot)
@@ -342,14 +342,14 @@ class Fritz_Box {
             .on('set', self.setReboot.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.Reboot)){
-            self.logger.info('Removing Reboot from ' + accessory.displayName);
+            self.logger.initinfo('Removing Reboot from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.Reboot));
           }
         }
 
         if(self.platform.options.answeringMachine){
           if (!service.testCharacteristic(Characteristic.AnsweringMachine)){
-            self.logger.info('Adding Answering Machine Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Answering Machine Characteristic to ' + accessory.displayName);
             accessory.context.lastAWState = false;
             service.addCharacteristic(Characteristic.AnsweringMachine);
           } 
@@ -359,14 +359,14 @@ class Fritz_Box {
             .on('get', self.checkAW.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.AnsweringMachine)){
-            self.logger.info('Removing Answering Machine from ' + accessory.displayName);
+            self.logger.initinfo('Removing Answering Machine from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.AnsweringMachine));
           }
         }
 
         if(self.platform.options.debug){
           if (!service.testCharacteristic(Characteristic.Debug)){
-            self.logger.info('Adding Debug Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Debug Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.Debug);
           } 
           service.getCharacteristic(Characteristic.Debug)
@@ -394,14 +394,14 @@ class Fritz_Box {
             });
         } else {
           if(service.testCharacteristic(Characteristic.Debug)){
-            self.logger.info('Removing Debug from ' + accessory.displayName);
+            self.logger.initinfo('Removing Debug from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.Debug));
           }
         }
 
         if(self.platform.options.deflection){
           if (!service.testCharacteristic(Characteristic.Deflection)){
-            self.logger.info('Adding Deflection Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Deflection Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.Deflection);
             accessory.context.lastDeflectiontate = false;
           }
@@ -411,24 +411,24 @@ class Fritz_Box {
             .on('get', self.checkDeflection.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.Deflection)){
-            self.logger.info('Removing Deflection from ' + accessory.displayName);
+            self.logger.initinfo('Removing Deflection from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.Deflection));
           }
         }
 
         if(Object.keys(self.platform.broadband).length&&!self.platform.broadband.disable){
           if (!service.testCharacteristic(Characteristic.DownloadSpeed)){
-            self.logger.info('Adding Download Speed Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Download Speed Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.DownloadSpeed);
             accessory.context.lastDLSpeed = 0;
           }
           if (!service.testCharacteristic(Characteristic.UploadSpeed)){
-            self.logger.info('Adding Upload Speed Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Upload Speed Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.UploadSpeed);
             accessory.context.lastULSpeed = 0;
           }
           if (!service.testCharacteristic(Characteristic.Ping)){
-            self.logger.info('Adding Ping Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Ping Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.Ping);
             accessory.context.lastPing = 0;
           }
@@ -443,22 +443,22 @@ class Fritz_Box {
           self.getMeasurement(accessory, service);
         } else {
           if(service.testCharacteristic(Characteristic.DownloadSpeed)){
-            self.logger.info('Removing Download Speed from ' + accessory.displayName);
+            self.logger.initinfo('Removing Download Speed from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.DownloadSpeed));
           }
           if(service.testCharacteristic(Characteristic.UploadSpeed)){
-            self.logger.info('Removing Upload Speed from ' + accessory.displayName);
+            self.logger.initinfo('Removing Upload Speed from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.UploadSpeed));
           }
           if(service.testCharacteristic(Characteristic.Ping)){
-            self.logger.info('Removing Ping from ' + accessory.displayName);
+            self.logger.initinfo('Removing Ping from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.Ping));
           }
         }
 
         if(self.platform.options.devicelock){
           if (!service.testCharacteristic(Characteristic.DeviceLock)){
-            self.logger.info('Adding Device Lock Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Device Lock Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.DeviceLock);
             accessory.context.lastDeviceLock = false;
           }
@@ -468,7 +468,7 @@ class Fritz_Box {
             .on('get', self.checkDeviceLock.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.DeviceLock)){
-            self.logger.info('Removing Device Lock from ' + accessory.displayName);
+            self.logger.initinfo('Removing Device Lock from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.DeviceLock));
           }
         }
@@ -476,7 +476,7 @@ class Fritz_Box {
         if(Object.keys(self.platform.wakeup).length){
           if(self.platform.wakeup.internNr){
             if (!service.testCharacteristic(Characteristic.WakeUp)){
-              self.logger.info('Adding Wake Up Characteristic to ' + accessory.displayName);
+              self.logger.initinfo('Adding Wake Up Characteristic to ' + accessory.displayName);
               service.addCharacteristic(Characteristic.WakeUp);
             }
             accessory.context.wakeupDuration = self.platform.wakeup.duration*1000||30000;
@@ -486,13 +486,13 @@ class Fritz_Box {
               .on('set', self.setWakeUp.bind(this, accessory, service));
           } else {
             if(service.testCharacteristic(Characteristic.WakeUp)){
-              self.logger.info('Removing Wake Up from ' + accessory.displayName);
+              self.logger.initinfo('Removing Wake Up from ' + accessory.displayName);
               service.removeCharacteristic(service.getCharacteristic(Characteristic.WakeUp));
             }
           }
         } else {
           if(service.testCharacteristic(Characteristic.WakeUp)){
-            self.logger.info('Removing Wake Up from ' + accessory.displayName);
+            self.logger.initinfo('Removing Wake Up from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WakeUp));
           }
         }
@@ -500,7 +500,7 @@ class Fritz_Box {
         if(Object.keys(self.platform.alarm).length){
           if(self.platform.alarm.telNr){
             if (!service.testCharacteristic(Characteristic.DialAlarm)){
-              self.logger.info('Adding Alarm Characteristic to ' + accessory.displayName);
+              self.logger.initinfo('Adding Alarm Characteristic to ' + accessory.displayName);
               service.addCharacteristic(Characteristic.DialAlarm);
             }
             accessory.context.alarmDuration = self.platform.alarm.duration*1000||30000;
@@ -510,20 +510,20 @@ class Fritz_Box {
               .on('set', self.setAlarm.bind(this, accessory, service));
           } else {
             if(service.testCharacteristic(Characteristic.DialAlarm)){
-              self.logger.info('Removing Alarm from ' + accessory.displayName);
+              self.logger.initinfo('Removing Alarm from ' + accessory.displayName);
               service.removeCharacteristic(service.getCharacteristic(Characteristic.DialAlarm));
             }
           }
         } else {
           if(service.testCharacteristic(Characteristic.DialAlarm)){
-            self.logger.info('Removing Alarm from ' + accessory.displayName);
+            self.logger.initinfo('Removing Alarm from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.DialAlarm));
           }
         }
 
         if(self.platform.options.phoneBook){
           if (!service.testCharacteristic(Characteristic.PhoneBook)){
-            self.logger.info('Adding Phone Book Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding Phone Book Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.PhoneBook);
           }
           service.getCharacteristic(Characteristic.PhoneBook)
@@ -531,7 +531,7 @@ class Fritz_Box {
             .on('set', self.setPhoneBook.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.PhoneBook)){
-            self.logger.info('Removing Phone Book from ' + accessory.displayName);
+            self.logger.initinfo('Removing Phone Book from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.PhoneBook));
           }
         }
@@ -554,8 +554,8 @@ class Fritz_Box {
                     callback(null, true);
                   }
                 } else {
-                  self.logger.error(accessory.displayName + 'An error occured by getting device state!');
-                  self.logger.error(JSON.stringify(err,null,4));
+                  self.logger.errorinfo(accessory.displayName + 'An error occured by getting device state!');
+                  self.logger.errorinfo(JSON.stringify(err,null,4));
                   callback(null, accessory.context.lastSwitchState);
                 }
               });
@@ -574,7 +574,7 @@ class Fritz_Box {
               callback(null, false);
             } else {
               reconnect.actions.ForceTermination(function() {
-                self.logger.warn(accessory.displayName + ': Reconnecting internet...');
+                self.logger.warninfo(accessory.displayName + ': Reconnecting internet...');
                 accessory.context.lastSwitchState = false;
                 setTimeout(function(){self.getIP(accessory,service);},15000);
                 callback(null, false);
@@ -656,8 +656,8 @@ class Fritz_Box {
                 if(!err){
                   self.logger.info('Turning on ' + accessory.displayName);
                 } else {
-                  self.logger.error('An error occured by turning on ' + accessory.displayName);
-                  self.logger.error(JSON.stringify(err,null,4));
+                  self.logger.errorinfo('An error occured by turning on ' + accessory.displayName);
+                  self.logger.errorinfo(JSON.stringify(err,null,4));
                 }
                 setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
                 callback(null, false);
@@ -671,7 +671,7 @@ class Fritz_Box {
         service = accessory.getService(Service.Switch);
         if(accessory.context.wifi2){ 
           if (!service.testCharacteristic(Characteristic.WifiTwo)){
-            self.logger.info('Adding WIFI 2.4 Ghz Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding WIFI 2.4 Ghz Characteristic to ' + accessory.displayName);
             accessory.context.lastWifiTwoState = false;
             service.addCharacteristic(Characteristic.WifiTwo);
           }
@@ -681,7 +681,7 @@ class Fritz_Box {
             .on('get', self.checkWifiTwo.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.WifiTwo)){
-            self.logger.info('Removing WIFI 2.4 Ghz Characteristic from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI 2.4 Ghz Characteristic from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiTwo));
           }
         }
@@ -689,7 +689,7 @@ class Fritz_Box {
         if(accessory.context.wifi5){
           if(self.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
             if (!service.testCharacteristic(Characteristic.WifiFive)){
-              self.logger.info('Adding WIFI 5 Ghz Characteristic to ' + accessory.displayName);
+              self.logger.initinfo('Adding WIFI 5 Ghz Characteristic to ' + accessory.displayName);
               accessory.context.lastWifiFiveState = false;
               service.addCharacteristic(Characteristic.WifiFive);
             }
@@ -698,18 +698,18 @@ class Fritz_Box {
               .on('set', self.setWifiFive.bind(this, accessory, service))
               .on('get', self.checkWifiFive.bind(this, accessory, service));
           } else {
-            self.logger.warn(accessory.displayName + ': Can not add WIFI 5 Ghz, not supported by this device!');
+            self.logger.warninfo(accessory.displayName + ': Can not add WIFI 5 Ghz, not supported by this device!');
           }
         } else {
           if(service.testCharacteristic(Characteristic.WifiFive)){
-            self.logger.info('Removing WIFI 5 Ghz Characteristic from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI 5 Ghz Characteristic from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiFive));
           }
         }
 
         if(accessory.context.wifiGuest){
           if (!service.testCharacteristic(Characteristic.WifiGuest)){
-            self.logger.info('Adding WIFI Guest Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding WIFI Guest Characteristic to ' + accessory.displayName);
             accessory.context.lastWifiGuestState = false;
             service.addCharacteristic(Characteristic.WifiGuest);
           }
@@ -719,14 +719,14 @@ class Fritz_Box {
             .on('get', self.checkWifiGuest.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.WifiGuest)){
-            self.logger.info('Removing WIFI Guest from ' + accessory.displayName);
+            self.logger.initinfo('Removing WIFI Guest from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiGuest));
           }
         }
 
         if(accessory.context.led){
           if (!service.testCharacteristic(Characteristic.DeviceLED)){
-            self.logger.info('Adding LED Characteristic to ' + accessory.displayName);
+            self.logger.initinfo('Adding LED Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.DeviceLED);
             accessory.context.lastLEDState = false;
           }
@@ -736,7 +736,7 @@ class Fritz_Box {
             .on('get', self.checkDeviceLED.bind(this, accessory, service));
         } else {
           if(service.testCharacteristic(Characteristic.DeviceLED)){
-            self.logger.info('Removing LED from ' + accessory.displayName);
+            self.logger.initinfo('Removing LED from ' + accessory.displayName);
             service.removeCharacteristic(service.getCharacteristic(Characteristic.DeviceLED));
           }
         }
@@ -746,7 +746,7 @@ class Fritz_Box {
           .on('get', function(callback){
             let adress = parseInt(accessory.context.host);
             if(isNaN(adress)) {
-              self.logger.warn(accessory.displayName + ': Setted value for ip in config ist not an numerical ip adress! Can not get repeater state!');
+              self.logger.warninfo(accessory.displayName + ': Setted value for ip in config ist not an numerical ip adress! Can not get repeater state!');
               accessory.context.lastSwitchState = false;
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
@@ -763,8 +763,8 @@ class Fritz_Box {
                       callback(null, false);
                     }
                   } else {
-                    self.logger.error(accessory.displayName + ': An error occured by getting device state!');
-                    self.logger.error(JSON.stringify(err,null,4));
+                    self.logger.errorinfo(accessory.displayName + ': An error occured by getting device state!');
+                    self.logger.errorinfo(JSON.stringify(err,null,4));
                     callback(null, accessory.context.lastSwitchState);
                   }
                 });
@@ -775,13 +775,15 @@ class Fritz_Box {
           })
           .on('set', function(state, callback) {
             if(state){
-              self.logger.info(accessory.displayName + ': Turning on is not supported');
-              setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
-              callback(null, false);
-            } else {
-              self.logger.info(accessory.displayName + ': Turning off is not supported');
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(true);},500);
               callback(null, true);
+            } else {
+              let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
+              reboot.actions.Reboot(function() {
+                self.logger.info(accessory.displayName + ': Rebooting...'); 
+              });
+              setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(true);},5*60*1000);
+              callback(null, false);
             }
           });
         break;
@@ -916,8 +918,8 @@ class Fritz_Box {
               if(!err){
                 callback(null, result);
               } else {
-                self.logger.error(accessory.displayName + ':An error occured by setting Device Lock state!');
-                self.logger.error(JSON.stringify(err,null,4));
+                self.logger.errorinfo(accessory.displayName + ':An error occured by setting Device Lock state!');
+                self.logger.errorinfo(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
                 callback(null, accessory.context.lastDeviceLock);
               }
@@ -929,8 +931,8 @@ class Fritz_Box {
         post_req.end();
 
       } else {
-        self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
         callback(null, accessory.context.lastDeviceLock);
       }
@@ -952,8 +954,8 @@ class Fritz_Box {
               if(!err){
                 callback(null, result);
               } else {
-                self.logger.error(accessory.displayName + ':An error occured by getting Device Lock state!');
-                self.logger.error(JSON.stringify(err,null,4));
+                self.logger.errorinfo(accessory.displayName + ':An error occured by getting Device Lock state!');
+                self.logger.errorinfo(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
                 callback(null, accessory.context.lastDeviceLock);
               }
@@ -961,8 +963,8 @@ class Fritz_Box {
           });
         }).end();
       } else {
-        self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
         callback(null, accessory.context.lastDeviceLock);
       }
@@ -1018,8 +1020,8 @@ class Fritz_Box {
         post_req.end();
 
       } else {
-        self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
       }
@@ -1041,8 +1043,8 @@ class Fritz_Box {
               if(!err){
                 callback(null, result);
               } else {
-                self.logger.error(accessory.displayName + ':An error occured by getting LED state!');
-                self.logger.error(JSON.stringify(err,null,4));
+                self.logger.errorinfo(accessory.displayName + ':An error occured by getting LED state!');
+                self.logger.errorinfo(JSON.stringify(err,null,4));
                 setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
                 callback(null, accessory.context.lastLEDState);
               }
@@ -1050,8 +1052,8 @@ class Fritz_Box {
           });
         }).end();
       } else {
-        self.logger.error(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
       }
@@ -1059,8 +1061,27 @@ class Fritz_Box {
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Telegram
+  // Callmonitor
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+  fritzboxDateToUnix(string) {
+    let d = string.match(/[0-9]{2}/g);
+    let result = '';
+    result += '20' + d[2] + '-' + d[1] + '-' + d[0];
+    result += ' ' + d[3] + ':' + d[4] + ':' + d[5];
+    return Math.floor(new Date(result).getTime() / 1000);
+  }
+
+  parseMessage(buffer) {
+    const self = this;
+    let message = buffer.toString()
+      .toLowerCase()
+      .replace(/[\n\r]$/, '')
+      .replace(/;$/, '')
+      .split(';');
+    message[0] = self.fritzboxDateToUnix(message[0]);
+    return message;
+  }
 
   sendTelegram(token,chatID,text){
     const self = this;
@@ -1086,34 +1107,11 @@ class Fritz_Box {
       }
     });
     req.on('error', function(err) {
-      self.logger.error('An error occured by sending telegram notification!');
-      self.logger.error(JSON.stringify(err,null,4));
+      self.logger.errorinfo('An error occured by sending telegram notification!');
+      self.logger.errorinfo(JSON.stringify(err,null,4));
     });
     req.write(post_data);
     req.end();
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Callmonitor
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  fritzboxDateToUnix(string) {
-    let d = string.match(/[0-9]{2}/g);
-    let result = '';
-    result += '20' + d[2] + '-' + d[1] + '-' + d[0];
-    result += ' ' + d[3] + ':' + d[4] + ':' + d[5];
-    return Math.floor(new Date(result).getTime() / 1000);
-  }
-
-  parseMessage(buffer) {
-    const self = this;
-    let message = buffer.toString()
-      .toLowerCase()
-      .replace(/[\n\r]$/, '')
-      .replace(/;$/, '')
-      .split(';');
-    message[0] = self.fritzboxDateToUnix(message[0]);
-    return message;
   }
 
   getContactState(accessory, service){
@@ -1149,30 +1147,30 @@ class Fritz_Box {
             let skip = false;
             for(const i in phonebook){
               if(message.caller == phonebook[i].number){
-                text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' ) to ' + message.called;
                 self.callerName = phonebook[i].name;
                 self.callerNr = phonebook[i].number;
                 skip = true;
               }
             }
             if(!skip){
-              text = 'Incoming call from: ' + message.caller;
+              text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
               self.callerNr = message.caller;
               self.callerName = false;
             }
           } else {
-            text = 'Incoming call from: ' + message.caller;
+            text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
             self.callerNr = message.caller;
             self.callerName = false;
           }
           self.logger.info(text);
-          if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token&&self.platform.callmonitor.messages){
-            if(self.platform.callmonitor.messages.incoming&&self.platform.callmonitor.messages.incoming!=''){
+          if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
+            if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.incoming&&self.platform.callmonitor.messages.incoming!=''){
               let parseInfo;
               (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
               text = self.platform.callmonitor.messages.incoming;
-              text = text.replace('@', parseInfo);
-              self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
+              text = text.replace('@', parseInfo).replace('%', message.called);
+              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
             }
           }
 
@@ -1243,13 +1241,13 @@ class Fritz_Box {
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastContactSensorState);
           self.logger.info('Call disconnected');
           if(accessory.displayName == 'Callmonitor Incoming'){
-            if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token&&self.platform.callmonitor.messages){
-              if(self.platform.callmonitor.messages.disconnected&&self.platform.callmonitor.messages.disconnected!=''){
+            if(self.platform.callmonitor.telegram&&self.platform.callmonitor.chatID&&self.platform.callmonitor.token){
+              if(self.platform.callmonitor.messages&&self.platform.callmonitor.messages.disconnected&&self.platform.callmonitor.messages.disconnected!=''){
                 let parseInfo;
                 (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
                 text = self.platform.callmonitor.messages.disconnected;
                 text = text.replace('@', parseInfo);
-                self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
+                self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
               }
             }
           }
@@ -1284,8 +1282,8 @@ class Fritz_Box {
           self.logger.info('Found ' + self.bookIDs.length + ' books! Fetching entries...');
           self.storeEntries(accessory,service);
         } else {
-          self.logger.error('An error occured by getting phone books!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo('An error occured by getting phone books!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
       });
       setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).setValue(false);},500);
@@ -1315,8 +1313,8 @@ class Fritz_Box {
             self.entryID += 1;
             setTimeout(function(){self.storeEntries(accessory,service);},500);
           } else {
-            self.logger.error(accessory.displayName + ': An error occured by fetching phone book!');
-            self.logger.error(JSON.stringify(error,null,4));
+            self.logger.errorinfo(accessory.displayName + ': An error occured by fetching phone book!');
+            self.logger.errorinfo(JSON.stringify(error,null,4));
             self.telBook = [];
             self.entryID = 0;
             self.bookIDs = [];
@@ -1337,8 +1335,8 @@ class Fritz_Box {
             self.telBook = [];
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting phone book!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting phone book!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
           self.telBook = [];
           self.entryID = 0;
           self.bookIDs = [];
@@ -1359,8 +1357,8 @@ class Fritz_Box {
         accessory.context.lastWifiTwoState = state;
         callback(null, state);
       } else {
-        state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI 2.4 Ghz') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI 2.4 Ghz');
-        self.logger.error(JSON.stringify(err,null,4));
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on WIFI 2.4 Ghz') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off WIFI 2.4 Ghz');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         accessory.context.lastWifiTwoState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiTwo).updateValue(accessory.context.lastWifiTwoState);},500);
         callback(null, accessory.context.lastWifiTwoState);
@@ -1379,8 +1377,8 @@ class Fritz_Box {
         accessory.context.lastWifiFiveState = state;
         callback(null, state);
       } else {
-        state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI 5 Ghz') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI 5 Ghz');
-        self.logger.error(JSON.stringify(err,null,4));
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on WIFI 5 Ghz') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off WIFI 5 Ghz');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         accessory.context.lastWifiFiveState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiFive).updateValue(accessory.context.lastWifiFiveState);},500);
         callback(null, accessory.context.lastWifiFiveState);
@@ -1404,8 +1402,8 @@ class Fritz_Box {
         accessory.context.lastWifiGuestState = state;
         callback(null, state);
       } else {
-        state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI Guest') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI Guest');
-        self.logger.error(JSON.stringify(err,null,4));
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on WIFI Guest') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off WIFI Guest');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         accessory.context.lastWifiGuestState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);},500);
         callback(null, accessory.context.lastWifiGuestState);
@@ -1425,8 +1423,8 @@ class Fritz_Box {
         accessory.context.lastWifiWPSState = state;
         callback(null, state);
       } else {
-        state ? self.logger.error(accessory.displayName + ': An error occured by turning on WIFI WPS') : self.logger.error(accessory.displayName + ': An error occured by turning off WIFI WPS');
-        self.logger.error(JSON.stringify(err,null,4));
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on WIFI WPS') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off WIFI WPS');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         accessory.context.lastWifiWPSState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.WifiWPS).updateValue(accessory.context.lastWifiWPSState);},500);
         callback(null, accessory.context.lastWifiWPSState);
@@ -1445,8 +1443,8 @@ class Fritz_Box {
         accessory.context.lastAWState = state;
         callback(null, state);
       } else {
-        state ? self.logger.error(accessory.displayName + ': An error occured by turning on Answering Machine') : self.logger.error(accessory.displayName + ': An error occured by turning off Answering Machine');
-        self.logger.error(JSON.stringify(err,null,4));
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on Answering Machine') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off Answering Machine');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         accessory.context.lastAWState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.AnsweringMachine).updateValue(accessory.context.lastAWState);},500);
         callback(null, accessory.context.lastAWState);
@@ -1491,13 +1489,13 @@ class Fritz_Box {
                             });
                           })
                           .catch(sslerr => {
-                            self.logger.error('No reboot possible! An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
-                            self.logger.error(JSON.stringify(sslerr,null,4));
+                            self.logger.errorinfo('No reboot possible! An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
+                            self.logger.errorinfo(JSON.stringify(sslerr,null,4));
                           });
                       })
                       .catch(err => {
-                        self.logger.error('No reboot possible! An error occured by initializing repeater: ' + self.accessories[i].displayName);
-                        self.logger.error(JSON.stringify(err,null,4));
+                        self.logger.errorinfo('No reboot possible! An error occured by initializing repeater: ' + self.accessories[i].displayName);
+                        self.logger.errorinfo(JSON.stringify(err,null,4));
                       });
                   }
                 }
@@ -1508,13 +1506,13 @@ class Fritz_Box {
                     self.logger.info(accessory.displayName + ': All homebridge instances were restarted!');
                     error = null;
                   } else {
-                    self.logger.error(accessory.displayName + ': An error occured by executing the OFF script Please restart manually all your homebridge instances!');
-                    self.logger.error(stderr);
+                    self.logger.errorinfo(accessory.displayName + ': An error occured by executing the OFF script Please restart manually all your homebridge instances!');
+                    self.logger.errorinfo(stderr);
                   }
                 });
               });
             } else {
-              self.logger.warn('Can not continue with rebooting! Please add \'echo 1\' at the end of your ON script!');
+              self.logger.warninfo('Can not continue with rebooting! Please add \'echo 1\' at the end of your ON script!');
               accessory.context.stopPolling = false;
               for(const i in self.accessories){
                 if(self.accessories[i].context.type==self.types.repeater||self.accessories[i].context.type==self.types.presence){
@@ -1524,8 +1522,8 @@ class Fritz_Box {
             }
             error = null;
           } else {
-            self.logger.error(accessory.displayName + ': An error occured by executing the ON script!');
-            self.logger.error(stderr);
+            self.logger.errorinfo(accessory.displayName + ': An error occured by executing the ON script!');
+            self.logger.errorinfo(stderr);
             setTimeout(function(){service.getCharacteristic(Characteristic.Reboot).updateValue(false);},500);
             accessory.context.stopPolling = false;
             for(const i in self.accessories){
@@ -1562,13 +1560,13 @@ class Fritz_Box {
                       });
                     })
                     .catch(sslerr => {
-                      self.logger.error('An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
-                      self.logger.error(JSON.stringify(sslerr,null,4));
+                      self.logger.errorinfo('An error occured by starting encrypted communication with ' + self.accessories[i].displayName);
+                      self.logger.errorinfo(JSON.stringify(sslerr,null,4));
                     });
                 })
                 .catch(err => {
-                  self.logger.error('An error occured by initializing repeater: ' + self.accessories[i].displayName);
-                  self.logger.error(JSON.stringify(err,null,4));
+                  self.logger.errorinfo('An error occured by initializing repeater: ' + self.accessories[i].displayName);
+                  self.logger.errorinfo(JSON.stringify(err,null,4));
                 });
             }
           }
@@ -1598,8 +1596,8 @@ class Fritz_Box {
               accessory.context.lastDeflectionState = state;
               callback(null, state);
             } else {
-              state ? self.logger.error(accessory.displayName + ': An error occured by turning on Deflection') : self.logger.error(accessory.displayName + ': An error occured by turning off Deflection');
-              self.logger.error(JSON.stringify(err,null,4));
+              state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on Deflection') : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off Deflection');
+              self.logger.errorinfo(JSON.stringify(err,null,4));
               accessory.context.lastDeflectiontate = state ? false : true;
               setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);},500);
               callback(null, accessory.context.lastDeflectionState);
@@ -1607,14 +1605,14 @@ class Fritz_Box {
           });
 
         } else {
-          state ? self.logger.warn('Cant turn on declection, no deflections setted up in fritz.box settings!') : self.logger.warn('Cant turn off declection, no deflections setted up in fritz.box settings!');
+          state ? self.logger.warninfo('Cant turn on declection, no deflections setted up in fritz.box settings!') : self.logger.warninfo('Cant turn off declection, no deflections setted up in fritz.box settings!');
           let backState = state ? false : true;
           setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(backState);},500);
           callback(null, backState);
         }
       } else {
-        self.logger.error(accessory.displayName + ': An error occured by setting deflections! Trying again...');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by setting deflections! Trying again...');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         let backState = state ? false : true;
         setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(backState);},500);
         callback(null, backState);
@@ -1634,8 +1632,8 @@ class Fritz_Box {
           });
           callback(null, true);
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by turning on \'Wake Up\'!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by turning on \'Wake Up\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(false);},500);
           callback(null, false);
         }
@@ -1646,8 +1644,8 @@ class Fritz_Box {
           self.logger.info(accessory.displayName + ': Stop calling. Turning off \'Wake Up\'');
           callback(null, false);
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by turning off \'Wake Up\'!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by turning off \'Wake Up\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(true);},500);
           callback(null, true);
         }
@@ -1675,8 +1673,8 @@ class Fritz_Box {
           });
           callback(null, true);
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by turning on \'Alarm\'!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by turning on \'Alarm\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.DialALarm).updateValue(false);},500);
           callback(null, false);
         }
@@ -1694,8 +1692,8 @@ class Fritz_Box {
           }
           callback(null, false);
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by turning off \'Alarm\'!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by turning off \'Alarm\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.DialAlarm).updateValue(true);},500);
           callback(null, true);
         }
@@ -1719,8 +1717,8 @@ class Fritz_Box {
             accessory.context.lastWifiTwoState = false;
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting WIFI 2.4 Ghz state!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting WIFI 2.4 Ghz state!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiTwoState);
       });
@@ -1741,8 +1739,8 @@ class Fritz_Box {
             accessory.context.lastWifiFiveState = false;
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting WIFI 5 Ghz state!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting WIFI 5 Ghz state!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiFiveState);
       });
@@ -1768,8 +1766,8 @@ class Fritz_Box {
             accessory.context.lastWifiGuestState = false;
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting WIFI Guest state!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting WIFI Guest state!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastWifiGuestState);
       });
@@ -1795,8 +1793,8 @@ class Fritz_Box {
               accessory.context.lastWifiWPSState = false;
             }
           } else {
-            self.logger.error(accessory.displayName + ': An error occured by getting WIFI WPS state!');
-            self.logger.error(JSON.stringify(err,null,4));
+            self.logger.errorinfo(accessory.displayName + ': An error occured by getting WIFI WPS state!');
+            self.logger.errorinfo(JSON.stringify(err,null,4));
           }
           callback(null, accessory.context.lastWifiWPSState);
         });
@@ -1818,8 +1816,8 @@ class Fritz_Box {
             accessory.context.lastAWState = false;
           }
         } else {
-          self.logger.error(accessory.displayName + ': An error occured by getting Answering Machine state!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting Answering Machine state!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
         callback(null, accessory.context.lastAWState);
       });
@@ -1845,22 +1843,22 @@ class Fritz_Box {
                   accessory.context.lastDeflectiontate = false;
                 }
               } else {
-                self.logger.error(accessory.displayName + ': An error occured by getting Deflection state!');
-                self.logger.error(JSON.stringify(err,null,4));
+                self.logger.errorinfo(accessory.displayName + ': An error occured by getting Deflection state!');
+                self.logger.errorinfo(JSON.stringify(err,null,4));
               }
               callback(null, accessory.context.lastDeflectiontate);
             });
           } else {
             callback(null, accessory.context.lastDeflectiontate);
-            self.logger.warn('Cant check declection state, no deflections setted up in fritz.box settings!');
+            self.logger.warninfo('Cant check declection state, no deflections setted up in fritz.box settings!');
             accessory.context.lastDeflectiontate = false;
             self.ignorePosted = 1;
             service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectiontate);
           }
         } else {
           callback(null, accessory.context.lastDeflectiontate);
-          self.logger.error(accessory.displayName + ': An error occured by getting Number of Deflactions!');
-          self.logger.error(JSON.stringify(err,null,4));
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting Number of Deflactions!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
         }
       });
 
@@ -1891,8 +1889,8 @@ class Fritz_Box {
         }, accessory.context.broadbandPolling); //60 minutes
       })
       .on('error', err => {
-        self.logger.error(accessory.displayName + ': An error occured by checking broadband');
-        self.logger.error(JSON.stringify(err,null,4));
+        self.logger.errorinfo(accessory.displayName + ': An error occured by checking broadband');
+        self.logger.errorinfo(JSON.stringify(err,null,4));
         service.getCharacteristic(Characteristic.DownloadSpeed).updateValue(accessory.context.lastDLSpeed);
         service.getCharacteristic(Characteristic.UploadSpeed).updateValue(accessory.context.lastULSpeed);
         service.getCharacteristic(Characteristic.Ping).updateValue(accessory.context.lastPing);
@@ -1952,20 +1950,22 @@ class Fritz_Box {
     if(!accessory.context.stopPolling){
       user.actions[actionName]([{name:actionVal, value:adress}],function(err, result) {
         if(!err){
+          self.timeoutError = 0;
           if(result.NewActive == '1'){
             accessory.context.lastMotionState = true;
             accessory.context.accType == 'motion' ? 
               service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
               service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-            if(self.info||self.presenceTimer)self.logger.info('Presence detected again for ' + accessory.displayName);
-            self.info = false;
-            self.presenceTimer = false;
+            if(self.info||self.presenceTimer){
+              self.logger.info('Presence detected again for ' + accessory.displayName);
+              self.info = false;
+              self.presenceTimer = false;
+            }
             if(!accessory.context.stopPolling){
               self.presenceTimeout = setTimeout(function(){
                 self.getMotionDetected(accessory, service);
               }, self.polling);
             }
-
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
@@ -1974,7 +1974,7 @@ class Fritz_Box {
                   port: allAccessories[i].context.options.port,
                   username: allAccessories[i].context.options.username,
                   password: allAccessories[i].context.options.password,
-                  timeout: allAccessories[i].context.options.timeout,
+                  timeout: self.platform.devOptions.timeout
                 });
               }
             }
@@ -1995,7 +1995,11 @@ class Fritz_Box {
                               callback(null, false);
                             }
                           } else {
-                            callback(err, null);
+                            if(err.tr064&&(err.tr064=='NoSuchEntryInArray'||err.tr064=='SpecifiedArrayIndexInvalid')){
+                              callback(null, false);
+                            } else {
+                              callback(err, null);
+                            }
                           }
                         });
                       })
@@ -2024,15 +2028,15 @@ class Fritz_Box {
                   if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
                     accessory.context.lastMotionState = true;
                     if(!self.info){
-                      self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
-                      self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
+                      self.logger.warninfo(accessory.displayName + ': No presence! Presence delay is active.');
+                      self.logger.warninfo(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
                       self.info = true;
                     }
                   } else {
                     accessory.context.lastMotionState = false;
                     if(self.info){
-                      self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
-                      self.logger.warn(accessory.displayName + ': Switching to no presence');
+                      self.logger.warninfo(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
+                      self.logger.warninfo(accessory.displayName + ': Switching to no presence');
                       self.info = false;
                       self.presenceTimer = false;
                     }
@@ -2043,36 +2047,23 @@ class Fritz_Box {
                     self.getMotionDetected(accessory, service);
                   }, self.polling);
                 }
+                self.timeoutErrorRep = 0;
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
               } else {
-                if(asyncerr.tr064){
-                  if(asyncerr.tr064=='NoSuchEntryInArray'||err.tr064code=='714'||err.tr064=='SpecifiedArrayIndexInvalid'||err.tr064code=='713'){
-                    !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
-                    if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
-                      accessory.context.lastMotionState = true;
-                      if(!self.info){
-                        self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
-                        self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
-                        self.info = true;
-                      }
-                    } else {
-                      accessory.context.lastMotionState = false;
-                      if(self.info){
-                        self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
-                        self.logger.warn(accessory.displayName + ': Switching to no presence');
-                        self.info = false;
-                        self.presenceTimer = false;
-                      }
-                    }
+                if(asyncerr.error == 'ETIMEDOUT'){
+                  if(self.timeoutErrorRep>5){
+                    self.timeoutErrorRep = 0;
+                    self.logger.errorinfo(accessory.displayName + ': Connection timed out!');
+                    self.logger.errorinfo(JSON.stringify(err,null,4));
                   } else {
-                    self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-                    self.logger.error(JSON.stringify(asyncerr,null,4));
+                    self.timeoutErrorRep += 1;
                   }
                 } else {
-                  self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-                  self.logger.error(JSON.stringify(asyncerr,null,4));
+                  self.timeoutErrorRep = 0;
+                  self.logger.errorinfo(accessory.displayName + ': An error occured by getting presence state from repeater, trying again...');
+                  self.logger.errorinfo(JSON.stringify(asyncerr,null,4));
                 }
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
@@ -2087,32 +2078,39 @@ class Fritz_Box {
             });
           }
         } else {
-          if(err.tr064){
-            if(err.tr064=='NoSuchEntryInArray'||err.tr064code=='714'||err.tr064=='SpecifiedArrayIndexInvalid'||err.tr064code=='713'){
-              !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
-              if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
-                accessory.context.lastMotionState = true;
-                if(!self.info){
-                  self.logger.warn(accessory.displayName + ': No presence! Presence delay is active.');
-                  self.logger.warn(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
-                  self.info = true;
-                }
-              } else {
-                accessory.context.lastMotionState = false;
-                if(self.info){
-                  self.logger.warn(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
-                  self.logger.warn(accessory.displayName + ': Switching to no presence');
-                  self.info = false;
-                  self.presenceTimer = false;
-                }
+          if(err.tr064&&(err.tr064=='NoSuchEntryInArray'||err.tr064=='SpecifiedArrayIndexInvalid')){
+            self.timeoutError = 0;
+            !self.presenceTimer ? self.presenceTimer = moment().unix() : self.presenceTimer; 
+            if(accessory.context.lastMotionState&&accessory.context.delay>0&&(moment().unix()-self.presenceTimer)<=(accessory.context.delay/1000)){
+              accessory.context.lastMotionState = true;
+              if(!self.info){
+                self.logger.warninfo(accessory.displayName + ': No presence! Presence delay is active.');
+                self.logger.warninfo(accessory.displayName + ': Wait ' + (accessory.context.delay/1000) + ' seconds before switching to no presence');
+                self.info = true;
               }
             } else {
-              self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-              self.logger.error(JSON.stringify(err,null,4));
+              accessory.context.lastMotionState = false;
+              if(self.info){
+                self.logger.warninfo(accessory.displayName + ': No presence after ' + (accessory.context.delay/1000) + ' seconds');
+                self.logger.warninfo(accessory.displayName + ': Switching to no presence');
+                self.info = false;
+                self.presenceTimer = false;
+              }
             }
           } else {
-            self.logger.error(accessory.displayName + ': An error occured by getting presence state, trying again...');
-            self.logger.error(JSON.stringify(err,null,4));
+            if(err.error == 'ETIMEDOUT'){
+              if(self.timeoutError>5){
+                self.timeoutError = 0;
+                self.logger.errorinfo(accessory.displayName + ': Connection timed out!');
+                self.logger.errorinfo(JSON.stringify(err,null,4));
+              } else {
+                self.timeoutError += 1;
+              }
+            } else {
+              self.timeoutError = 0;
+              self.logger.errorinfo(accessory.displayName + ': An error occured by getting presence state from main device, trying again...');
+              self.logger.errorinfo(JSON.stringify(err,null,4));
+            }
           }
           accessory.context.accType == 'motion' ? 
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
