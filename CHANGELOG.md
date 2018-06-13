@@ -6,6 +6,7 @@
 - Added more flags to LogUtil
 - Increased min timeout limit from 5s to 10s
 - Better error handling
+- Reboot function to repeater main switch > if switch off > reboot
 
 ## v2.4.1 - 2018-06-12
 - Updated dependencies
