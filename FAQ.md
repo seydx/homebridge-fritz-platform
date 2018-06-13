@@ -2,6 +2,18 @@
 
 Below, i have listed some frequently asked questions and errors that may be appear during the installation process.
 
+## Error 713/714 (presence)
+
+That is not an issue by the plugin, it means only it can not find the, in config defined ip/mac adress, in the list of your main device/repeater
+
+**Fix:** Connect to your repeater/main device so it can save your ip/mac adress in the list of known devices
+
+## ETIMEDOUT
+
+`"error": "ETIMEDOUT"`
+
+**Fix:** Increase your polling and timeout
+
 ## Deflection error
 
 `[WARN] Cant check declection state, no deflections setted up in fritz.box settings!`
