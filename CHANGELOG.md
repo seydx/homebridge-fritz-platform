@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.4.4 - 2018-06-14
+- Fixed callmonitor telegram notification
+- Fixed Repeater state
+
 ## v2.4.3 - 2018-06-13
 - Bugfixes
 - Clean up code
