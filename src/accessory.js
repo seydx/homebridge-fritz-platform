@@ -752,11 +752,13 @@ class Fritz_Box {
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
             } else {
-              let host = self.device.services['urn:dslforum-org:service:Hosts:1'];
+              //let host = self.device.services['urn:dslforum-org:service:Hosts:1'];
+              let host = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
               if(!accessory.context.stopPolling){
-                host.actions['X_AVM-DE_GetSpecificHostEntryByIP']([{name:'NewIPAddress', value:accessory.context.host}],function(err, result){
+                //host.actions['X_AVM-DE_GetSpecificHostEntryByIP']([{name:'NewIPAddress', value:accessory.context.host}],function(err, result){
+                host.actions.GetInfo(function(err, result){
                   if(!err){
-                    if(result.NewActive == '1'){
+                    if(result.NewStatus == 'Up' && result.NewEnable == '1'){
                       accessory.context.lastSwitchState = true;
                       callback(null, true);
                     } else {
@@ -1175,7 +1177,7 @@ class Fritz_Box {
               (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
               text = self.platform.callmonitor.messages.incoming;
               text = text.replace('@', parseInfo).replace('%', message.called);
-              self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
+              self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
             }
           }
 
@@ -1252,7 +1254,7 @@ class Fritz_Box {
                 (self.callerName&&self.callerNr) ? parseInfo = self.callerName + ' ( ' + self.callerNr + ' )' : parseInfo = self.callerNr + ' ( No name )';
                 text = self.platform.callmonitor.messages.disconnected;
                 text = text.replace('@', parseInfo);
-                self.sendTelegram(self.platform.alarm.token,self.platform.alarm.chatID,text); 
+                self.sendTelegram(self.platform.callmonitor.token,self.platform.callmonitor.chatID,text); 
               }
             }
           }
