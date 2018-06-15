@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.UV_THREADPOOL_SIZE = 128
+process.env.UV_THREADPOOL_SIZE = 128;
 const tr = require('../lib/TR064.js');
 const moment = require('moment');
 const net= require('net');
@@ -68,7 +68,7 @@ function FritzPlatform (log, config, api) {
   
   this.randomInt = function(max) {
     return Math.floor(Math.random() * Math.floor(max));
-  }
+  };
 
   if (api) {
     if (api.version < 2.2) {

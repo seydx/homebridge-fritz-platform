@@ -1300,7 +1300,7 @@ class Fritz_Box {
   storeEntries(accessory, service){
     const self = this;
     let book = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID,id:self.randomInt(99999)},{name:'NewPhonebookEntryID',value:self.entryID,id:self.randomInt(99999)}],function(err, res) {
+    book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID.toString(),id:self.randomInt(99999)},{name:'NewPhonebookEntryID',value:self.entryID.toString(),id:self.randomInt(99999)}],function(err, res) {
       if(!err&&res){
         parseString(res.NewPhonebookEntryData,{explicitArray: false,}, function (error, result) {
           if(!error){
@@ -1354,7 +1354,7 @@ class Fritz_Box {
     const self = this;
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
     let status;
-    state ? status = 1 : status = 0;
+    state ? status = '1' : status = '0';
     wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI 2.4 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 2.4 Ghz');
@@ -1374,7 +1374,7 @@ class Fritz_Box {
     const self = this;
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
     let status;
-    state ? status = 1 : status = 0;
+    state ? status = '1' : status = '0';
     wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI 5 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 5 Ghz');
@@ -1399,7 +1399,7 @@ class Fritz_Box {
       wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
     }
     let status;
-    state ? status = 1 : status = 0;
+    state ? status = '1' : status = '0';
     wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI Guest') : self.logger.info(accessory.displayName + ': Turning off WIFI Guest');
@@ -1440,8 +1440,8 @@ class Fritz_Box {
     const self = this;
     let aw = self.device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1'];
     let status;
-    state ? status = 1 : status = 0;
-    aw.actions.SetEnable([{name:'NewIndex', value:'0',id:self.randomInt(99999)},{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
+    state ? status = '1' : status = '0';
+    aw.actions.SetEnable([{name:'NewIndex', value:'0'},{name:'NewEnable', value:status, id:self.randomInt(99999)}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turn on Answering Machine') : self.logger.info(accessory.displayName + ': Turn off Answering Machine');
         accessory.context.lastAWState = state;
@@ -1571,7 +1571,7 @@ class Fritz_Box {
     deflection.actions.GetNumberOfDeflections([{id:self.randomInt(99999)}],function(err, result) {
       if(!err){
         if(result.NewNumberOfDeflections != 0){
-          state ? status = 1 : status = 0;
+          state ? status = '1' : status = '0';
           deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0',id:self.randomInt(99999)}, {name:'NewEnable',value:status,id:self.randomInt(99999)}],function(err) {
             if(!err){
               state ? self.logger.info(accessory.displayName + ': Turning on Deflection') : self.logger.info(accessory.displayName + ': Turning off Deflection');
@@ -1979,7 +1979,6 @@ class Fritz_Box {
                             if(err.tr064&&(err.tr064=='NoSuchEntryInArray'||err.tr064=='SpecifiedArrayIndexInvalid')){
                               callback(null, false);
                             } else {
-	                          console.log(err)
                               callback(err, null);
                             }
                           }
