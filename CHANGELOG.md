@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.5.1 - 2018-06-15
+- Bugfixes
+- Code cleanup
+
 ## v2.5.0 - 2018-06-15
 - Bugfixes
 - Integrated tr064 api
