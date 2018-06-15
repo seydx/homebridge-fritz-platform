@@ -1,6 +1,7 @@
 'use strict';
 
-const tr = require('@seydx/tr064');
+process.env.UV_THREADPOOL_SIZE = 128
+const tr = require('../lib/TR064.js');
 const moment = require('moment');
 const net= require('net');
 const Device = require('./accessory.js');
@@ -55,7 +56,7 @@ function FritzPlatform (log, config, api) {
     timeout: this.config.timeout < 10 ? 10000 : this.config.timeout
   };
 
-  this.tr064 = new tr.TR064(this.devOptions);
+  this.tr064 = new tr.TR064(this.devOptions, this.logger, this.api);
 
   this.types = {
     device: 1,
@@ -64,6 +65,10 @@ function FritzPlatform (log, config, api) {
     repeater: 4,
     callmonitor: 5
   };
+  
+  this.randomInt = function(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
 
   if (api) {
     if (api.version < 2.2) {
@@ -315,9 +320,9 @@ FritzPlatform.prototype = {
                 port: this.repeater[i].port,
                 username: this.repeater[i].username,
                 password: this.repeater[i].password,
-                wifi2: this.repeater[i].wifi['2.4ghz']||false,
-                wifi5: this.repeater[i].wifi['5ghz']||false,
-                wifiGuest: this.repeater[i].wifi.guest||false,
+                wifi2: this.repeater[i].wifi ? this.repeater[i].wifi['2.4ghz'] : false,
+                wifi5: this.repeater[i].wifi ? this.repeater[i].wifi['5ghz'] : false,
+                wifiGuest: this.repeater[i].wifi ? this.repeater[i].wifi.guest : false,
                 led: this.repeater[i].led||false,
                 type: this.types.repeater,
                 model: 'Repeater',
@@ -423,9 +428,9 @@ FritzPlatform.prototype = {
             accessory.context.port = self.repeater[i].port||49000;
             accessory.context.username = self.repeater[i].username;
             accessory.context.password = self.repeater[i].password;
-            accessory.context.wifi2 = self.repeater[i].wifi['2.4ghz']||false;
-            accessory.context.wifi5 = self.repeater[i].wifi['5ghz']||false;
-            accessory.context.wifiGuest = self.repeater[i].wifi.guest||false;
+            accessory.context.wifi2 = self.repeater[i].wifi ? self.repeater[i].wifi['2.4ghz'] : false;
+            accessory.context.wifi5 = self.repeater[i].wifi ? self.repeater[i].wifi['5ghz'] : false;
+            accessory.context.wifiGuest = self.repeater[i].wifi ? self.repeater[i].wifi.guest : false;
             accessory.context.led = self.repeater[i].led||false;
             accessory.context.options = {
               host: accessory.context.host,
