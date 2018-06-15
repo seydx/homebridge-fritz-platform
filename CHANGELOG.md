@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.5.0 - 2018-06-15
+- Bugfixes
+- Integrated tr064 api
+- Speed up
+- Code cleanup
+
 ## v2.4.4 - 2018-06-14
 - Fixed callmonitor telegram notification
 - Fixed Repeater state
