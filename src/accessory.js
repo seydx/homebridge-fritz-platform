@@ -205,8 +205,8 @@ class Fritz_Box {
 
   logTR064 (accessory) {
     const self = this;
-    this.tr064 = new tr.TR064(accessory.context.options, self.logger, self.api); 
-    this.tr064.initDevice('TR064')
+    this.tr064 = new tr.TR064(accessory.context.options, self.logger); 
+    this.tr064.initDevice()
       .then(result => {
         self.logger.initinfo('Repeater initialized: ' + result.meta.friendlyName);
         result.startEncryptedCommunication()
@@ -545,7 +545,7 @@ class Fritz_Box {
               dsl = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
               dsl = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
             if(!accessory.context.stopPolling){
-              dsl.actions.GetStatusInfo([{id:self.randomInt(99999)}],function(err, result) {
+              dsl.actions.GetStatusInfo(function(err, result) {
                 if(!err){
                   if(result.NewConnectionStatus == 'Connected'){
                     accessory.context.lastSwitchState = true;
@@ -574,7 +574,7 @@ class Fritz_Box {
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
             } else {
-              reconnect.actions.ForceTermination([{id:self.randomInt(99999)}],function() {
+              reconnect.actions.ForceTermination(function() {
                 self.logger.warninfo(accessory.displayName + ': Reconnecting internet...');
                 accessory.context.lastSwitchState = false;
                 setTimeout(function(){self.getIP(accessory,service);},15000);
@@ -654,7 +654,7 @@ class Fritz_Box {
           .on('set', function(state, callback) {
             if(state){
               let wol = self.device.services['urn:dslforum-org:service:Hosts:1'];
-              wol.actions['X_AVM-DE_WakeOnLANByMACAddress']([{name:'NewMACAddress', value:accessory.context.mac,id:self.randomInt(99999)}],function(err) {
+              wol.actions['X_AVM-DE_WakeOnLANByMACAddress']([{name:'NewMACAddress', value:accessory.context.mac}],function(err) {
                 if(!err){
                   self.logger.info('Turning on ' + accessory.displayName);
                 } else {
@@ -757,7 +757,7 @@ class Fritz_Box {
               let host = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
               if(!accessory.context.stopPolling){
                 //host.actions['X_AVM-DE_GetSpecificHostEntryByIP']([{name:'NewIPAddress', value:accessory.context.host}],function(err, result){
-                host.actions.GetInfo([{id:self.randomInt(99999)}],function(err, result){
+                host.actions.GetInfo(function(err, result){
                   if(!err){
                     if(result.NewStatus == 'Up' && result.NewEnable == '1'){
                       accessory.context.lastSwitchState = true;
@@ -783,7 +783,7 @@ class Fritz_Box {
               callback(null, true);
             } else {
               let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
-              reboot.actions.Reboot([{id:self.randomInt(99999)}],function() {
+              reboot.actions.Reboot(function() {
                 self.logger.info(accessory.displayName + ': Rebooting...'); 
               });
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(true);},5*60*1000);
@@ -808,7 +808,7 @@ class Fritz_Box {
     self.platform.boxType == 'dsl' ? 
       ppp = self.device.services['urn:dslforum-org:service:WANPPPConnection:1'] :
       ppp = self.device.services['urn:dslforum-org:service:WANIPConnection:1'];
-    ppp.actions.GetExternalIPAddress([{id:self.randomInt(99999)}],function(err, res) {
+    ppp.actions.GetExternalIPAddress(function(err, res) {
       if(!err){
         self.logger.info(accessory.displayName + ': Reconnect successfull. New external ip adress is: ' + res.NewExternalIPAddress);
       }else{
@@ -826,7 +826,7 @@ class Fritz_Box {
   fetchSID(accessory, callback){
     const self = this;
     let getSID = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
-    getSID.actions['X_AVM-DE_CreateUrlSID']([{id:self.randomInt(99999)}],function(err, result) {
+    getSID.actions['X_AVM-DE_CreateUrlSID'](function(err, result) {
       if(!err){
         let sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
         callback(null, sid);
@@ -1280,7 +1280,7 @@ class Fritz_Box {
     !self.telBook ? self.telBook = [] : self.telBook;
     if(state){
       self.logger.info('Refreshing phone book...');
-      book.actions.GetPhonebookList([{id:self.randomInt(99999)}],function(err, res) {
+      book.actions.GetPhonebookList(function(err, res) {
         if(!err){
           self.bookIDs = res.NewPhonebookList.split(',');
           self.logger.info('Found ' + self.bookIDs.length + ' books! Fetching entries...');
@@ -1300,7 +1300,7 @@ class Fritz_Box {
   storeEntries(accessory, service){
     const self = this;
     let book = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID.toString(),id:self.randomInt(99999)},{name:'NewPhonebookEntryID',value:self.entryID.toString(),id:self.randomInt(99999)}],function(err, res) {
+    book.actions.GetPhonebookEntry([{name:'NewPhonebookID',value:self.currentID.toString()},{name:'NewPhonebookEntryID',value:self.entryID.toString()}],function(err, res) {
       if(!err&&res){
         parseString(res.NewPhonebookEntryData,{explicitArray: false,}, function (error, result) {
           if(!error){
@@ -1355,7 +1355,7 @@ class Fritz_Box {
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
     let status;
     state ? status = '1' : status = '0';
-    wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
+    wlan.actions.SetEnable([{name:'NewEnable', value:status}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI 2.4 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 2.4 Ghz');
         accessory.context.lastWifiTwoState = state;
@@ -1375,7 +1375,7 @@ class Fritz_Box {
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
     let status;
     state ? status = '1' : status = '0';
-    wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
+    wlan.actions.SetEnable([{name:'NewEnable', value:status}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI 5 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 5 Ghz');
         accessory.context.lastWifiFiveState = state;
@@ -1400,7 +1400,7 @@ class Fritz_Box {
     }
     let status;
     state ? status = '1' : status = '0';
-    wlan.actions.SetEnable([{name:'NewEnable', value:status,id:self.randomInt(99999)}],function(err) {
+    wlan.actions.SetEnable([{name:'NewEnable', value:status}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI Guest') : self.logger.info(accessory.displayName + ': Turning off WIFI Guest');
         accessory.context.lastWifiGuestState = state;
@@ -1421,7 +1421,7 @@ class Fritz_Box {
     let status;
     state ? status = 'pbc' : status = 'stop';
     self.wpsTimer = moment().unix();
-    wlan.actions['X_AVM-DE_SetWPSConfig']([{name:'NewX_AVM-DE_WPSMode', value:status,id:self.randomInt(99999)},{name:'NewX_AVM-DE_WPSClientPIN',value:'',id:self.randomInt(99999)}],function(err) {
+    wlan.actions['X_AVM-DE_SetWPSConfig']([{name:'NewX_AVM-DE_WPSMode', value:status},{name:'NewX_AVM-DE_WPSClientPIN',value:''}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turning on WIFI WPS for 2 minutes!') : self.logger.info(accessory.displayName + ': Turning off WIFI WPS');
         accessory.context.lastWifiWPSState = state;
@@ -1469,7 +1469,7 @@ class Fritz_Box {
             if(stdout == 1){
               self.logger.info(accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
               let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
-              reboot.actions.Reboot([{id:self.randomInt(99999)}],function() {
+              reboot.actions.Reboot(function() {
                 accessory.context.reboot = true;
                 if(self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&self.platform.options.reboot.messages){
                   if(self.platform.options.reboot.messages.on&&self.platform.options.reboot.messages.on!=''){
@@ -1515,7 +1515,7 @@ class Fritz_Box {
         let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
         self.logger.info('Polling werde stopped!');
         accessory.context.stopPolling = true;
-        reboot.actions.Reboot([{id:self.randomInt(99999)}],function() {
+        reboot.actions.Reboot(function() {
           accessory.context.reboot = true;
           if(self.platform.options.reboot.telegram&&self.platform.options.reboot.chatID&&self.platform.options.reboot.token&&self.platform.options.reboot.messages){
             if(self.platform.options.reboot.messages.on&&self.platform.options.reboot.messages.on!=''){
@@ -1543,7 +1543,7 @@ class Fritz_Box {
   rebootRepeater(accessory){
     const self = this;
     let tr064Repeater = new tr.TR064(accessory.context.options); 
-    tr064Repeater.initDevice('TR064')
+    tr064Repeater.initDevice()
       .then(result => {
         result.startEncryptedCommunication()
           .then(device => {
@@ -1568,11 +1568,11 @@ class Fritz_Box {
     const self = this;
     let deflection = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
     let status;
-    deflection.actions.GetNumberOfDeflections([{id:self.randomInt(99999)}],function(err, result) {
+    deflection.actions.GetNumberOfDeflections(function(err, result) {
       if(!err){
         if(result.NewNumberOfDeflections != 0){
           state ? status = '1' : status = '0';
-          deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0',id:self.randomInt(99999)}, {name:'NewEnable',value:status,id:self.randomInt(99999)}],function(err) {
+          deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0'}, {name:'NewEnable',value:status}],function(err) {
             if(!err){
               state ? self.logger.info(accessory.displayName + ': Turning on Deflection') : self.logger.info(accessory.displayName + ': Turning off Deflection');
               accessory.context.lastDeflectionState = state;
@@ -1606,7 +1606,7 @@ class Fritz_Box {
     const self = this;
     let wakeup = self.device.services['urn:dslforum-org:service:X_VoIP:1'];
     if(state){
-      wakeup.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.internNr,id:self.randomInt(99999)}],function(err, result) {
+      wakeup.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.internNr}],function(err, result) {
         if(!err||result){
           self.logger.info(accessory.displayName + ': Calling ' + accessory.context.internNr + ' for ' + accessory.context.wakeupDuration/1000 + ' seconds');
           self.sleep(accessory.context.wakeupDuration).then(() => {
@@ -1621,7 +1621,7 @@ class Fritz_Box {
         }
       });
     } else {
-      wakeup.actions['X_AVM-DE_DialHangup']([{id:self.randomInt(99999)}],function(err, result) {
+      wakeup.actions['X_AVM-DE_DialHangup'](function(err, result) {
         if(!err||result){
           self.logger.info(accessory.displayName + ': Stop calling. Turning off \'Wake Up\'');
           callback(null, false);
@@ -1639,7 +1639,7 @@ class Fritz_Box {
     const self = this;
     let alarm = self.device.services['urn:dslforum-org:service:X_VoIP:1'];
     if(state){
-      alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.alarmNumber,id:self.randomInt(99999)}],function(err, result) {
+      alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.alarmNumber}],function(err, result) {
         if(!err||result){
           let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds';
           self.logger.info(accessory.displayName + ': ' + message);
@@ -1662,7 +1662,7 @@ class Fritz_Box {
         }
       });
     } else {
-      alarm.actions['X_AVM-DE_DialHangup']([{id:self.randomInt(99999)}],function(err, result) {
+      alarm.actions['X_AVM-DE_DialHangup'](function(err, result) {
         if(!err||result){
           let message = 'Stop calling. Turning off \'Alarm\'';
           self.logger.info(accessory.displayName + ': ' + message);
@@ -1691,7 +1691,7 @@ class Fritz_Box {
     const self = this;
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
     if(!accessory.context.stopPolling){
-      wlan.actions.GetInfo([{id:self.randomInt(99999)}],function(err, result) {
+      wlan.actions.GetInfo(function(err, result) {
         if(!err){
           if(result.NewEnable == '1'){
             accessory.context.lastWifiTwoState = true;
@@ -1713,7 +1713,7 @@ class Fritz_Box {
     const self = this;
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
     if(!accessory.context.stopPolling){
-      wlan.actions.GetInfo([{id:self.randomInt(99999)}],function(err, result) {
+      wlan.actions.GetInfo(function(err, result) {
         if(!err){
           if(result.NewEnable == '1'){
             accessory.context.lastWifiFiveState = true;
@@ -1740,7 +1740,7 @@ class Fritz_Box {
       wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
     }
     if(!accessory.context.stopPolling){
-      wlan.actions.GetInfo([{id:self.randomInt(99999)}],function(err, result) {
+      wlan.actions.GetInfo(function(err, result) {
         if(!err){
           if(result.NewEnable == '1'){
             accessory.context.lastWifiGuestState = true;
@@ -1763,7 +1763,7 @@ class Fritz_Box {
     let wlan = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
     if(!accessory.context.stopPolling){
       self.sleep(1000).then(() => {
-        wlan.actions['X_AVM-DE_GetWPSInfo']([{id:self.randomInt(99999)}],function(err, result) {
+        wlan.actions['X_AVM-DE_GetWPSInfo'](function(err, result) {
           if(!err){
             if(result['NewX_AVM-DE_WPSStatus'] == 'active'){
               accessory.context.lastWifiWPSState = true;
@@ -1790,7 +1790,7 @@ class Fritz_Box {
     const self = this;
     let aw = self.device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1']; 
     if(!accessory.context.stopPolling){
-      aw.actions.GetInfo([{name:'NewIndex',value:'0',id:self.randomInt(99999)}],function(err, result) {
+      aw.actions.GetInfo([{name:'NewIndex',value:'0'}],function(err, result) {
         if(!err){
           if(result.NewEnable == '1'){
             accessory.context.lastAWState = true;
@@ -1812,11 +1812,11 @@ class Fritz_Box {
     const self = this;
     let deflection = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
     if(!accessory.context.stopPolling){
-      deflection.actions.GetNumberOfDeflections([{id:self.randomInt(99999)}],function(err, result) {
+      deflection.actions.GetNumberOfDeflections(function(err, result) {
         if(!err){
           if(result.NewNumberOfDeflections != 0){
             let deflection = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-            deflection.actions.GetDeflection([{name:'NewDeflectionId',value:'0',id:self.randomInt(99999)}],function(err, result) {
+            deflection.actions.GetDeflection([{name:'NewDeflectionId',value:'0'}],function(err, result) {
               if(!err){
                 if(result.NewEnable == '1'){
                   accessory.context.lastDeflectiontate = true;
@@ -1929,7 +1929,7 @@ class Fritz_Box {
       adress = accessory.context.ip;
     }
     if(!accessory.context.stopPolling){
-      user.actions[actionName]([{name:actionVal, value:adress,id:self.randomInt(99999)}],function(err, result) {
+      user.actions[actionName]([{name:actionVal, value:adress}],function(err, result) {
         if(!err){
           self.timeoutError = 0;
           if(result.NewActive == '1'){
@@ -1962,13 +1962,13 @@ class Fritz_Box {
             let checkPresenceFunction = function(options, callback){
               if(!accessory.context.stopPolling){
                 let tr064Repeater = new tr.TR064(options); 
-                tr064Repeater.initDevice('TR064')
+                tr064Repeater.initDevice()
                   .then(result => {
                     result.startEncryptedCommunication()
                       .then(device => {
                         device.login(options.username, options.password);
                         let userRepeater = device.services['urn:dslforum-org:service:Hosts:1'];
-                        userRepeater.actions[actionName]([{name:actionVal, value:adress,id:self.randomInt(99999)}],function(err, res) {
+                        userRepeater.actions[actionName]([{name:actionVal, value:adress}],function(err, res) {
                           if(!err){
                             if(res.NewActive == '1'){
                               callback(null, true);

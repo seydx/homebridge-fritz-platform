@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.UV_THREADPOOL_SIZE = 128;
+process.env.UV_THREADPOOL_SIZE = 128
 const tr = require('../lib/TR064.js');
 const moment = require('moment');
 const net= require('net');
@@ -53,7 +53,7 @@ function FritzPlatform (log, config, api) {
     port: this.config.port||49000,
     username: this.config.username,
     password: this.config.password,
-    timeout: this.config.timeout < 10 ? 10000 : this.config.timeout
+    timeout: this.config.timeout < 10 ? 10000 : this.config.timeout*1000
   };
 
   this.tr064 = new tr.TR064(this.devOptions, this.logger, this.api);
@@ -64,10 +64,6 @@ function FritzPlatform (log, config, api) {
     wol: 3,
     repeater: 4,
     callmonitor: 5
-  };
-  
-  this.randomInt = function(max) {
-    return Math.floor(Math.random() * Math.floor(max));
   };
 
   if (api) {
@@ -89,7 +85,7 @@ FritzPlatform.prototype = {
 
   didFinishLaunching: function(){
     const self = this;
-    this.tr064.initDevice('TR064')
+    this.tr064.initDevice()
       .then(result => {
         self.logger.initinfo('Device initialized: ' + result.meta.friendlyName); 
         result.startEncryptedCommunication()
