@@ -121,5 +121,5 @@ Extra chracteristics for other options
 
 **Elgato EVE Overview**
 
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/device_characteristics1.PNG" align="left" alt="Overview" width="45%">
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/device_characteristics2.PNG" align="right" alt="Overview" width="45%">
+<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/device_characteristics1.PNG" alt="Overview">
+<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/images/device_characteristics2.PNG" alt="Overview">
