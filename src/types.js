@@ -77,6 +77,20 @@ module.exports = {
     Characteristic.WifiWPS.UUID = '991dd58c-7d8c-46b1-acd1-411d8f6902ac';
     
     /// /////////////////////////////////////////////////////////////////////////
+    // RefreshCanal Characteristic
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.RefreshCanal = function() {
+      Characteristic.call(this, 'WIFI Refresh Canal', '6b4dbaa5-b30c-47c8-96f1-7b269cc1e512');
+      this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.RefreshCanal, Characteristic);
+    Characteristic.RefreshCanal.UUID = '6b4dbaa5-b30c-47c8-96f1-7b269cc1e512';
+    
+    /// /////////////////////////////////////////////////////////////////////////
     // AnsweringMachine Characteristic
     /// /////////////////////////////////////////////////////////////////////////
     Characteristic.AnsweringMachine = function() {

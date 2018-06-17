@@ -332,6 +332,21 @@ class Fritz_Box {
             service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiWPS));
           }
         }
+        
+        if(self.platform.wifi.refreshCanal){
+          if (!service.testCharacteristic(Characteristic.RefreshCanal)){
+            self.logger.initinfo('Adding Refresh Canal Characteristic to ' + accessory.displayName);
+            service.addCharacteristic(Characteristic.RefreshCanal);
+          }
+          service.getCharacteristic(Characteristic.RefreshCanal)
+            .updateValue(false)
+            .on('set', self.setRefreshCanal.bind(this, accessory, service));
+        } else {
+          if(service.testCharacteristic(Characteristic.RefreshCanal)){
+            self.logger.initinfo('Removing Refresh Canal from ' + accessory.displayName);
+            service.removeCharacteristic(service.getCharacteristic(Characteristic.RefreshCanal));
+          }
+        }
 
         if(Object.keys(self.platform.reboot).length&&!self.platform.reboot.disable){
           if (!service.testCharacteristic(Characteristic.Reboot)){
@@ -753,18 +768,36 @@ class Fritz_Box {
               setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
               callback(null, false);
             } else {
-              //let host = self.device.services['urn:dslforum-org:service:Hosts:1'];
               let host = self.device.services['urn:dslforum-org:service:WLANConfiguration:1'];
               if(!accessory.context.stopPolling){
-                //host.actions['X_AVM-DE_GetSpecificHostEntryByIP']([{name:'NewIPAddress', value:accessory.context.host}],function(err, result){
                 host.actions.GetInfo(function(err, result){
                   if(!err){
                     if(result.NewStatus == 'Up' && result.NewEnable == '1'){
                       accessory.context.lastSwitchState = true;
                       callback(null, true);
                     } else {
-                      accessory.context.lastSwitchState = false;
-                      callback(null, false);
+                      let host2;
+                      if(self.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
+                        host2 = self.device.services['urn:dslforum-org:service:WLANConfiguration:2'];
+                        host2.actions.GetInfo(function(errNew, resultNew){
+                          if(!errNew){
+                            if(resultNew.NewStatus == 'Up' && resultNew.NewEnable == '1'){
+                              accessory.context.lastSwitchState = true;
+                              callback(null, true);
+                            } else {
+                              accessory.context.lastSwitchState = false;
+                              callback(null, false);
+                            }
+                          } else {
+                            self.logger.errorinfo(accessory.displayName + ': An error occured by getting device state!');
+                            self.logger.errorinfo(JSON.stringify(errNew,null,4));
+                            callback(null, accessory.context.lastSwitchState);
+                          }
+                        });
+                      } else {
+                        accessory.context.lastSwitchState = false;
+                        callback(null, false);
+                      }
                     }
                   } else {
                     self.logger.errorinfo(accessory.displayName + ': An error occured by getting device state!');
@@ -875,7 +908,7 @@ class Fritz_Box {
       }
     });
   }
-
+  
   setDeviceLock(accessory, service, state, callback){
     const self = this;
     let formData;
@@ -915,30 +948,64 @@ class Fritz_Box {
         // Set up the request
         let post_req = http.request(post_options, function(res) {
           res.setEncoding('utf8');
-          res.on('data', function (chunk) {
-            self.parseOutput(accessory, service, chunk,'keylock', function(err, result){
-              if(!err){
-                callback(null, result);
-              } else {
-                self.logger.errorinfo(accessory.displayName + ':An error occured by setting Device Lock state!');
-                self.logger.errorinfo(JSON.stringify(err,null,4));
-                setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-                callback(null, accessory.context.lastDeviceLock);
-              }
-            });
-          });
+          callback(null, state);
         });
         // post the data
         post_req.write(formData);
         post_req.end();
-
       } else {
-        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device Lock\'!');
         self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
         callback(null, accessory.context.lastDeviceLock);
       }
     });
+  }
+  
+  setRefreshCanal(accessory, service, state, callback){
+    const self = this;
+    if(state){
+      let formData;
+      self.fetchSID(accessory, function(err, result){
+        if(!err){
+          let sid = result;
+          self.logger.info(accessory.displayName + ': Turning on Refresh Canal');
+          formData = querystring.stringify({
+            xhr: '1',
+            channelSelectMode: 'auto',
+            airslot: '1',
+            refresh: '',
+            sid: sid,
+            page: 'chan'
+          });
+          let post_options = {
+            host: accessory.context.options.host,
+            port: '80',
+            path: '/data.lua?sid='+sid,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Length': Buffer.byteLength(formData)
+            }
+          };
+          // Set up the request
+          let post_req = http.request(post_options, function(res) {
+            res.setEncoding('utf8');
+            self.logger.info('WIFI canal refreshed!');
+          });
+          // post the data
+          post_req.write(formData);
+          post_req.end();
+        } else {
+          self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Refresh Canal\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
+        }
+      });
+      setTimeout(function(){service.getCharacteristic(Characteristic.RefreshCanal).updateValue(false);}, 500);
+      callback(null, false);
+    } else {
+      callback(null, false);
+    }
   }
 
   checkDeviceLock(accessory, service, callback){
@@ -1018,7 +1085,6 @@ class Fritz_Box {
         // post the data
         post_req.write(formData);
         post_req.end();
-
       } else {
         self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
         self.logger.errorinfo(JSON.stringify(err,null,4));
