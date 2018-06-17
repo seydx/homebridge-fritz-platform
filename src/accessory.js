@@ -1441,7 +1441,7 @@ class Fritz_Box {
     let aw = self.device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1'];
     let status;
     state ? status = '1' : status = '0';
-    aw.actions.SetEnable([{name:'NewIndex', value:'0'},{name:'NewEnable', value:status, id:self.randomInt(99999)}],function(err) {
+    aw.actions.SetEnable([{name:'NewIndex', value:'0'},{name:'NewEnable', value:status}],function(err) {
       if(!err){
         state ? self.logger.info(accessory.displayName + ': Turn on Answering Machine') : self.logger.info(accessory.displayName + ': Turn off Answering Machine');
         accessory.context.lastAWState = state;
@@ -1570,7 +1570,7 @@ class Fritz_Box {
     let status;
     deflection.actions.GetNumberOfDeflections(function(err, result) {
       if(!err){
-        if(result.NewNumberOfDeflections != 0){
+        if(result.NewNumberOfDeflections != '0'){
           state ? status = '1' : status = '0';
           deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0'}, {name:'NewEnable',value:status}],function(err) {
             if(!err){
@@ -1641,7 +1641,7 @@ class Fritz_Box {
     if(state){
       alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.alarmNumber}],function(err, result) {
         if(!err||result){
-          let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + accessory.context.alarmDuration/1000 + ' seconds';
+          let message = 'Alarm activated! Calling ' + accessory.context.alarmNumber + ' for ' + (accessory.context.alarmDuration/1000) + ' seconds';
           self.logger.info(accessory.displayName + ': ' + message);
           if(self.platform.alarm.telegram&&self.platform.alarm.chatID&&self.platform.alarm.token&&self.platform.alarm.messages){
             if(self.platform.alarm.messages.activated && self.platform.alarm.messages.activated!=''){
@@ -1651,7 +1651,7 @@ class Fritz_Box {
             }
           }
           self.sleep(accessory.context.alarmDuration).then(() => {
-            service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
+            if(service.getCharacteristic(Characteristic.DialAlarm).value)service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
           });
           callback(null, true);
         } else {

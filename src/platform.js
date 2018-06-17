@@ -1,6 +1,8 @@
 'use strict';
 
-process.env.UV_THREADPOOL_SIZE = 128
+process.env.UV_THREADPOOL_SIZE = 128;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const tr = require('../lib/TR064.js');
 const moment = require('moment');
 const net= require('net');
@@ -56,7 +58,7 @@ function FritzPlatform (log, config, api) {
     timeout: this.config.timeout < 10 ? 10000 : this.config.timeout*1000
   };
 
-  this.tr064 = new tr.TR064(this.devOptions, this.logger, this.api);
+  this.tr064 = new tr.TR064(this.devOptions, this.logger);
 
   this.types = {
     device: 1,
@@ -129,7 +131,7 @@ FritzPlatform.prototype = {
     self.client.on('error', error => {
       self.logger.errorinfo('An error occured by connecting to callmonitor!');
       if(error.errno == 'ECONNREFUSED'||error.code == 'ECONNREFUSED'){
-        self.logger.warninfo('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - Dial #96*5 to enable port 1012');
+        self.logger.warninfo('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - Dial #96*5* to enable port 1012');
       } else if (error.errno == 'EHOSTUNREACH'||error.code == 'EHOSTUNREACH') {
         self.logger.warninfo('Can not connect to ' + self.callmonitor.ip + ':' + self.callmonitor.port + ' - IP address seems to be wrong!');
       } else if(error.errno == 'ENETUNREACH') {
