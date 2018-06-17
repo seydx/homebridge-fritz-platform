@@ -31,6 +31,26 @@ Required characteristics
 | password | Password for logging in to the above device |
 | polling | Polling in seconds (only for presence) |
 
+# WIFI (extra characteristics)
+
+```
+"wifi": {
+  "2.4ghz": true,
+  "5ghz": true,
+  "guest": true,
+  "wps": true,
+  "refreshCanal":true
+}
+```
+
+| Attributes | Usage |
+|------------|-------|
+| 2.4ghz | Switch to turn on/off 2.4GHZ WIFI |
+| 5ghz | Switch to turn on/off 5GHZ WIFI |
+| guest | Switch to turn on/off Guest WIFI |
+| wps | Switch to turn on/off WPS |
+| refreshCanal | Switch to refresh WIFI canal |
+
 # Options (extra characteristics)
 
 ```
