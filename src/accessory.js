@@ -1942,11 +1942,11 @@ class Fritz_Box {
               self.info = false;
               self.presenceTimer = false;
             }
-            if(!accessory.context.stopPolling){
+            /*if(!accessory.context.stopPolling){
               self.presenceTimeout = setTimeout(function(){
                 self.getMotionDetected(accessory, service);
               }, self.polling);
-            }
+            }*/
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
@@ -2022,11 +2022,11 @@ class Fritz_Box {
                     }
                   }
                 }
-                if(!accessory.context.stopPolling){
+                /*if(!accessory.context.stopPolling){
                   self.presenceTimeout = setTimeout(function(){
                     self.getMotionDetected(accessory, service);
                   }, self.polling);
-                }
+                }*/
                 self.timeoutErrorRep = 0;
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
@@ -2048,12 +2048,11 @@ class Fritz_Box {
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-                if(!accessory.context.stopPolling){
+                /*if(!accessory.context.stopPolling){
                   self.presenceTimeout = setTimeout(function(){
                     self.getMotionDetected(accessory, service);
                   }, self.polling);
-                }
-
+                }*/
               }
             });
           }
@@ -2095,11 +2094,16 @@ class Fritz_Box {
           accessory.context.accType == 'motion' ? 
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
             service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-          if(!accessory.context.stopPolling){
+          /*if(!accessory.context.stopPolling){
             self.presenceTimeout = setTimeout(function(){
               self.getMotionDetected(accessory, service);
             }, self.polling);
-          }
+          }*/
+        }
+        if(!accessory.context.stopPolling){
+          self.presenceTimeout = setTimeout(function(){
+            self.getMotionDetected(accessory, service);
+          }, self.polling);
         }
       });
     } else {
