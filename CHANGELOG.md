@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.6.0 - 2018-06-17
+- Bugfixes
+- Remote Login possibility [see docs](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
+- Updated dependencies
+- Better interaction with the TR064 module
+
 ## v2.5.1 - 2018-06-15
 - Bugfixes
 - Code cleanup
