@@ -1,5 +1,11 @@
 # Changelog
 
+
+## v2.6.2 - 2018-06-18
+- Code clean up
+- Bugfixes
+- Added "[refresh wifi canal](https://github.com/SeydX/homebridge-fritz-platform/blob/cbe48c0a2b9b86bf9706711c19e4eb4f684f01f5/example/example-config.json#L23)"
+
 ## v2.6.0 - 2018-06-17
 - Bugfixes
 - Remote Login possibility [see docs](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
