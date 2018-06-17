@@ -19,7 +19,8 @@
         "2.4ghz": true,
         "5ghz": true,
         "guest": true,
-        "wps": true
+        "wps": true,
+	"refreshCanal":true
       },
       "options": {
         "deflection": true,
