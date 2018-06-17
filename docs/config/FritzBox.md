@@ -24,7 +24,7 @@ Required characteristics
 | platform | Platform name, must be '**FritzPlatform**' |
 | name | Plugin name |
 | host | Host, IP or Remote addresse of the device |
-| port | Port of the device (Default: 49000) |
+| port | Port of the device (Default: 49000, or port setted in the settings for remote login) |
 | type | Type of the device (cable/dsl, Default: dsl) |
 | timeout | Timeout for requests in seconds |
 | username | Username for logging in to the above device |
