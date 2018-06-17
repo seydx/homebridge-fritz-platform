@@ -1,6 +1,6 @@
 # Fritz!Box
 
-This plugin uses the TR 064 interface of the router to communicate with it. Host can be the local address (fritz.box) or ip adresse. Port is 49000. So that the plugin runs perfectly, please enter the access data from FritzBox web interface in the config.json. Timeout defines the maximum time a request can take (in seconds). Polling is the time span when the data should be refreshed. Type is required if you are using cable router like Fritz!Box 6490 etc. In this case, you need to put "type":"cable" in the config.json
+This plugin uses the TR 064 interface of the router to communicate with it. Host can be the local address (fritz.box) or ip adresse or the myfritz adress (for remote login). Port is 49000 (or port setted in the settings for remote login). So that the plugin runs perfectly, please enter the access data from FritzBox web interface in the config.json. Timeout defines the maximum time a request can take (in seconds). Polling is the time span when the data should be refreshed. Type is required if you are using cable router like Fritz!Box 6490 etc. In this case, you need to put "type":"cable" in the config.json
 
 # Example Config
 
@@ -15,6 +15,21 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
   "password": "PASSWORD",
   "polling": 10
 ```
+
+## Base
+Required characteristics
+
+| Attributes | Usage |
+|------------|-------|
+| platform | Platform name, must be '**FritzPlatform**' |
+| name | Plugin name |
+| host | Host, IP or Remote addresse of the device |
+| port | Port of the device (Default: 49000) |
+| type | Type of the device (cable/dsl, Default: dsl) |
+| timeout | Timeout for requests in seconds |
+| username | Username for logging in to the above device |
+| password | Password for logging in to the above device |
+| polling | Polling in seconds (only for presence) |
 
 # Options (extra characteristics)
 
@@ -116,6 +131,10 @@ Extra chracteristics for other options
 | devicelock | Switch characteristic for Fritz!Box Device Lock |
 | phoneBook | Switch characteristic to save Fritz!Box Phone Book in storage (needed for show the name of incoming calls) |
 | debug | Switch characteristic to send DEBUG to log |
+
+## Remote Settings
+
+<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/remoteLogin.jpg" alt="Remote Login">
 
 ## In-App Screenshots (Elgato EVE)
 
