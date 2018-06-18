@@ -87,6 +87,7 @@ FritzPlatform.prototype = {
 
   didFinishLaunching: function(){
     const self = this;
+    if(self.devOptions.host.match('myfritz'))self.logger.initinfo('Starting remote login');
     this.tr064.initDevice()
       .then(result => {
         self.logger.initinfo('Device initialized: ' + result.meta.friendlyName); 
@@ -315,7 +316,7 @@ FritzPlatform.prototype = {
                 serialNo: this.device.meta.UDN.split('uuid:')[1].split('-')[0]+'-'+this.types.repeater,
                 disable: this.repeater[i].disable||false,
                 host: this.repeater[i].ip,
-                port: this.repeater[i].port,
+                port: this.repeater[i].port||49000,
                 username: this.repeater[i].username,
                 password: this.repeater[i].password,
                 wifi2: this.repeater[i].wifi ? this.repeater[i].wifi['2.4ghz'] : false,
@@ -402,7 +403,7 @@ FritzPlatform.prototype = {
         port: self.config.port||49000,
         username: self.config.username,
         password: self.config.password,
-        timeout: self.devOptions.timeout
+        timeout: self.config.timeout < 10 ? 10000 : self.config.timeout*1000
       }; 
       if(accessory.context.type == self.types.presence){
         accessory.context.delay=self.presenceOptions.delay*1000||0;
@@ -435,7 +436,7 @@ FritzPlatform.prototype = {
               port: accessory.context.port,
               username: accessory.context.username,
               password: accessory.context.password,
-              timeout: self.devOptions.timeout
+              timeout: this.config.timeout < 10 ? 10000 : this.config.timeout*1000
             };
           }
         }

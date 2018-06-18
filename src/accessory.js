@@ -13,6 +13,7 @@ const parseString = require('xml2js').parseString;
 const HomeKitTypes = require('./types.js');
 const LogUtil = require('../lib/LogUtil.js');
 const packageFile = require('../package.json');
+const request = require('request');
 
 var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory, FakeGatoHistoryService;
 
@@ -333,18 +334,18 @@ class Fritz_Box {
           }
         }
         
-        if(self.platform.wifi.refreshCanal){
-          if (!service.testCharacteristic(Characteristic.RefreshCanal)){
-            self.logger.initinfo('Adding Refresh Canal Characteristic to ' + accessory.displayName);
-            service.addCharacteristic(Characteristic.RefreshCanal);
+        if(self.platform.wifi.refreshChannel){
+          if (!service.testCharacteristic(Characteristic.RefreshChannel)){
+            self.logger.initinfo('Adding Refresh Channel Characteristic to ' + accessory.displayName);
+            service.addCharacteristic(Characteristic.RefreshChannel);
           }
-          service.getCharacteristic(Characteristic.RefreshCanal)
+          service.getCharacteristic(Characteristic.RefreshChannel)
             .updateValue(false)
-            .on('set', self.setRefreshCanal.bind(this, accessory, service));
+            .on('set', self.setRefreshChannel.bind(this, accessory, service));
         } else {
-          if(service.testCharacteristic(Characteristic.RefreshCanal)){
-            self.logger.initinfo('Removing Refresh Canal from ' + accessory.displayName);
-            service.removeCharacteristic(service.getCharacteristic(Characteristic.RefreshCanal));
+          if(service.testCharacteristic(Characteristic.RefreshChannel)){
+            self.logger.initinfo('Removing Refresh Channel from ' + accessory.displayName);
+            service.removeCharacteristic(service.getCharacteristic(Characteristic.RefreshChannel));
           }
         }
 
@@ -912,72 +913,30 @@ class Fritz_Box {
   setDeviceLock(accessory, service, state, callback){
     const self = this;
     let formData;
-    self.fetchSID(accessory, function(err, result){
-      if(!err){
-        let sid = result;
-        if(state){
-          self.logger.info(accessory.displayName + ': Turning on Device Lock');
-          formData = querystring.stringify({
-            xhr: '1',
-            sid: sid,
-            no_sidrenew: '',
-            keylock_enabled: '1',
-            apply: '',
-            oldpage: '/system/keylock.lua'
-          });
-        } else {
-          self.logger.info(accessory.displayName + ': Turning off Device Lock');
-          formData = querystring.stringify({
-            xhr: '1',
-            sid: sid,
-            no_sidrenew: '',
-            apply: '',
-            oldpage: '/system/keylock.lua'
-          });
-        }
-        let post_options = {
-          host: accessory.context.options.host,
-          port: '80',
-          path: '/data.lua?sid='+sid,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(formData)
-          }
-        };
-        // Set up the request
-        let post_req = http.request(post_options, function(res) {
-          res.setEncoding('utf8');
-          callback(null, state);
-        });
-        // post the data
-        post_req.write(formData);
-        post_req.end();
-      } else {
-        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device Lock\'!');
-        self.logger.errorinfo(JSON.stringify(err,null,4));
-        setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-        callback(null, accessory.context.lastDeviceLock);
-      }
-    });
-  }
-  
-  setRefreshCanal(accessory, service, state, callback){
-    const self = this;
-    if(state){
-      let formData;
+    if(!accessory.context.options.host.match('myfritz')){
       self.fetchSID(accessory, function(err, result){
         if(!err){
           let sid = result;
-          self.logger.info(accessory.displayName + ': Turning on Refresh Canal');
-          formData = querystring.stringify({
-            xhr: '1',
-            channelSelectMode: 'auto',
-            airslot: '1',
-            refresh: '',
-            sid: sid,
-            page: 'chan'
-          });
+          if(state){
+            self.logger.info(accessory.displayName + ': Turning on Device Lock');
+            formData = querystring.stringify({
+              xhr: '1',
+              sid: sid,
+              no_sidrenew: '',
+              keylock_enabled: '1',
+              apply: '',
+              oldpage: '/system/keylock.lua'
+            });
+          } else {
+            self.logger.info(accessory.displayName + ': Turning off Device Lock');
+            formData = querystring.stringify({
+              xhr: '1',
+              sid: sid,
+              no_sidrenew: '',
+              apply: '',
+              oldpage: '/system/keylock.lua'
+            });
+          }
           let post_options = {
             host: accessory.context.options.host,
             port: '80',
@@ -991,17 +950,69 @@ class Fritz_Box {
           // Set up the request
           let post_req = http.request(post_options, function(res) {
             res.setEncoding('utf8');
-            self.logger.info('WIFI canal refreshed!');
+            callback(null, state);
           });
           // post the data
           post_req.write(formData);
           post_req.end();
         } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Refresh Canal\'!');
+          self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device Lock\'!');
           self.logger.errorinfo(JSON.stringify(err,null,4));
+          setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
+          callback(null, accessory.context.lastDeviceLock);
         }
       });
-      setTimeout(function(){service.getCharacteristic(Characteristic.RefreshCanal).updateValue(false);}, 500);
+    } else {
+      self.logger.warninfo('Can not set Device Lock in remote mode!');
+      setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(false);}, 500);
+      callback(null, false);
+    }
+  }
+  
+  setRefreshChannel(accessory, service, state, callback){
+    const self = this;
+    if(state){
+      if(!accessory.context.options.host.match('myfritz')){
+        let formData;
+        self.fetchSID(accessory, function(err, result){
+          if(!err){
+            let sid = result;
+            self.logger.info(accessory.displayName + ': Turning on Refresh Channel');
+            formData = querystring.stringify({
+              xhr: '1',
+              channelSelectMode: 'auto',
+              airslot: '1',
+              refresh: '',
+              sid: sid,
+              page: 'chan'
+            });
+            let post_options = {
+              host: accessory.context.options.host,
+              port: '80',
+              path: '/data.lua?sid='+sid,
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(formData)
+              }
+            };
+            // Set up the request
+            let post_req = http.request(post_options, function(res) {
+              res.setEncoding('utf8');
+              self.logger.info('WIFI Channel refreshed!');
+            });
+            // post the data
+            post_req.write(formData);
+            post_req.end();
+          } else {
+            self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Refresh Channel\'!');
+            self.logger.errorinfo(JSON.stringify(err,null,4));
+          }
+        });
+      } else {
+        self.logger.warninfo('Can not refresh WIFI channel in remote mode!');
+      }
+      setTimeout(function(){service.getCharacteristic(Characteristic.RefreshChannel).updateValue(false);}, 500);
       callback(null, false);
     } else {
       callback(null, false);
@@ -1010,34 +1021,45 @@ class Fritz_Box {
 
   checkDeviceLock(accessory, service, callback){
     const self = this; 
-    self.fetchSID(accessory, function(err, result){
-      if(!err){
-        let sid = result;
-        http.request({host:accessory.context.options.host, path:'/system/keylock.lua?sid='+sid},function(response){
-          let data = '';
-          response.on('data', function (chunk) {
-            data += chunk;
+    if(!accessory.context.options.host.match('myfritz')){
+      self.fetchSID(accessory, function(err, result){
+        if(!err){
+          let sid = result;
+          request('http://' + accessory.context.options.host + '/system/keylock.lua?sid='+sid,function(error, response, body){
+            if (!error && (response.statusCode == 200 || response.statusCode == 303)){
+              self.parseOutput(accessory, service, body,'keylock', function(err, result){
+                if(!err){
+                  callback(null, result);
+                } else {
+                  self.logger.errorinfo(accessory.displayName + ':An error occured by getting Device Lock state!');
+                  self.logger.errorinfo(JSON.stringify(err,null,4));
+                  setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
+                  callback(null, accessory.context.lastDeviceLock);
+                }
+              });
+            } else {
+              self.logger.errorinfo(accessory.displayName + ':An error occured by getting Device Lock!');
+              let showError = {
+                error: error?error.errno:response.statusMessage,
+                errorCode: error?error.code:response.statusCode
+              };
+              self.logger.errorinfo(JSON.stringify(showError,null,4));
+              setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
+              callback(null, accessory.context.lastDeviceLock);
+            }
           });
-          response.on('end', function () {
-            self.parseOutput(accessory, service, data,'keylock', function(err, result){
-              if(!err){
-                callback(null, result);
-              } else {
-                self.logger.errorinfo(accessory.displayName + ':An error occured by getting Device Lock state!');
-                self.logger.errorinfo(JSON.stringify(err,null,4));
-                setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-                callback(null, accessory.context.lastDeviceLock);
-              }
-            });
-          });
-        }).end();
-      } else {
-        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
-        self.logger.errorinfo(JSON.stringify(err,null,4));
-        setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-        callback(null, accessory.context.lastDeviceLock);
-      }
-    });
+        } else {
+          self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device Lock\'!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
+          setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
+          callback(null, accessory.context.lastDeviceLock);
+        }
+      });
+    } else {
+      self.logger.warninfo('Can not get Device Lock state in remote mode!');
+      setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(false);}, 500);
+      callback(null, false);
+    }
   }
 
   setDeviceLED(accessory, service, state, callback){
@@ -1047,7 +1069,6 @@ class Fritz_Box {
       if(!err){
         let sid = result;
         if(state){
-          self.logger.info(accessory.displayName + ': Turning on LEDs');
           formData = querystring.stringify({
             xhr: '1',
             sid: result,
@@ -1057,7 +1078,6 @@ class Fritz_Box {
             oldpage: '/system/led_display.lua'
           });
         } else {
-          self.logger.info(accessory.displayName + ': Turning off LEDs');
           formData = querystring.stringify({
             xhr: '1',
             sid: result,
@@ -1067,26 +1087,23 @@ class Fritz_Box {
             oldpage: '/system/led_display.lua'
           });
         }
-        let post_options = {
-          host: accessory.context.options.host,
-          port: '80',
-          path: '/data.lua?sid='+sid,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(formData)
+        request.post('http://' + accessory.context.options.host + '/system/led_display.lua?sid='+sid,{form:formData}, function(error, response, body){
+          if (!error && (response.statusCode == 200 || response.statusCode == 303)){
+            state ? self.logger.info(accessory.displayName + ': Turning on LEDs') : self.logger.info(accessory.displayName + ': Turning off LEDs');
+            callback(null, state);
+          } else {
+            self.logger.errorinfo(accessory.displayName + ':An error occured by setting LED state!');
+            let showError = {
+              error: error?error.errno:response.statusMessage,
+              errorCode: error?error.code:response.statusCode
+            };
+            self.logger.errorinfo(JSON.stringify(showError,null,4));
+            setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(state?false:true);}, 500);
+            callback(null, state?false:true);
           }
-        };
-        // Set up the request
-        let post_req = http.request(post_options, function(res) {
-          res.setEncoding('utf8');
-          callback(null, state);
         });
-        // post the data
-        post_req.write(formData);
-        post_req.end();
       } else {
-        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device LED\'!');
         self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
@@ -1099,13 +1116,9 @@ class Fritz_Box {
     self.fetchSID(accessory, function(err, result){
       if(!err){
         let sid = result;
-        http.request({host:accessory.context.options.host, path:'/system/led_display.lua?sid='+sid},function(response){
-          let data = '';
-          response.on('data', function (chunk) {
-            data += chunk;
-          });
-          response.on('end', function () {
-            self.parseOutput(accessory, service, data,'led_one', function(err, result){
+        request('http://' + accessory.context.options.host + '/system/led_display.lua?sid='+sid, function(error, response, body){
+          if (!error && response.statusCode == 200){
+            self.parseOutput(accessory, service, body,'led_one', function(err, result){
               if(!err){
                 callback(null, result);
               } else {
@@ -1115,10 +1128,19 @@ class Fritz_Box {
                 callback(null, accessory.context.lastLEDState);
               }
             });
-          });
-        }).end();
+          } else {
+            self.logger.errorinfo(accessory.displayName + ':An error occured by getting LED state!');
+            let showError = {
+              error: error?error.errno:response.statusMessage,
+              errorCode: error?error.code:response.statusCode
+            };
+            self.logger.errorinfo(JSON.stringify(showError,null,4));
+            setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
+            callback(null, accessory.context.lastLEDState);
+          }
+        });
       } else {
-        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID!');
+        self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device LED\'!');
         self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
         callback(null, accessory.context.lastLEDState);
