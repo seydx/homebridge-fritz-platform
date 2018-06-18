@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.6.3 - 2018-06-18
+## v2.6.4 - 2018-06-18
 - Bugfixes
 - Code cleanup
 - Better error handling
