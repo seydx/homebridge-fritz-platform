@@ -1,19 +1,17 @@
 'use strict';
 
-const tr = require('../lib/TR064.js');
 const moment = require('moment');
 const async = require('async');
-const speedTest = require('speedtest-net');
-const exec = require('child_process').exec;
-const http = require('http');
-const https = require('https');
+const request = require('request');
 const cheerio = require('cheerio');
-const querystring = require('querystring');
 const parseString = require('xml2js').parseString;
+
+const tr = require('../lib/TR064.js');
 const HomeKitTypes = require('./types.js');
 const LogUtil = require('../lib/LogUtil.js');
 const packageFile = require('../package.json');
-const request = require('request');
+const exec = require('child_process').exec;
+const querystring = require('querystring');
 
 var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory, FakeGatoHistoryService;
 
@@ -434,6 +432,7 @@ class Fritz_Box {
         }
 
         if(Object.keys(self.platform.broadband).length&&!self.platform.broadband.disable){
+          self.speedTest = require('speedtest-net');
           if (!service.testCharacteristic(Characteristic.DownloadSpeed)){
             self.logger.initinfo('Adding Download Speed Characteristic to ' + accessory.displayName);
             service.addCharacteristic(Characteristic.DownloadSpeed);
@@ -918,7 +917,6 @@ class Fritz_Box {
         if(!err){
           let sid = result;
           if(state){
-            self.logger.info(accessory.displayName + ': Turning on Device Lock');
             formData = querystring.stringify({
               xhr: '1',
               sid: sid,
@@ -928,7 +926,6 @@ class Fritz_Box {
               oldpage: '/system/keylock.lua'
             });
           } else {
-            self.logger.info(accessory.displayName + ': Turning off Device Lock');
             formData = querystring.stringify({
               xhr: '1',
               sid: sid,
@@ -937,24 +934,21 @@ class Fritz_Box {
               oldpage: '/system/keylock.lua'
             });
           }
-          let post_options = {
-            host: accessory.context.options.host,
-            port: '80',
-            path: '/data.lua?sid='+sid,
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'Content-Length': Buffer.byteLength(formData)
+          request.post('http://' + accessory.context.options.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
+            if (!error && (response.statusCode == 200 || response.statusCode == 303)){
+              state ? self.logger.info(accessory.displayName + ': Turning on Device Lock') : self.logger.info(accessory.displayName + ': Turning off Device Lock');
+              callback(null, state);
+            } else {
+              self.logger.errorinfo(accessory.displayName + ':An error occured by setting \'Device Lock\'!');
+              let showError = {
+                error: error?error.errno:response.statusMessage,
+                errorCode: error?error.code:response.statusCode
+              };
+              self.logger.errorinfo(JSON.stringify(showError,null,4));
+              setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(state?false:true);}, 500);
+              callback(null, state?false:true);
             }
-          };
-          // Set up the request
-          let post_req = http.request(post_options, function(res) {
-            res.setEncoding('utf8');
-            callback(null, state);
           });
-          // post the data
-          post_req.write(formData);
-          post_req.end();
         } else {
           self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Device Lock\'!');
           self.logger.errorinfo(JSON.stringify(err,null,4));
@@ -977,7 +971,6 @@ class Fritz_Box {
         self.fetchSID(accessory, function(err, result){
           if(!err){
             let sid = result;
-            self.logger.info(accessory.displayName + ': Turning on Refresh Channel');
             formData = querystring.stringify({
               xhr: '1',
               channelSelectMode: 'auto',
@@ -986,24 +979,22 @@ class Fritz_Box {
               sid: sid,
               page: 'chan'
             });
-            let post_options = {
-              host: accessory.context.options.host,
-              port: '80',
-              path: '/data.lua?sid='+sid,
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(formData)
+            request.post('http://' + accessory.context.options.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
+              if (!error && (response.statusCode == 200 || response.statusCode == 303)){
+                self.logger.info(accessory.displayName + ': WIFI Channel refreshed!');
+                setTimeout(function(){service.getCharacteristic(Characteristic.RefreshChannel).updateValue(false);}, 500);
+                callback(null, false);
+              } else {
+                self.logger.errorinfo(accessory.displayName + ':An error occured by refreshing \'WIFI Channel\'!');
+                let showError = {
+                  error: error?error.errno:response.statusMessage,
+                  errorCode: error?error.code:response.statusCode
+                };
+                self.logger.errorinfo(JSON.stringify(showError,null,4));
+                setTimeout(function(){service.getCharacteristic(Characteristic.RefreshChannel).updateValue(false);}, 500);
+                callback(null, false);
               }
-            };
-            // Set up the request
-            let post_req = http.request(post_options, function(res) {
-              res.setEncoding('utf8');
-              self.logger.info('WIFI Channel refreshed!');
             });
-            // post the data
-            post_req.write(formData);
-            post_req.end();
           } else {
             self.logger.errorinfo(accessory.displayName + ': An error occured by fetching new SID for \'Refresh Channel\'!');
             self.logger.errorinfo(JSON.stringify(err,null,4));
@@ -1154,33 +1145,18 @@ class Fritz_Box {
   
   sendTelegram(token,chatID,text){
     const self = this;
-    let options = {
-      host: 'api.telegram.org',
-      path: '/bot' + token + '/sendMessage',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-
-    let post_data = JSON.stringify(
-      {
-        'chat_id': chatID,
-        'text': text
-      }
-    );
-
-    let req = https.request(options, function(res) {
-      if(res){
+    request.post('https://api.telegram.org/bot' + token + '/sendMessage',{body:{'chat_id': chatID,'text': text},json:true}, function(error, response, body){
+      if (!error && (response.statusCode == 200 || response.statusCode == 303)){
         self.logger.info('Successfully send telegram notification!');
+      } else {
+        self.logger.errorinfo('An error occured by sending telegram notification!');
+        let showError = {
+          error: error?error.errno:response.statusMessage,
+          errorCode: error?error.code:response.statusCode
+        };
+        self.logger.errorinfo(JSON.stringify(showError,null,4));
       }
     });
-    req.on('error', function(err) {
-      self.logger.errorinfo('An error occured by sending telegram notification!');
-      self.logger.errorinfo(JSON.stringify(err,null,4));
-    });
-    req.write(post_data);
-    req.end();
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -1939,7 +1915,7 @@ class Fritz_Box {
   getMeasurement(accessory, service){
     const self = this;
     self.logger.info('Starting broadband measurement...');
-    speedTest({
+    self.speedTest({
       maxTime: accessory.context.maxTime
     })
       .on('data', data => {
