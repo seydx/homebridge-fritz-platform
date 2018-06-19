@@ -7,6 +7,10 @@ Before you can use this plugin, you must activate the following options in the F
 
 <img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/heimnetzfreigabe.png" align="center" alt="Network Settings">
 
+I also recommend giving the user full rights to make the plugin work properly
+
+<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/user_rights.jpg" align="center" alt="Rights">
+
 After the above settings have been made, the plugin can be installed as follows:
 
 ```
