@@ -31,6 +31,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
    * [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Callmonitor.md)
    * [Configuring Presence](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Presence.md)
    * [Configuring Wake On Lan](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/WOL.md)
+   * [Configuring SmartHome Devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md)
 - Examples
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
    * [Multiple instances (for Reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
