@@ -20,7 +20,7 @@
         "5ghz": true,
         "guest": true,
         "wps": true,
-	"refreshCanal":true
+	"refreshChannel":true
       },
       "options": {
         "deflection": true,
