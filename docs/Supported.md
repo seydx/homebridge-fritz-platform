@@ -17,4 +17,7 @@
 - [x] Fritz!Wlan Repeater 450E
 - [x] Fritz!Wlan Repeater 310
 
+## Fritz!DECT Smart Home
+- [x] Fritz!DECT Repeater 1000
+
 Note: The page is constantly updated. If your device is also supported, please contact me
