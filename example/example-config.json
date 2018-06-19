@@ -95,6 +95,10 @@
 	  "Fernseher":"AA:00:BB:11:CC:ZZ",
 	  "Computer":"BB:11:ZZ:33:OO:AA"
       },
+      "smarthome": {
+	  "My Plug 1":"12345 67890",
+	  "My Thermo 1":"09876 54321"
+      },
       "repeater": {
         "FritzRepeater": {
           "disable": false,
