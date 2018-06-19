@@ -107,6 +107,7 @@
           "username": "USERNAME2",
           "password": "PASSWORD2",
           "led": true,
+	  "reboot":true,
           "wifi": {
             "2.4ghz": true,
             "5ghz": false,
