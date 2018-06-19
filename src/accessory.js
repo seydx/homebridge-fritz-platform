@@ -100,6 +100,10 @@ class Fritz_Box {
         deviceType = Accessory.Categories.SENSOR;
         accessoryType = Service.ContactSensor;
         break;
+      case 6:
+        deviceType = Accessory.Categories.SWITCH;
+        accessoryType = Service.Switch;
+        break;
       default:
         break;
     }
@@ -164,6 +168,10 @@ class Fritz_Box {
         break;
       case 5:
         accessory.context.lastContactSensorState = false;
+        break;
+      case 6:
+        accessory.context.lastHASwitchState = false;
+        accessory.context.ain = parameter.ain;
         break;
       default:
         break;
@@ -757,6 +765,32 @@ class Fritz_Box {
             service.removeCharacteristic(service.getCharacteristic(Characteristic.DeviceLED));
           }
         }
+        
+        if(accessory.context.reboot){
+          if (!service.testCharacteristic(Characteristic.Reboot)){
+            self.logger.initinfo('Adding Reboot Characteristic to ' + accessory.displayName);
+            service.addCharacteristic(Characteristic.Reboot);
+          }
+          service.getCharacteristic(Characteristic.Reboot)
+            .updateValue(false)
+            .on('set', function(state, callback) {
+              if(state){
+                let reboot = self.device.services['urn:dslforum-org:service:DeviceConfig:1'];
+                reboot.actions.Reboot(function() {
+                  self.logger.info(accessory.displayName + ': Rebooting...'); 
+                });
+                setTimeout(function(){service.getCharacteristic(Characteristic.Reboot).updateValue(false);},500);
+                callback(null, false);
+              } else {
+                callback(null, false);
+              }
+            });
+        } else {
+          if(service.testCharacteristic(Characteristic.Reboot)){
+            self.logger.initinfo('Removing Reboot from ' + accessory.displayName);
+            service.removeCharacteristic(service.getCharacteristic(Characteristic.Reboot));
+          }
+        }
 
         service.getCharacteristic(Characteristic.On)
           .updateValue(accessory.context.lastSwitchState)
@@ -829,6 +863,13 @@ class Fritz_Box {
         service.getCharacteristic(Characteristic.ContactSensorState)
           .updateValue(accessory.context.lastContactSensorState);
         if(self.config.callmonitor&&!self.config.callmonitor.disable)self.getContactState(accessory, service);
+        break;
+      case 6:
+        service = accessory.getService(Service.Switch);
+        service.getCharacteristic(Characteristic.On)
+          .updateValue(accessory.context.lastHASwitchState)
+          .on('set', self.setHASwitchState.bind(this, accessory, service))
+          .on('get', self.checkHASwitchState.bind(this, accessory, service));
         break;
       default:
         break;
@@ -1413,6 +1454,26 @@ class Fritz_Box {
       }
     });
   }
+  
+  setHASwitchState(accessory, service, state, callback){
+    const self = this;
+    let homeauto = self.device.services['urn:dslforum-org:service:X_AVM-DE_Homeauto:1'];
+    let status;
+    state ? status = 'ON' : status = 'OFF';
+    homeauto.actions.SetSwitch([{name:'NewAIN', value:accessory.context.ain},{name:'NewSwitchState', value:status}],function(err) {
+      if(!err){
+        state ? self.logger.info(accessory.displayName + ': Turning on ' + accessory.displayName) : self.logger.info(accessory.displayName + ': Turning off ' + accessory.displayName);
+        accessory.context.lastHASwitchstate = state;
+        callback(null, state);
+      } else {
+        state ? self.logger.errorinfo(accessory.displayName + ': An error occured by turning on ' + accessory.displayName) : self.logger.errorinfo(accessory.displayName + ': An error occured by turning off ' + accessory.displayName);
+        self.logger.errorinfo(JSON.stringify(err,null,4));
+        accessory.context.lastHASwitchstate = state ? false : true;
+        setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastHASwitchstate);},500);
+        callback(null, accessory.context.lastHASwitchstate);
+      }
+    });
+  }
 
   setWifiTwo(accessory, service, state, callback){
     const self = this;
@@ -1541,12 +1602,7 @@ class Fritz_Box {
                     self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message); 
                   }
                 }
-                for(const i in self.accessories){
-                  self.accessories[i].context.stopPolling = true;
-                  if(self.accessories[i].context.type == self.types.repeater){
-                    self.rebootRepeater(self.accessories[i]);
-                  }
-                }
+                for(const i in self.accessories)self.accessories[i].context.stopPolling = true;
                 self.logger.info(accessory.displayName + ': Homebridge instances will be restarted automatically in 5 minutes!');
                 self.logger.info(accessory.displayName + ': Rebooting...'); 
                 exec(self.platform.reboot.cmd_off, function (error, stdout, stderr) {
@@ -1587,12 +1643,7 @@ class Fritz_Box {
               self.sendTelegram(self.platform.options.reboot.token,self.platform.options.reboot.chatID,message);
             }
           }
-          for(const i in self.accessories){
-            self.accessories[i].context.stopPolling = true;
-            if(self.accessories[i].context.type == self.types.repeater){
-              self.rebootRepeater(self.accessories[i]);
-            }
-          }
+          for(const i in self.accessories)self.accessories[i].context.stopPolling = true;
           self.logger.info(accessory.displayName + ': Rebooting...');
         });
       }
@@ -1604,30 +1655,6 @@ class Fritz_Box {
     }
   }
   
-  rebootRepeater(accessory){
-    const self = this;
-    let tr064Repeater = new tr.TR064(accessory.context.options); 
-    tr064Repeater.initDevice()
-      .then(result => {
-        result.startEncryptedCommunication()
-          .then(device => {
-            device.login(accessory.context.options.username, accessory.context.options.password);
-            let reboot2 = device.services['urn:dslforum-org:service:DeviceConfig:1'];
-            reboot2.actions.Reboot(function() {
-              self.logger.info(accessory.displayName + ': Rebooting...'); 
-            });
-          })
-          .catch(sslerr => {
-            self.logger.errorinfo('An error occured by starting encrypted communication with ' + accessory.displayName);
-            self.logger.errorinfo(JSON.stringify(sslerr,null,4));
-          });
-      })
-      .catch(err => {
-        self.logger.errorinfo('An error occured by initializing repeater: ' + accessory.displayName);
-        self.logger.errorinfo(JSON.stringify(err,null,4));
-      });
-  }
-
   setDeflection(accessory, service, state, callback){
     const self = this;
     let deflection = self.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
@@ -1750,6 +1777,28 @@ class Fritz_Box {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // Extra Characteristics // Gets
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+  
+  checkHASwitchState(accessory, service, callback){
+    const self = this;
+    let homeauto = self.device.services['urn:dslforum-org:service:X_AVM-DE_Homeauto:1'];
+    if(!accessory.context.stopPolling){
+      homeauto.actions.GetSpecificDeviceInfos([{name:'NewAIN',value:accessory.context.ain}],function(err, result) {
+        if(!err){
+          if(result.NewSwitchIsEnabled == 'ENABLED' && result.NewSwitchState == 'ON'){
+            accessory.context.lastHASwitchstate = true;
+          } else {
+            accessory.context.lastHASwitchstate = false;
+          }
+        } else {
+          self.logger.errorinfo(accessory.displayName + ': An error occured by getting ' + accessory.displayName + ' state!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
+        }
+        callback(null, accessory.context.lastHASwitchstate);
+      });
+    } else {
+      callback(null, accessory.context.lastHASwitchstate);
+    }
+  }
 
   checkWifiTwo(accessory, service, callback){
     const self = this;

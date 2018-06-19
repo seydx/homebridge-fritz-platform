@@ -32,6 +32,7 @@ function FritzPlatform (log, config, api) {
   this.presenceOptions = config.presence||{};
   this.presence = this.presenceOptions.devices||{};
   this.wol = config.wol||{};
+  this.smarthome = config.smarthome||{};
   this.options = config.options||{};
   this.wifi = config.wifi||{};
   this.debug = config.debug||{};
@@ -65,7 +66,8 @@ function FritzPlatform (log, config, api) {
     presence: 2,
     wol: 3,
     repeater: 4,
-    callmonitor: 5
+    callmonitor: 5,
+    smarthome: 6
   };
 
   if (api) {
@@ -298,6 +300,43 @@ FritzPlatform.prototype = {
           }
         }
       }
+      
+      if(Object.keys(this.smarthome).length){
+        let smarthomeArray = [];
+        for(const i of Object.keys(this.smarthome)) {
+          skip = false;
+          smarthomeArray.push(this.smarthome[i]);
+          for (const j in this.accessories) {
+            if (this.accessories[j].context.ain == this.smarthome[i] && this.accessories[j].context.type == this.types.smarthome) {
+              skip = true;
+            }
+          }
+          if (!skip) {
+            let parameter = {
+              name: i,
+              serialNo: this.smarthome[i] + '-' + this.types.smarthome,
+              type: this.types.smarthome,
+              model: 'Smart Home',
+              ain: this.smarthome[i],
+              fakegato: false
+            };
+            new Device(this, parameter, true);
+          }
+        }
+        for(const i in this.accessories){
+          if(this.accessories[i].context.type == this.types.smarthome){
+            if(!smarthomeArray.includes(this.accessories[i].context.ain)){
+              self.removeAccessory(self.accessories[i]);
+            }
+          }
+        }
+      } else {
+        for (const i in this.accessories) {
+          if (this.accessories[i].context.type == this.types.smarthome) {
+            this.removeAccessory(this.accessories[i]);
+          }
+        }
+      }
 
       if(Object.keys(this.repeater).length){
         let repeaterArray = [];
@@ -323,6 +362,7 @@ FritzPlatform.prototype = {
                 wifi5: this.repeater[i].wifi ? this.repeater[i].wifi['5ghz'] : false,
                 wifiGuest: this.repeater[i].wifi ? this.repeater[i].wifi.guest : false,
                 led: this.repeater[i].led||false,
+                reboot: this.repeater[i].reboot||false,
                 type: this.types.repeater,
                 model: 'Repeater',
                 fakegato: false
@@ -431,6 +471,7 @@ FritzPlatform.prototype = {
             accessory.context.wifi5 = self.repeater[i].wifi ? self.repeater[i].wifi['5ghz'] : false;
             accessory.context.wifiGuest = self.repeater[i].wifi ? self.repeater[i].wifi.guest : false;
             accessory.context.led = self.repeater[i].led||false;
+            accessory.context.reboot = self.repeater[i].reboot||false;
             accessory.context.options = {
               host: accessory.context.host,
               port: accessory.context.port,
