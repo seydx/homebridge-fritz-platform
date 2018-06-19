@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.7.0 - 2018-06-18
+- Added [Smarthome devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md) 
+- Code cleanup
+- Better error handling
+- Bugfixes
+- Added own reboot functionality to repeater. [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json#L110)
+- Removed repeater reboot from main device
+
 ## v2.6.4 - 2018-06-18
 - Bugfixes
 - Code cleanup
@@ -97,7 +105,8 @@
 
 
 # Functions in progress
-- [ ] Fritz!SmartHome device implementations
+- [x] Fritz!SmartHome device implementations
+- [ ] Fritz!SmartHome device extensions (temperature, thermometer, energy monitor)
 - [ ] Ring lock
 - [x] Debug tool (in work)
 - [x] Support for cable router like Fritz!Box 6490 etc
