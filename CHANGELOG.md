@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.7.0 - 2018-06-18
+## v2.7.0 - 2018-06-19
 - Added [Smarthome devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md) 
 - Code cleanup
 - Better error handling
