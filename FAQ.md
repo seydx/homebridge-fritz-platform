@@ -2,6 +2,12 @@
 
 Below, i have listed some frequently asked questions and errors that may be appear during the installation process.
 
+## Presence not work properly
+
+Presence works as follows: As soon as a user is no longer registered on the network, the user is not immediately shown as being absent. The plugin searches for the user, eg. if repeaters are listed in config.json, the user will be searched for further. If the user is also not active there and if no "Delay" is set in the config.json, the user is displayed as absent.
+
+**Fix:** To work properly, the user setted in config.json needs full read/write rights. [First Steps](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md#installation---first-steps)
+
 ## Error 713/714 (presence)
 
 That is not an issue by the plugin, it means only it can not find the, in config defined ip/mac adress, in the list of your main device/repeater
