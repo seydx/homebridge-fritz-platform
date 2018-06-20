@@ -96,8 +96,21 @@
 	  "Computer":"BB:11:ZZ:33:OO:AA"
       },
       "smarthome": {
-	  "My Plug 1":"12345 67890",
-	  "My Thermo 1":"09876 54321"
+        "Dect 1":{
+          "disable":false,
+          "type":"plug",
+          "ain":"12345 67890"
+        },
+        "Dect 2":{
+          "disable":false,
+          "type":"thermo",
+          "ain":"00998 76655"
+        },
+        "Dect 3":{
+          "disable":false,
+          "type":"contact",
+          "ain":"09876 54321"
+        },
       },
       "repeater": {
         "FritzRepeater": {
