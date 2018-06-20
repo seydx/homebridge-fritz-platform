@@ -110,7 +110,7 @@
           "disable":false,
           "type":"contact",
           "ain":"09876 54321"
-        },
+        }
       },
       "repeater": {
         "FritzRepeater": {
