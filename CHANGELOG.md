@@ -3,6 +3,7 @@
 ## v2.7.1 - 2018-06-20
 - Bugfixes
 - Note: "smarthome" were changed in config.json! Please check before update. ([example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json#L98))
+- Note: 'thermo' & 'contact' currently not supported (smarthome)
 
 ## v2.7.0 - 2018-06-19
 - Added [Smarthome devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md) 
