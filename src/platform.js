@@ -305,22 +305,28 @@ FritzPlatform.prototype = {
         let smarthomeArray = [];
         for(const i of Object.keys(this.smarthome)) {
           skip = false;
-          smarthomeArray.push(this.smarthome[i]);
-          for (const j in this.accessories) {
-            if (this.accessories[j].context.ain == this.smarthome[i] && this.accessories[j].context.type == this.types.smarthome) {
-              skip = true;
+          let polling = this.smarthome[i].polling*1000||10000;
+          if(Object.keys(this.smarthome[i]).length&&!this.smarthome[i].disable){
+            smarthomeArray.push(this.smarthome[i].ain);
+            for (const j in this.accessories) {
+              if (this.accessories[j].context.ain == this.smarthome[i].ain && this.accessories[j].context.type == this.types.smarthome) {
+                skip = true;
+              }
             }
-          }
-          if (!skip) {
-            let parameter = {
-              name: i,
-              serialNo: this.smarthome[i] + '-' + this.types.smarthome,
-              type: this.types.smarthome,
-              model: 'Smart Home',
-              ain: this.smarthome[i],
-              fakegato: false
-            };
-            new Device(this, parameter, true);
+            if (!skip) {
+              let parameter = {
+                name: i,
+                serialNo: this.smarthome[i].ain + '-' + this.types.smarthome,
+                type: this.types.smarthome,
+                accType: this.smarthome[i].type,
+                model: 'Smart Home',
+                ain: this.smarthome[i].ain,
+                disable: this.smarthome[i].disable,
+                polling: polling,
+                fakegato: false
+              };
+              new Device(this, parameter, true);
+            }
           }
         }
         for(const i in this.accessories){
@@ -479,6 +485,15 @@ FritzPlatform.prototype = {
               password: accessory.context.password,
               timeout: this.config.timeout < 10 ? 10000 : this.config.timeout*1000
             };
+          }
+        }
+      }
+      if(accessory.context.type == self.types.smarthome){
+        for(const i of Object.keys(self.smarthome)){
+          let polling = self.smarthome[i].polling||10000;
+          if(accessory.displayName == i){
+            accessory.context.disable = self.smarthome[i].disable;
+            accessory.context.polling = polling;
           }
         }
       }

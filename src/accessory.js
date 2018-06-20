@@ -101,8 +101,22 @@ class Fritz_Box {
         accessoryType = Service.ContactSensor;
         break;
       case 6:
-        deviceType = Accessory.Categories.SWITCH;
-        accessoryType = Service.Switch;
+        switch(parameter.accType){
+          case 'plug':
+            deviceType = Accessory.Categories.SWITCH;
+            accessoryType = Service.Switch;
+            break;
+          case 'thermo':
+            deviceType = Accessory.Categories.THERMOSTAT;
+            accessoryType = Service.Thermostat;
+            break;
+          case 'contact':
+            deviceType = Accessory.Categories.SENSOR;
+            accessoryType = Service.ContactSensor;
+            break;
+          default:
+            break;
+        }
         break;
       default:
         break;
@@ -172,6 +186,9 @@ class Fritz_Box {
       case 6:
         accessory.context.lastHASwitchState = false;
         accessory.context.ain = parameter.ain;
+        accessory.context.disable = parameter.disable;
+        accessory.context.accType = parameter.accType;
+        accessory.context.polling = parameter.polling;
         break;
       default:
         break;
@@ -865,11 +882,23 @@ class Fritz_Box {
         if(self.config.callmonitor&&!self.config.callmonitor.disable)self.getContactState(accessory, service);
         break;
       case 6:
-        service = accessory.getService(Service.Switch);
-        service.getCharacteristic(Characteristic.On)
-          .updateValue(accessory.context.lastHASwitchState)
-          .on('set', self.setHASwitchState.bind(this, accessory, service))
-          .on('get', self.checkHASwitchState.bind(this, accessory, service));
+        switch(accessory.context.accType){
+          case 'plug':
+            service = accessory.getService(Service.Switch);
+            service.getCharacteristic(Characteristic.On)
+              .updateValue(accessory.context.lastHASwitchState)
+              .on('set', self.setHASwitchState.bind(this, accessory, service)); 
+            break;
+          case 'thermo':
+            service = accessory.getService(Service.Thermostat);
+            break;
+          case 'contact':
+            service = accessory.getService(Service.ContactSensor);
+            break;
+          default:
+            break;
+        }
+        self.checkHASwitchState(accessory, service, accessory.context.accType);
         break;
       default:
         break;
@@ -1778,25 +1807,38 @@ class Fritz_Box {
   // Extra Characteristics // Gets
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   
-  checkHASwitchState(accessory, service, callback){
+  checkHASwitchState(accessory, service, type){
     const self = this;
     let homeauto = self.device.services['urn:dslforum-org:service:X_AVM-DE_Homeauto:1'];
-    if(!accessory.context.stopPolling){
-      homeauto.actions.GetSpecificDeviceInfos([{name:'NewAIN',value:accessory.context.ain}],function(err, result) {
-        if(!err){
-          if(result.NewSwitchIsEnabled == 'ENABLED' && result.NewSwitchState == 'ON'){
-            accessory.context.lastHASwitchstate = true;
-          } else {
-            accessory.context.lastHASwitchstate = false;
-          }
+    switch(type){
+      case 'plug':
+        if(!accessory.context.stopPolling){
+          homeauto.actions.GetSpecificDeviceInfos([{name:'NewAIN',value:accessory.context.ain}],function(err, result) {
+            if(!err){
+              if(result.NewSwitchIsEnabled == 'ENABLED' && result.NewSwitchState == 'ON'){
+                accessory.context.lastHASwitchstate = true;
+              } else {
+                accessory.context.lastHASwitchstate = false;
+              }
+            } else {
+              self.logger.errorinfo(accessory.displayName + ': An error occured by getting ' + accessory.displayName + ' state!');
+              self.logger.errorinfo(JSON.stringify(err,null,4));
+            }
+            service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastHASwitchstate);
+            self.HATimeout = setTimeout(function(){
+              self.checkHASwitchState(accessory,service,type);
+            }, self.polling);
+          });
         } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured by getting ' + accessory.displayName + ' state!');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
+          service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastHASwitchstate);
         }
-        callback(null, accessory.context.lastHASwitchstate);
-      });
-    } else {
-      callback(null, accessory.context.lastHASwitchstate);
+        break;
+      case 'thermo':
+        break;
+      case 'contact':
+        break;
+      default:
+        break;
     }
   }
 
@@ -2055,11 +2097,11 @@ class Fritz_Box {
               self.info = false;
               self.presenceTimer = false;
             }
-            /*if(!accessory.context.stopPolling){
+            if(!accessory.context.stopPolling){
               self.presenceTimeout = setTimeout(function(){
                 self.getMotionDetected(accessory, service);
               }, self.polling);
-            }*/
+            }
           } else { 
             for(const i in allAccessories){
               if(allAccessories[i].context.type == self.types.repeater){
@@ -2135,20 +2177,15 @@ class Fritz_Box {
                     }
                   }
                 }
-                /*if(!accessory.context.stopPolling){
-                  self.presenceTimeout = setTimeout(function(){
-                    self.getMotionDetected(accessory, service);
-                  }, self.polling);
-                }*/
                 self.timeoutErrorRep = 0;
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
               } else {
-                if(asyncerr.error == 'ETIMEDOUT'){
+                if(asyncerr.error=='ETIMEDOUT'||asyncerr.errorCode=='ETIMEDOUT'){
                   if(self.timeoutErrorRep>5){
                     self.timeoutErrorRep = 0;
-                    self.logger.errorinfo(accessory.displayName + ': Connection timed out!');
+                    self.logger.errorinfo(accessory.displayName + ': Connection timed out! Trying again...');
                     self.logger.errorinfo(JSON.stringify(err,null,4));
                   } else {
                     self.timeoutErrorRep += 1;
@@ -2161,11 +2198,11 @@ class Fritz_Box {
                 accessory.context.accType == 'motion' ? 
                   service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
                   service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-                /*if(!accessory.context.stopPolling){
-                  self.presenceTimeout = setTimeout(function(){
-                    self.getMotionDetected(accessory, service);
-                  }, self.polling);
-                }*/
+              }
+              if(!accessory.context.stopPolling){
+                self.presenceTimeout = setTimeout(function(){
+                  self.getMotionDetected(accessory, service);
+                }, self.polling);
               }
             });
           }
@@ -2190,7 +2227,7 @@ class Fritz_Box {
               }
             }
           } else {
-            if(err.error&&err.error == 'ETIMEDOUT'){
+            if(err.error=='ETIMEDOUT'||err.errorCode=='ETIMEDOUT'){
               if(self.timeoutError>5){
                 self.timeoutError = 0;
                 self.logger.errorinfo(accessory.displayName + ': Connection timed out!');
@@ -2207,16 +2244,11 @@ class Fritz_Box {
           accessory.context.accType == 'motion' ? 
             service.getCharacteristic(Characteristic.MotionDetected).updateValue(accessory.context.lastMotionState) :
             service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastMotionState);
-          /*if(!accessory.context.stopPolling){
+          if(!accessory.context.stopPolling){
             self.presenceTimeout = setTimeout(function(){
               self.getMotionDetected(accessory, service);
             }, self.polling);
-          }*/
-        }
-        if(!accessory.context.stopPolling){
-          self.presenceTimeout = setTimeout(function(){
-            self.getMotionDetected(accessory, service);
-          }, self.polling);
+          }
         }
       });
     } else {
