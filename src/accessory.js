@@ -591,8 +591,8 @@ class Fritz_Box {
                     accessory.context.lastSwitchState = true;
                     callback(null, true);
                   } else {
-                    accessory.context.lastSwitchState = true;
-                    callback(null, true);
+                    accessory.context.lastSwitchState = false;
+                    callback(null, false);
                   }
                 } else {
                   self.logger.errorinfo(accessory.displayName + 'An error occured by getting device state!');
