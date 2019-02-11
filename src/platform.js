@@ -22,7 +22,7 @@ module.exports = function (homebridge) {
 
 function FritzPlatform (log, config, api) {
 
-// HB
+  // HB
   const self = this;
   this.log = log;
   this.logger = new LogUtil(null, log);
@@ -114,9 +114,6 @@ FritzPlatform.prototype = {
           });
       })
       .catch(err => {
-	      
-	    console.log(err)  
-	      
         self.logger.errorinfo('An error occured by initializing device, trying again...');
         self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){
