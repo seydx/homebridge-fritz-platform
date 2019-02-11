@@ -59,7 +59,7 @@ function FritzPlatform (log, config, api) {
     timeout: this.config.timeout < 10 ? 10000 : this.config.timeout*1000
   };
 
-  this.tr064 = new tr.TR064(this.devOptions, this.logger);
+  this.tr064 = new tr.TR064(this.devOptions);
 
   this.types = {
     device: 1,
@@ -92,12 +92,12 @@ FritzPlatform.prototype = {
     if(self.devOptions.host.match('myfritz'))self.logger.initinfo('Starting remote login');
     this.tr064.initDevice()
       .then(result => {
-        self.logger.initinfo('Device initialized: ' + result.meta.friendlyName); 
+        self.logger.initinfo('Device initialized: ' + result.deviceInfo.friendlyName); 
         result.startEncryptedCommunication()
           .then(device => {
-            self.logger.initinfo('Encrypted communication started with: ' + result.meta.friendlyName); 
+            self.logger.initinfo('Encrypted communication started with: ' + result.deviceInfo.friendlyName); 
             if(self.config.callmonitor&&!self.config.callmonitor.disable){
-              self.callMonitor(result.meta.friendlyName, device);
+              self.callMonitor(result.deviceInfo.friendlyName, device);
             } else {
               self.time = moment().unix();
               self.device = device;
@@ -106,7 +106,7 @@ FritzPlatform.prototype = {
             }
           })
           .catch(err => {
-            self.logger.errorinfo('An error occured by starting encypted communication with: ' + result.meta.friendlyName);
+            self.logger.errorinfo('An error occured by starting encypted communication with: ' + result.deviceInfo.friendlyName);
             self.logger.errorinfo(JSON.stringify(err,null,4));
             setTimeout(function(){
               self.didFinishLaunching();
@@ -114,6 +114,9 @@ FritzPlatform.prototype = {
           });
       })
       .catch(err => {
+	      
+	    console.log(err)  
+	      
         self.logger.errorinfo('An error occured by initializing device, trying again...');
         self.logger.errorinfo(JSON.stringify(err,null,4));
         setTimeout(function(){
@@ -161,8 +164,8 @@ FritzPlatform.prototype = {
       }
       if (!skip&&this.device) {
         let parameter = {
-          name: this.device.meta.friendlyName,
-          serialNo: this.device.meta.UDN.split('uuid:')[1].split('-')[0]+'-'+this.types.device,
+          name: this.device.deviceInfo.friendlyName,
+          serialNo: this.device.deviceInfo.UDN.split('uuid:')[1].split('-')[0]+'-'+this.types.device,
           type: this.types.device,
           model: 'Fritz Box',
           fakegato: false
@@ -358,7 +361,7 @@ FritzPlatform.prototype = {
             if (!skip) {
               let parameter = {
                 name: i,
-                serialNo: this.device.meta.UDN.split('uuid:')[1].split('-')[0]+'-'+this.types.repeater,
+                serialNo: this.device.deviceInfo.UDN.split('uuid:')[1].split('-')[0]+'-'+this.types.repeater,
                 disable: this.repeater[i].disable||false,
                 host: this.repeater[i].ip,
                 port: this.repeater[i].port||49000,
@@ -408,14 +411,14 @@ FritzPlatform.prototype = {
         if (!skip) {
           let incoming = {
             name: 'Callmonitor Incoming',
-            serialNo: self.device.meta.UDN.split('uuid:')[1].split('-')[0]+'-'+self.types.callmonitor+'-1',
+            serialNo: self.device.deviceInfo.UDN.split('uuid:')[1].split('-')[0]+'-'+self.types.callmonitor+'-1',
             type: self.types.callmonitor,
             model: 'Incoming sensor',
             fakegato: false
           };
           let outgoing = {
             name: 'Callmonitor Outgoing',
-            serialNo: self.device.meta.UDN.split('uuid:')[1].split('-')[0]+'-'+self.types.callmonitor+'-2',
+            serialNo: self.device.deviceInfo.UDN.split('uuid:')[1].split('-')[0]+'-'+self.types.callmonitor+'-2',
             type: self.types.callmonitor,
             model: 'Outgoing sensor',
             fakegato: false
