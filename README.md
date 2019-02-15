@@ -1,4 +1,4 @@
-# Homebridge Fritz!Platform 
+# Homebridge Fritz!Platform v2
 
 This dynamic platform plugin allows almost full control of AVM hardware like Fritz!Box, Fritz!Repeater and Fritz!Fon. 
 
@@ -16,6 +16,18 @@ Among other things, homebridge-fritz-platform allows the switching of all WLAN f
 **Creating and maintaining Homebridge plugins consume a lot of time and effort, if you would like to share your appreciation, feel free to "Star" or donate.**
 
 [Click here](https://github.com/SeydX) to review more of my plugins.
+
+## Upcoming changes - Version 3
+- Completely rewritten code
+- Fixed several bugs
+- Full polling of all accessories and characteristics
+- Rewritten TR064 API
+- Better presence request
+- Faster PhoneBook
+- Phone prefix for more countries (Callmonitor)
+- and more...
+
+Stay tuned!
 
 ## Changelog
 See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/master/CHANGELOG.md) for changes between versions of this package.
