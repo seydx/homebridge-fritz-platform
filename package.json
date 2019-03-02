@@ -1,43 +1,43 @@
- {
-   "name": "homebridge-fritz-platform",
-   "version": "2.8.0",
-   "description": "homebridge-fritz-platform",
-   "main": "index.js",
-   "devDependencies": {},
-   "scripts": {
-     "test": "echo \"Error: no test specified\" && exit 1"
-   },
-   "repository": {
-     "type": "git",
-     "url": "git+https://github.com/SeydX/homebridge-fritz-platform.git"
-   },
-   "author": "SeydX (https://github.com/SeydX/homebridge-fritz-platform)",
-   "license": "MIT",
-   "bugs": {
-     "url": "https://github.com/SeydX/homebridge-fritz-platform/issues"
-   },
-   "homepage": "https://github.com/SeydX/homebridge-fritz-platform#readme",
-   "keywords": [
-     "fritz",
-     "fritzbox",
-     "homebridge",
-     "plugin",
-     "homebridge-plugin",
-     "internet",
-     "dsl"
-   ],
-   "engines": {
-     "node": ">=0.12.0",
-     "homebridge": ">=0.2.0"
-   },
-   "dependencies": {
-     "async": "2.6.1",
-     "cheerio": "^0.22.0",
-     "fakegato-history": "^0.5.3",
-     "moment": "^2.24.0",
-     "node-persist": "0.0.8",
-     "request": "^2.88.0",
-     "speedtest-net": "^1.5.0",
-     "xml2js": "^0.4.19"
-   }
- }
+{
+  "name": "homebridge-fritz-platform",
+  "version": "3.0.0",
+  "description": "homebridge-fritz-platform",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SeydX/homebridge-fritz-platform.git"
+  },
+  "author": "SeydX (https://github.com/SeydX/homebridge-fritz-platform)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SeydX/homebridge-fritz-platform/issues"
+  },
+  "homepage": "https://github.com/SeydX/homebridge-fritz-platform#readme",
+  "keywords": [
+    "fritz",
+    "fritzbox",
+    "homebridge",
+    "homebridge-plugin",
+    "plugin",
+    "presence"
+  ],
+  "engines": {
+    "node": "^8.9.1",
+    "homebridge": "^0.4.38"
+  },
+  "dependencies": {
+    "async": "2.6.1",
+    "moment": "^2.24.0",
+    "request": "^2.88.0",
+    "xml2js": "^0.4.19",
+    "node-persist": "0.0.8",
+    "cheerio": "^0.22.0",
+    "fakegato-history": "^0.5.3",
+    "tcp-ping": "^0.1.1",
+    "speedtest-net": "^1.5.0"
+  }
+}

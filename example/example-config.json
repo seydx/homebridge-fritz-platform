@@ -1,133 +1,142 @@
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
+
 {
-  "bridge": {
-	  ...
-  },
-  "accessories": [
-	  ...
-  ],
-  "platforms": [
+ "bridge": {
+   ...
+},
+ "accessories": [
+   ...
+],
+ "platforms": [
     {
       "platform": "FritzPlatform",
-      "name": "FritzBox",
-      "host": "fritz.box",
-      "port": 49000,
-      "timeout": 5,
-      "username": "USERNAME",
-      "password": "PASSWORD",
-      "polling": 5,
-      "wifi": {
-        "2.4ghz": true,
-        "5ghz": true,
-        "guest": true,
-        "wps": true,
-	"refreshChannel":true
+      "devices":{
+	      "FritzBox":{
+	        "host":"fritz.box",
+	        "port":49000,
+	        "username":"USERNAME",
+	        "password":"PASSWORD",
+	        "type":"dsl", //types: dsl, cable, repeater
+	        "wifi2":true,
+	        "wifi5":true,
+	        "wifiGuest":true,
+	        "phoneBook":true,
+	        "wps":true,
+	        "aw":true,
+	        "deflection":true,
+	        "led": true,
+	        "lock":true,
+          "beta":true, //true if using beta firmware
+          "mesh":false, //true if using mesh (7590 i.e)
+          "master":true //set master true if it is your main router! REQUIRED!
+	      },
+	      "FritzBox Extend":{
+	        "host":"192.168.1.1",
+	        "port":49000,
+	        "username":"USERNAME",
+	        "password":"PASSWORD",
+	        "type":"cable", //types: dsl, cable, repeater
+	        "wifi2":true,
+	        "wifi5":false,
+	        "wifiGuest":false,
+	        "led": true,
+          "beta":false //true if using beta firmware
+	      },
+	      "FritzRepeater":{
+	        "host":"fritz.repeater",
+	        "port":49000,
+	        "username":"USERNAME",
+	        "password":"PASSWORD",
+	        "type":"repeater", //types: dsl, cable, repeater
+	        "wifi2":true,
+	        "wifi5":false,
+	        "wifiGuest":false,
+	        "led": true,
+          "beta":false //true if using beta firmware
+	      }
       },
-      "options": {
-        "deflection": true,
-        "answeringMachine": true,
-        "devicelock": true,
-        "debug": false,
-        "phoneBook": true,
-        "broadband": {
-          "disable": true,
-          "maxTime": 5,
-          "polling": 60
+      "smarthome":{
+        "DECT 200": {
+          "ain":"01234567890", //actor ident number
+          "type":"switch",  // type: switch, contact, thermo
+          "tempSensor":true, // if true, a temp accessory will be exposed to homekit
+          "unit":"celsius" // celsius/fahrenheit, for temp sensor
         },
-        "wakeup": {
-          "internNr": "**620",
-          "duration": 30
+        "Window contact":{
+          "ain":"01234567890", //actor ident number
+          "type":"contact" // type: switch, contact, thermo
         },
-        "alarm": {
-          "telNr": "01234567890",
-          "duration": 30,
-          "telegram": true,
-          "token": "TOKENHERE",
-          "chatID": "CHATIDHERE",
-          "messages": {
-            "activated": "Alarm activated! Call @!",
-            "deactivated": "Alarm deactivated"
-          }
-        },
-        "reboot": {
-          "disable": false,
-          "cmd_on": "sh /var/homebridge-fritz-platform/reboot-start.sh",
-          "cmd_off": "sh /var/homebridge-fritz-platform/reboot-finished.sh",
-          "telegram": true,
-          "token": "TOKENHERE",
-          "chatID": "CHATIDHERE",
-          "messages": {
-            "on": "Network reboot started!",
-            "off": "Network reboot completed! @"
-          }
+        "DECT 301":{
+          "ain":"01234567890", //actor ident number
+          "type":"thermo", // type: switch, contact, thermo
+          "unit":"celsius", // units: celsius, fahrenheit
+          "heatValue":5,
+          "coolValue":5
         }
       },
       "callmonitor": {
-        "disable": false,
-        "ip": "192.168.178.1",
+        "active": true,
+        "ip": "192.168.1.1", //should be the same with main router
         "port": 1012,
-        "telegram": true,
-        "token": "TOKENHERE",
-        "chatID": "CHATIDHERE",
-        "messages":{
-	        "incoming":"Incoming call! @",
-	        "disconnected":"Incoming call - @ - was disconnected!"
-	    }
+        "country":"DE" //country where you live for better fetching numbers (callmonitor)
       },
-      "presence": {
-	"anyoneSensor":true,
-        "delay":60,
-        "type":"motion",
-        "telegram": true,
-        "token": "TOKENHERE",
-        "chatID": "CHATIDHERE",
-        "messages": {
-          "sensorOn": "Welcome at home @",
-          "sensorOff": "Bye bye @",
-          "anyoneOn": "Presence detected at home!",
-          "anyoneOff": "No one at home!"
-        },
-	"devices":{
-	  "Peter":"00:11:22:33:44:55",
-	  "Maria":"123.456.123.12"
-	}
+      "presence":{
+	      "USER 1":"40:98:AD:1E:E5:E0", //ip/mac addresse - Recommended: MAC addresse
+	      "USER 2":"E0:33:8E:CE:9D:BD" //ip/mac addresse - Recommended: MAC addresse
       },
-      "wol": {
-	  "Fernseher":"AA:00:BB:11:CC:ZZ",
-	  "Computer":"BB:11:ZZ:33:OO:AA"
+      "wol":{
+        "Device 1":"04:5D:4B:0C:E3:47" //MAC addresse from device for WOL
       },
-      "smarthome": {
-        "Dect 1":{
-          "disable":false,
-          "type":"plug",
-          "ain":"12345 67890"
-        },
-        "Dect 2":{
-          "disable":false,
-          "type":"thermo",
-          "ain":"00998 76655"
-        },
-        "Dect 3":{
-          "disable":false,
-          "type":"contact",
-          "ain":"09876 54321"
-        }
+      "alarm":{
+	      "active":true,
+	      "telNr":"0123456789",
+	      "duration":30 //in seconds
       },
-      "repeater": {
-        "FritzRepeater": {
-          "disable": false,
-          "ip": "192.168.178.2",
-          "port": 49000,
-          "username": "USERNAME2",
-          "password": "PASSWORD2",
-          "led": true,
-	  "reboot":true,
-          "wifi": {
-            "2.4ghz": true,
-            "5ghz": false,
-            "guest": true
-          }
-        }
-      }
+      "wakeup":{
+	      "active":true,
+	      "internNr":"**620",
+	      "duration":60 //in seconds
+      },
+      "ringlock":{
+	      "active":true,
+	      "DECTphones":1, //only DECT phones
+	      "start":"15:00", //24h format hh:mm
+	      "end":"21:00" //24h format hh:mm
+      },
+      "broadband":{
+	    "active":true,
+	      "measureTime":5, //time to measure in seconds
+	      "polling":30 //in minutes
+      },
+      "extReboot":{
+	      "active":true,
+	      "cmdOn":"sh /PATHTOSCRIPT/reboot-start.sh",  //change path to your script!
+	      "cmdOff":"sh /PATHTOSCRIPT/reboot-finished.sh"  //change path to your script!
+      },
+      "telegram":{
+	      "active":true,
+	      "token":"TOKEN",
+	      "chatID":"CHATID",
+	      "presence":{
+	        "in":"Willkommen zu Hause @", //@ will be replaced automatically with name
+	        "out":"Auf Wiedersehen @", //@ will be replaced automatically with name
+	        "anyoneIn":"Jemand ist zu Hause!",                
+	        "anyoneOut":"Niemand zu Hause!"
+	      },
+	      "callmonitor":{
+	        "incoming":"Ankommende Anruf! @", //@ will be replaced automatically with name and nr
+	        "disconnected":"Anruf mit @ wurde beendet!" //@ will be replaced automatically with name and nr
+	      }
+      },
+      "anyone":true, //for anyone sensor (presence)
+      "delay":60, //in seconds
+      "polling":5, //in seconds
+      "timeout": 5 //in seconds
     }
-  ]
+ ]
 }

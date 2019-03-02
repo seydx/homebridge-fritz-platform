@@ -1,8 +1,7 @@
 # Tested devices & OS version
 
 ## Fritz!OS
-- [x] Fritz!OS 6.98 (Labor)
-- [x] Fritz!OS 6.92
+- [x] Fritz!OS 7.x & Beta
 
 ## Fritz!Box
 - [x] Fritz!Box 7590
@@ -15,9 +14,14 @@
 ## Fritz!Repeater
 - [x] Fritz!Repeater 1750E
 - [x] Fritz!Wlan Repeater 450E
-- [x] Fritz!Wlan Repeater 310
+- [x] Fritz!Wlan Repeater 310 *(works partial if no mesh)*
 
 ## Fritz!DECT Smart Home
 - [x] Fritz!DECT Repeater 1000
+- [x] Fritz!DECT 301
+- [x] Fritz!DECT 200
+- [x] HAN-FUN Contact sensor
 
-Note: The page is constantly updated. If your device is also supported, please contact me
+
+
+**Note:** The page is constantly updated. If your device is also supported, please contact me

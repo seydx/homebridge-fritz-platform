@@ -1,36 +1,46 @@
-# Homebridge Fritz!Platform v2
+<p align="center">
+    <img src="https://i.imgur.com/YAEtHb5.png">
+</p>
 
-This dynamic platform plugin allows almost full control of AVM hardware like Fritz!Box, Fritz!Repeater and Fritz!Fon. 
 
-Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run homebridge-fritz-platform. The only need is network access to the device or program in question.
 
-Among other things, homebridge-fritz-platform allows the switching of all WLAN frequencies, guest WLAN, answering machine, wake-up call, call monitor, presence sensors with FakeGato and much more!
+# Fritz!Platform
+
+This dynamic platform plugin allows almost full control of **AVM** hardware like:
+
+- Fritz!Box, 
+- Fritz!WLAN Repeater,
+- Fritz!Fon,
+- Fritz!DECT plugs and repeater,
+- Comet!DECT thermostats,
+- HAN-FUN sensors
+
+Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run **homebridge-fritz-platform**. The only need is network access to the device or program in question.
+
+Among other things, **homebridge-fritz-platform** allows the switching of all WLAN frequencies, guest WLAN, answering machine, wake-up call, call monitor, presence sensors with [FakeGato](https://github.com/simont77/fakegato-history) and much more!
+
+
 
 ## Status
+
 [![npm](https://img.shields.io/npm/v/homebridge-fritz-platform.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-fritz-platform)
 [![npm](https://img.shields.io/npm/dt/homebridge-fritz-platform.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-fritz-platform)
 [![GitHub last commit](https://img.shields.io/github/last-commit/SeydX/homebridge-fritz-platform.svg?style=flat-square)](https://github.com/SeydX/homebridge-fritz-platform)
-[![Join the chat at https://gitter.im/sahat/hackathon-starter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/homebridge-fritz-platform/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square&maxAge=2592000)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NP4T3KASWQLD8)
 
 **Creating and maintaining Homebridge plugins consume a lot of time and effort, if you would like to share your appreciation, feel free to "Star" or donate.**
 
 [Click here](https://github.com/SeydX) to review more of my plugins.
 
-## Upcoming changes - Version 3
-- Completely rewritten code
-- Fixed several bugs
-- Full polling of all accessories and characteristics
-- Rewritten TR064 API
-- Better presence request
-- Faster PhoneBook
-- Phone prefix for more countries (Callmonitor)
-- and more...
 
-Stay tuned!
 
 ## Changelog
+
 See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/master/CHANGELOG.md) for changes between versions of this package.
+
+**<u>NOTE:</u>** Updating from **v2.x** to **v3.x** will crash your homebridge, please **REMOVE** the old version first and check also the new [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json) !
+
+
 
 ## Documentation
 
@@ -39,16 +49,20 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
 - [Common issues & FAQs](https://github.com/SeydX/homebridge-fritz-platform/blob/master/FAQ.md)
 - [Installation instruction](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)
    * [Configuring Fritz!Box](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
+   * [Configuring Fritz!Box Extras](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Extras.md)
    * [Configuring Fritz!Repeater](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Repeater.md)
    * [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Callmonitor.md)
    * [Configuring Presence](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Presence.md)
    * [Configuring Wake On Lan](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/WOL.md)
-   * [Configuring SmartHome Devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md)
-- Examples
+   * [Configuring SmartHome (DECT, HAN-FUN, Comet!DECT)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md)
+   * [Configuring Telegram](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Telegram.md)
+- <u>Examples</u>
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
-   * [Multiple instances (for Reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
-   * [Telegram Notification instructions](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/Telegram.md)
+   * [Multiple instances (for extended reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
+   * [Telegram Notification instructions](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Telegram.md)
 - [Fritz!Platform Debug util](https://github.com/SeydX/fritzplatform-util)
+
+
 
 ## Contributing
 
@@ -62,11 +76,13 @@ You can contribute to this homebridge plugin in following ways:
 
 This Plugin uses modules from others, see [CONTRIBUTING](https://github.com/SeydX/homebridge-fritz-platform/blob/master/CONTRIBUTING.md) for credits.
 
+
+
 ## Licens
 
-MIT License
+**MIT License**
 
-Copyright (c) 2017 SeydX
+Copyright (c) 2019 **Seyit Bayraktar**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

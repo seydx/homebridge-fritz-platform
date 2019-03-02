@@ -1,42 +1,87 @@
-# Smarthome
+# SmartHome Accessory
 
-If you want to control your DECT plugs or thermometer _(thermometer and contact sensor currently not supported)_, you have to set it in the config.json
+If you want to control your DECT plugs, thermometer or sensors, you have to set it in the config.json
 
-**Note:** Currently **ONLY** plugs are supported. Thermometer and contact sensors will come in another version, also temperature and energy monitor are under development!
+
+
 # Example Config
 
 ```
 "smarthome": {
-  "Dect 1":{
-    "disable":false,
-    "type":"plug",
-    "ain":"12345 67890"
+  "DECT 200":{
+    "type":"switch",
+    "ain":"1234567890",
+    "tempSensor":true,
+    "unit":"celsius"
   },
-  "Dect 2":{
-    "disable":false,
+  "DECT 301":{
     "type":"thermo",
-    "ain":"00998 76655"
+    "ain":"1234567890",
+    "unit":"celsius",
+    "heatValue":5,
+    "coolValue":5
   },
-  "Dect 3":{
-    "disable":false,
+  "Kitchen Window":{
     "type":"contact",
-    "ain":"09876 54321"
-  },
+    "ain":"1234567890"
+  }
 }
 ```
 
-## New devices
-Parameter to expose new switches
 
-| Attributes | Usage |
-|------------|-------|
-| custom name | Own defined name for Home |
-| disable | If disable = false, accessory will exposed to HomeKit, otherwise it will be removed |
-| type | Type from Accessory (plug, thermo or contact) |
-| ain | AIN adresse from the device |
+
+## Required parameter "switch"
+
+| Attributes | Usage | Req |
+|------------|-------|:----------:|
+| custom name | Own defined name for Home | X |
+| type        | Must be "switch"            | X |
+| ain         | AIN adresse from the device | X |
+| tempSensor  | If true AND the switch provides a temperature sensor, a temperature sensor will be exposed to HomeKit (Default: false) |  |
+| unit        | Unit for temperature sensor - celsius/fahrenheit (Default: celsius, fahrenheit may be buggy) |  |
+
+
+
+## Required parameter "contact"
+
+| Attributes  | Usage                       | Req  |
+| ----------- | --------------------------- | :--: |
+| custom name | Own defined name for Home   |  X   |
+| type        | Must be "contact"           |  X   |
+| ain         | AIN adresse from the device |  X   |
+
+
+
+## Required parameter "thermo"
+
+| Attributes  | Usage                                                        | Req  |
+| ----------- | ------------------------------------------------------------ | :--: |
+| custom name | Own defined name for Home                                    |  X   |
+| type        | Must be "thermo"                                             |  X   |
+| ain         | AIN adresse from the device                                  |  X   |
+| unit        | "celsius" or "fahrenheit" (fahrenheit may be buggy) (Default: celsius) |      |
+| heatValue   | Value for the "Heat" mode. Example: a value of 4 will heat up the room to **Current Room Temperature + 4 degrees** (Default: 5) |      |
+| coolValue   | Value for the "Cool" mode. Example: a value of 4 will cool up the room to **Current Room Temperature - 4 degrees** (Default: 5) |      |
+
 
 
 The AIN adresse can be found on the weboverview or behind the device
 
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/ain1.jpg" align="center" alt="AIN1">
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/ain2.jpg" align="center" alt="AIN2">
+
+## Screenshots
+
+![AIN](https://github.com/SeydX/homebridge-fritz-platform/raw/master/docs/images/ain1.jpg)
+
+![Settings](https://github.com/SeydX/homebridge-fritz-platform/raw/master/docs/images/ain2.jpg)
+
+
+
+![Smarthome1](https://github.com/SeydX/homebridge-fritz-platform/raw/master/images/smarthome_tempsensor.jpg)
+
+
+
+![Smarthome2](https://github.com/SeydX/homebridge-fritz-platform/raw/master/images/smarthome_thermosensor.jpg)
+
+
+
+![Smarthome](https://github.com/SeydX/homebridge-fritz-platform/raw/master/images/smarthome_contactsensor.jpg)

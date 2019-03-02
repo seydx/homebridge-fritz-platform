@@ -2,7 +2,7 @@
 
 Below, i have listed some frequently asked questions and errors that may be appear during the installation process.
 
-## Presence not work properly
+## Presence not working properly
 
 Presence works as follows: As soon as a user is no longer registered on the network, the user is not immediately shown as being absent. The plugin searches for the user, eg. if repeaters are listed in config.json, the user will be searched for further. If the user is also not active there and if no "Delay" is set in the config.json, the user is displayed as absent.
 
@@ -10,15 +10,17 @@ Presence works as follows: As soon as a user is no longer registered on the netw
 
 ## Error 713/714 (presence)
 
-That is not an issue by the plugin, it means only it can not find the, in config defined ip/mac adress, in the list of your main device/repeater
+That is not an issue by the plugin, it means only it can not find the, in config defined ip/mac adress, in the list of your main device/repeater.
 
 **Fix:** Connect to your repeater/main device so it can save your ip/mac adress in the list of known devices
 
-## ETIMEDOUT
+## ETIMEDOUT/ESOCKETTIMEDOUT
 
 `"error": "ETIMEDOUT"`
 
-**Fix:** Increase your polling and timeout
+`"error": "ESOCKETTIMEDOUT"`
+
+**Fix:** There are several things to do. First, check if the user have full rights. If yes, try with creating a new user on FritzBox and give him also full rights. Put the new credentials in your config.json and look ifthe error appears again. You can also try to increase polling and timeout in your config.json
 
 ## Deflection error
 
@@ -26,7 +28,7 @@ That is not an issue by the plugin, it means only it can not find the, in config
 
 **Fix:** In order for deflection to work, a new deflection must first be added in the Fritz!Box settings, see example:
 
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/deflection.png" align="center" alt="Deflection error">
+![Deflection Settings](https://raw.githubusercontent.com/SeydX/homebridge-fritz-platform/master/docs/images/deflection.png)
 
 <hr>
 
@@ -47,5 +49,3 @@ That is not an issue by the plugin, it means only it can not find the, in config
 ```
 
 **Fix:** You need to set the right router type in your config.json. If you are using a cable router, please put "type":"cable" in your config.json otherwise it is by default "type":"dsl"
-
-<hr>

@@ -1,62 +1,54 @@
-# Fritz!Repeater
+# Fritz!Repeater Switch Accessory
 
 Like with the Fritz!Box, this plugin uses the TR 064 interface of the repeater to communicate with it. Port for it is 49000. So that the plugin runs perfectly, please enter the access data to FritzRepeater web interface in the config.json (if you dont hve a usernsme, judt ttake the username from your FritzBox). In addition to the TR064 interface, the plugin also uses the LUA interface for e.g. turn on the LED
 
-The Plugin can also expose all available Wifi frequences and guest wifi access as characteristics to HomeKit. Note: Custom characteristics are only available with 3rd party apps like Elgato EVE etc.
+The Plugin can also expose all available Wifi frequences and guest wifi access as characteristics to HomeKit. **Note:** Custom characteristics are only available with 3rd party apps like Elgato EVE etc.
+
+
+
+## Example Config
 
 ```
-"repeater": {
-  "Fritz Repeater #1": {
-    "disable": false,
-    "ip": "192.168.178.56",
-    "port": 49000,
-    "username": "USERNAME",
-    "password": "PASSWORD",
-    "led": true,
-    "wifi": {
-      "2.4ghz": true,
-      "5ghz": true,
-      "guest": true
-    }
-  },
-  "Fritz Repeater #2": {
-    "disable": false,
-    "ip": "192.168.178.75",
-    "port": 49000,
-    "username": "USERNAME",
-    "password": "PASSWORD",
-    "led": true,
-    "wifi": {
-      "2.4ghz": true,
-      "5ghz": true,
-      "guest": true
+  "devices": {
+    "FritzBox": {
+      "host": "fritz.repeater",
+      "port": 49000,
+      "username": "USERNAME",
+      "password": "PASSWORD",
+      "type": "repeater",
+      "wifi2": true,
+      "wifi5": true,
+      "wifiGuest": true
+      "led": true
     }
   }
-}
 ```
 
-## Base
-Required settings
+
+
+## Required parameter
+
+| Attributes | Usage | Req |
+|------------|-------|:----------:|
+| host | Host, IP or Remote addresse of the device | x |
+| port | Port of the device (Default: 49000, or port setted in the settings for remote login) | x |
+| type | Type of the device (Choices: repeater/cable/dsl, Default: "dsl") |  |
+| username | Username for logging in to the above device | x |
+| password | Password for logging in to the above device | x |
+
+
+
+## Optional parameter
 
 | Attributes | Usage |
 |------------|-------|
-| disable | If true, Fritz!Repeater will be removed  |
-| ip | Ip adress from repeater |
-| port | Port for TR064 API (Default: 49000) |
-| username | Username for Fritz!Repeater |
-| password | Password for Fritz!Repeater |
+| wifi2 | Parameter for enable/disable wifi 2.4ghz switch (Default: false) |
+| wifi5 | Parameter for enable/disable wifi 5ghz switch (Default: false) |
+| wifiGuest | Parameter for enable/disable guest wifi switch (Default: false) |
+| led | Parameter for enable/disable LED switch (Default: false) |
 
-## Options
-Extra characteristics to show LED and Wifi 
 
-| Attributes | Usage |
-|------------|-------|
-| LED | Switch characteristic to switch on/off LED |
-| wifi.2.4ghz | Switch characteristic to switch on/off Wifi 2.4Ghz |
-| wifi.5ghz | Switch characteristic to switch on/off Wifi 5Ghz |
-| wifi.guest | Switch characteristic to switch on/off Wifi Guest |
 
-## In-App Screenshots (Elgato EVE)
+## Screenshots
 
-**Elgato Eve**
-<img src="https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/images/Repeater.JPG" align="center" alt="Repeater EVE">
+![EVE 1](https://raw.githubusercontent.com/SeydX/homebridge-fritz-platform/master/docs/images/Repeater.JPG)

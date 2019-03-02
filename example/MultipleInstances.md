@@ -73,4 +73,4 @@ sudo systemctl restart homebridge-fritz-platform
 echo 1
 ```
 
-Note: The .services must be replaced with own instances
+**Note:** The .services must be replaced with own instances

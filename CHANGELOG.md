@@ -1,5 +1,30 @@
 # Changelog
 
+## v3.0.0 - 2019-03-02
+
+**Breaking changes, remove v2.x first before continue! Check also the new [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json) !**
+
+- **[NEW]** Callmonitor with extended FakeGato support
+- **[NEW]** Callmonitor PhoneBook with auto prefix functionality
+- **[NEW]** Callmonitor PhoneBook ultra fast storing
+- **[NEW]** Support of BETA FritzBox firmware
+- **[NEW]** Support of MESH functionality to decrease request amounts
+- **[NEW]** Ring Lock
+- **[NEW]** Fallback if no connection
+- **[NEW]** Better debug logger (-D)
+- **[NEW]** SmartHome Devices (plugs, contact sensors and thermostats)
+- **[NEW]** SmartHome Switch accessory with external temp sensor accessory
+- **[NEW]** FakeGato for smarthome devices
+- **[FIX]** Better presence detection
+- **[FIX]** Bugfixes and Speed improvements
+- **[BETTER]** Rewritten dynamic platform
+- **[BETTER]** Resource efficient
+- **[REMOVE]** Presence as motion sensor
+- **[REMOVE]** FakeGato for presence sensor
+
+## v2.8.0 - 2018-02-11
+- Fix TR064 Api
+
 ## v2.7.1 - 2018-06-20
 - Bugfixes
 - Note: "smarthome" were changed in config.json! Please check before update. ([example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json#L98))
@@ -107,11 +132,3 @@
 
 ## v2.2.5 - 2018-06-06
 - Created initial basic accessory and initial work
-
-
-# Functions in progress
-- [x] Fritz!SmartHome device implementations
-- [ ] Fritz!SmartHome device extensions (temperature, thermometer, energy monitor)
-- [ ] Ring lock
-- [x] Debug tool (in work)
-- [x] Support for cable router like Fritz!Box 6490 etc
