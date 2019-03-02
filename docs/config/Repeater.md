@@ -10,7 +10,7 @@ The Plugin can also expose all available Wifi frequences and guest wifi access a
 
 ```
   "devices": {
-    "FritzBox": {
+    "FritzBox Repeater Kitchen": {
       "host": "fritz.repeater",
       "port": 49000,
       "username": "USERNAME",
@@ -30,6 +30,7 @@ The Plugin can also expose all available Wifi frequences and guest wifi access a
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
+| name | Unique name for the accessory, eg FritzBox Repeater Kitchen | x |
 | host | Host, IP or Remote addresse of the device | x |
 | port | Port of the device (Default: 49000, or port setted in the settings for remote login) | x |
 | type | Type of the device (Choices: repeater/cable/dsl, Default: "dsl") |  |
