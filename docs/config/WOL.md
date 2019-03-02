@@ -19,7 +19,7 @@ If you want to start wol capable devices with this plugin, you have to put the M
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
-| custom name | Own defined name for Home | x |
+| name | Unique name for the accessory, eg Fernseher or Computer etc. | x |
 | mac adress | MAC adresse from the device | x |
 
 
