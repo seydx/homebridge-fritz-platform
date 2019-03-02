@@ -56,6 +56,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
    * [Configuring Wake On Lan](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/WOL.md)
    * [Configuring SmartHome (DECT, HAN-FUN, Comet!DECT)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md)
    * [Configuring Telegram](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Telegram.md)
+   * [General Config](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/General.md)
 - <u>Examples</u>
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
    * [Multiple instances (for extended reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
