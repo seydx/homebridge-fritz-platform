@@ -8,13 +8,13 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 
 ```
 "smarthome": {
-  "DECT 200":{
+  "Work room DECT 200":{
     "type":"switch",
     "ain":"1234567890",
     "tempSensor":true,
     "unit":"celsius"
   },
-  "DECT 301":{
+  "Living room DECT 301":{
     "type":"thermo",
     "ain":"1234567890",
     "unit":"celsius",
@@ -34,7 +34,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
-| custom name | Own defined name for Home | X |
+| name | Unique name for the accessory, eg Work room DECT 200 | X |
 | type        | Must be "switch"            | X |
 | ain         | AIN adresse from the device | X |
 | tempSensor  | If true AND the switch provides a temperature sensor, a temperature sensor will be exposed to HomeKit (Default: false) |  |
@@ -46,7 +46,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 
 | Attributes  | Usage                       | Req  |
 | ----------- | --------------------------- | :--: |
-| custom name | Own defined name for Home   |  X   |
+| name | Unique name for the accessory, eg Living room DECT 301   |  X   |
 | type        | Must be "contact"           |  X   |
 | ain         | AIN adresse from the device |  X   |
 
@@ -56,7 +56,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 
 | Attributes  | Usage                                                        | Req  |
 | ----------- | ------------------------------------------------------------ | :--: |
-| custom name | Own defined name for Home                                    |  X   |
+| name | Unique name for the accessory, eg Kitchen window |  X   |
 | type        | Must be "thermo"                                             |  X   |
 | ain         | AIN adresse from the device                                  |  X   |
 | unit        | "celsius" or "fahrenheit" (fahrenheit may be buggy) (Default: celsius) |      |
