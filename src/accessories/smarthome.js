@@ -95,7 +95,7 @@ class Fritz_Box {
         accessory.context.lastSwitchState = false;
         break;
       case 'contact':
-        accessory.context.lastSensorState = false;
+        accessory.context.lastSensorState = 0;
         //EVE
         accessory.context.lastActivation = 0;
         accessory.context.timesOpened = 0;
@@ -106,6 +106,7 @@ class Fritz_Box {
         accessory.context.lastThermoCurrentState = 0;
         accessory.context.lastThermoTargetState = 0;
         accessory.context.lastThermoCurrentTemp = 0;
+        accessory.context.lastThermoTargetTemp = 0;
         accessory.context.unit = parameter.unit;
         accessory.context.heatValue = parameter.heatValue||5;
         accessory.context.coolValue = parameter.coolValue||5;
@@ -165,21 +166,14 @@ class Fritz_Box {
         device = accessory.context.devices[i];
       }
     }
-
     switch(type){
       case 'temp':
         service = accessory.getService(Service.TemperatureSensor);
         service.getCharacteristic(Characteristic.CurrentTemperature)
           .updateValue(accessory.context.lastTemp)
           .on('change', self.refreshData.bind(this, accessory, service, type));
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService['FakeGatoHistory']=accessory.context.loggingService;
-        } else {
-          accessory.context.loggingService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        }
-        if(accessory.context.loggingService.history.length===1&&accessory.context.loggingService.history[0]=='noValue'){
-          accessory.context.loggingService.addEntry({time: moment().unix(), temp:accessory.context.lastTemp, pressure:0, humidity:0});
-        }
+        
+        self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
         break;
       case 'switch':
         service = accessory.getService(Service.Switch);
@@ -209,14 +203,8 @@ class Fritz_Box {
         service.getCharacteristic(Characteristic.ContactSensorState)
           .updateValue(accessory.context.lastSensorState)
           .on('change', self.refreshData.bind(this, accessory, service, type));
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService['FakeGatoHistory']=accessory.context.loggingService;
-        } else {
-          accessory.context.loggingService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        }
-        if(accessory.context.loggingService.history.length===1&&accessory.context.loggingService.history[0]=='noValue'){
-          accessory.context.loggingService.addEntry({time: moment().unix(), status:accessory.context.lastSensorState});
-        }
+        
+        self.historyService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
         break;
       case 'thermo':
         service = accessory.getService(Service.Thermostat);
@@ -263,14 +251,8 @@ class Fritz_Box {
         battery.getCharacteristic(Characteristic.StatusLowBattery)
           .updateValue(accessory.context.batteryStatus);
 
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService['FakeGatoHistory']=accessory.context.loggingService;
-        } else {
-          accessory.context.loggingService = new FakeGatoHistoryService('thermo', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        }
-        if(accessory.context.loggingService.history.length===1&&accessory.context.loggingService.history[0]=='noValue'){
-          accessory.context.loggingService.addEntry({time: moment().unix(), currentTemp:accessory.context.lastThermoCurrentTemp, setTemp:accessory.context.lastThermoTargetTemp, valvePosition:0});
-        }
+       
+        self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
         break;
       default:
         self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
@@ -326,33 +308,30 @@ class Fritz_Box {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   
   refreshData(accessory, service, type, value){
-    //const self = this;
+    const self = this;   
     switch(type){
       case 'temp':
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
-        }
+        self.historyService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
+        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastTemp);
         break;
       case 'contact':
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService.addEntry({time: moment().unix(), status:accessory.context.lastSensorState});
-        }
+        self.historyService.addEntry({time: moment().unix(), status:value.newValue});
+        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastSensorState);
         if(value.newValue){
           accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - accessory.context.loggingService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - accessory.context.loggingService.getInitialTime();
+          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
           service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
           service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
           service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
         } else {
-          accessory.context.openDuration = moment().unix() - accessory.context.loggingService.getInitialTime();
+          accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
           service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
         }
         break;
       case 'thermo':
-        if(accessory.context.loggingService&&accessory.context.loggingService.length){
-          accessory.context.loggingService.addEntry({time: moment().unix(), currentTemp:accessory.context.lastThermoCurrentTemp, setTemp:accessory.context.lastThermoTargetTemp, valvePosition:0});
-        }
+        self.historyService.addEntry({time: moment().unix(), temp:accessory.context.lastThermoCurrentTemp, pressure:0, humidity:0});
+        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastThermoCurrentTemp + ' - and - ' + accessory.context.lastThermoTargetTemp);
         break;
       default:
         //err
