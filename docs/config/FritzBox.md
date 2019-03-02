@@ -36,6 +36,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
+| name | Unique name for the accessory, eg FritzBox | x |
 | master | True if it is your main device/router, false if it is a repeater or extended router | x |
 | host       | Host, IP or Remote addresse of the device                    | x |
 | port       | Port of the device (Default: 49000, or port setted in the settings for remote login) |  |
