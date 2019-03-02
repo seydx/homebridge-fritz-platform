@@ -32,26 +32,9 @@ Presence also supports the Telegram notification service, via config.json it is 
 
 You can also add a "Anyone" sensor to HomeKit for checking presence at home to create automations based on "if anyone at home / not at home)
 
-There is also a possibility to set a delay. This prevents the motion sensor from going to "no movement" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the motion sensor goes to "no movement". If delay = 0 or removed, this option is deactivated. Type defines the accessory type (motion sensor or occupancy sensor)
+There is also a possibility to set a delay. This prevents the occupancy sensor from going to "no occupancy" when the device logs out of the repeater and connects to the router or vice versa. Only if there is still no connection in the specified time, the occupancy sensor goes to "no occupancy". If delay = 0 or removed, this option is deactivated. 
 
-
-
-## Example Presence Configuration
-
-```
-"anyone":true,
-"delay":60
-```
-
-
-
-## Required presence parameter
-
-| Attributes | Usage                                                        |
-| ---------- | ------------------------------------------------------------ |
-| anyone     | If true, the plugin will expose an 'anyone' occupancy sensor to HomeKit (Default: false) |
-| delay      | If delay > 0, a delay will be set to avoid wrong occupancy updates |
-
+Check the **[General config](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/General.md)** section for this!
 
 
 ## Screenshots
