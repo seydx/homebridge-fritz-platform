@@ -55,6 +55,7 @@ function FritzPlatform (log, config, api) {
   this.broadband = config.broadband||{};
   this.extReboot = config.extReboot||{};
   
+  this.readOnlySwitches = config.readOnlySwitches||false;
   this.telegram = config.telegram||{};
   this.delay = (config.delay&&config.delay>=10) ? config.delay*1000:10*1000;
   this.polling = (config.polling&&config.polling>=5) ? config.polling*1000:5*1000;
