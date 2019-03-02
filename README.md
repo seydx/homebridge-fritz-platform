@@ -42,6 +42,12 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
 
 
 
+## Upcoming
+
+- [ ] Advanced Call Monitor Features: Consider numbers entered in the config for incoming and outgoing calls!
+
+
+
 ## Documentation
 
 - [Supported HomeKit Apps](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Apps.md)
