@@ -40,6 +40,7 @@ class Fritz_Box {
     this.delay = platform.delay;
     this.telegram = platform.telegram;
     this.sendTelegram = platform.sendTelegram;
+    this.readOnlySwitches = platform.readOnlySwitches;
     this.errorpoll = 60000;
     this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
     this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
@@ -543,23 +544,28 @@ class Fritz_Box {
 
   setState(accessory,service,state,callback){
     const self = this;
-    let box, device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i]; 
+    if(!self.readOnlySwitches){
+      let box, device;
+      for(const i in accessory.context.devices){
+        if(accessory.displayName == i){
+          device = accessory.context.devices[i]; 
+        }
       }
-    }
-    if(!state){
-      accessory.context.lastState = false;
-      box = device.services['urn:dslforum-org:service:DeviceConfig:1'];
-      box.actions.Reboot(null,{name:accessory.displayName + ' SetState', count:0},function() {
-        self.logger.info(accessory.displayName + ': Rebooting...'); 
-      });
-      accessory.context.lastState = false;
-      callback(null, state);
+      if(!state){
+        accessory.context.lastState = false;
+        box = device.services['urn:dslforum-org:service:DeviceConfig:1'];
+        box.actions.Reboot(null,{name:accessory.displayName + ' SetState', count:0},function() {
+          self.logger.info(accessory.displayName + ': Rebooting...'); 
+        });
+        accessory.context.lastState = false;
+        callback(null, state);
+      } else {
+        callback(null, state);
+      }
     } else {
-      callback(null, state);
-    }
+      setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(state?false:true);},500);
+      callback(null, state?false:true);
+    }  
   }
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
