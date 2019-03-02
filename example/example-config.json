@@ -133,6 +133,7 @@
 	        "disconnected":"Anruf mit @ wurde beendet!" //@ will be replaced automatically with name and nr
 	      }
       },
+      "readOnlySwitches":false, //If true, the device switches will not trigger for reboot if set to on on/off
       "anyone":true, //for anyone sensor (presence)
       "delay":60, //in seconds
       "polling":5, //in seconds
