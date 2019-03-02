@@ -146,6 +146,8 @@ class Fritz_Box {
       self.logger.info(accessory.displayName + ': Hi!');
       callback();
     });
+    
+    this.historyService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
 
     let service = accessory.getService(Service.ContactSensor);
 
@@ -187,12 +189,6 @@ class Fritz_Box {
       if (!service.testCharacteristic(Characteristic.Called))service.addCharacteristic(Characteristic.Called);
       service.getCharacteristic(Characteristic.Called)
         .updateValue(accessory.context.called);
-    }
-
-    if(accessory.context.loggingService&&accessory.context.loggingService.length){
-      accessory.context.loggingService['FakeGatoHistory']=accessory.context.loggingService;
-    } else {
-      accessory.context.loggingService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
     }
 
     this.getContactState(accessory, service);
@@ -245,13 +241,13 @@ class Fritz_Box {
           };
           accessory.context.lastState = 1;
           accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - accessory.context.loggingService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - accessory.context.loggingService.getInitialTime();
+          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
           service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
           service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
           service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
-          accessory.context.loggingService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
           if(self.storage.getItem('PhoneBook.js')){
             let phonebook = self.storage.getItem('PhoneBook.js');
             let skip = false;
@@ -311,12 +307,12 @@ class Fritz_Box {
           };
           accessory.context.lastState = 1;
           accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - accessory.context.loggingService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - accessory.context.loggingService.getInitialTime();
+          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
           service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
           service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
           service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
-          accessory.context.loggingService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
           let called = message.called.replace(/\D/g,''); 
           if(self.storage.getItem('PhoneBook.js')){
             let phonebook = self.storage.getItem('PhoneBook.js');
@@ -378,9 +374,9 @@ class Fritz_Box {
             text = text.replace('@', parseInfo).replace('%', message.called);
             self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
           }
-          accessory.context.openDuration = moment().unix() - accessory.context.loggingService.getInitialTime();
+          accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
           service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
-          accessory.context.loggingService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
 
         }
       }
