@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.0.4 - 2019-03-03
+- Fixed a bug with fetching SIDs for multiple devices
+
+## v3.0.3 - 2019-03-03
+- Added new function to callmonitor: Specify numbers for "incoming to" and "outgoing from" calls (usefull if using multiple numbers at home and want to trigger only for specified number in config
+
+## v3.0.2 - 2019-03-02
+- Added new function to devices: "Read Only" 
+
+## v3.0.1 - 2019-03-02
+- Fixed FakeGato for callmonitor and smarthome devices
+
 ## v3.0.0 - 2019-03-02
 
 **Breaking changes, remove v2.x first before continue! Check also the new [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json) !**
