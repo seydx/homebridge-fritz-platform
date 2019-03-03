@@ -789,6 +789,8 @@ FritzPlatform.prototype = {
           model: 'Incoming sensor',
           config: self.callmonitor,
           client: self.client,
+          incomingTo: self.callmonitor.incomingTo||false,
+          outgoingFrom: self.callmonitor.outgoingFrom||false,
           devices: devices
         };
         cmArray.push(incoming);
@@ -798,6 +800,8 @@ FritzPlatform.prototype = {
           model: 'Outgoing sensor',
           config: self.callmonitor,
           client: self.client,
+          incomingTo: self.callmonitor.incomingTo||false,
+          outgoingFrom: self.callmonitor.outgoingFrom||false,
           devices: devices
         };
         cmArray.push(outgoing);
@@ -1082,6 +1086,8 @@ FritzPlatform.prototype = {
     accessory.context.ip = self.callmonitor.ip;
     accessory.context.port = self.callmonitor.port;
     accessory.context.config = self.callmonitor;
+    accessory.context.incomingTo = self.callmonitor.incomingTo;
+    accessory.context.outgoingFrom = self.callmonitor.outgoingFrom;
     !accessory.context.timesOpened?accessory.context.timesOpened=0:accessory.context.timesOpened;
     !accessory.context.lastActivation?accessory.context.lastActivation=0:accessory.context.lastActivation;
     !accessory.context.closeDuration?accessory.context.closeDuration=0:accessory.context.closeDuration;
