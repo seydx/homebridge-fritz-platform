@@ -45,6 +45,7 @@ function FritzPlatform (log, config, api) {
   
   this.devices = config.devices||{};
   this.deviceArray = [];
+  this.sidArray = [];
   this.smarthome = config.smarthome||{};
   this.presence = config.presence||{};
   this.wol = config.wol||{};
@@ -63,6 +64,7 @@ function FritzPlatform (log, config, api) {
   this.anyone = config.anyone||false;
   this.hostsCount = 0;
   this.smartCount = 0;
+  this.sidCount = 0;
 
   if (api) {
     if (api.version < 2.2) {
@@ -120,8 +122,8 @@ FritzPlatform.prototype = {
                     self.logger.initinfo('Encrypted communication started with: ' + result.deviceInfo.friendlyName); 
                     device.login(options.username, options.password);
                     self.deviceArray[i] = device;
+                    self.fetchSID(device);
                     if(Object.keys(self.devices).length==Object.keys(self.deviceArray).length){
-                      self.fetchSID(self.deviceArray);
                       if(Object.keys(self.presence).length){ 
                         self.hostsList(self.deviceArray);
                       } else {
@@ -164,31 +166,38 @@ FritzPlatform.prototype = {
     }
   },
   
-  fetchSID(devices){
+  fetchSID(device){
     const self = this;
-    let device, stopPolling;
-    for(const i in devices){
-      if(devices[i].config.master){
-        device = devices[i];
-      }
-    }
+    let stopPolling;
     for(const a in self.accessories){
-      stopPolling = self.accessories[a].context.stopPolling;
+      if(self.accessories[a].context.stopPolling)stopPolling=true;
     }
     if(!stopPolling){
+      self.sidCount++;
       let config = device.services['urn:dslforum-org:service:DeviceConfig:1'];
-      config.actions['X_AVM-DE_CreateUrlSID'](null,{name:'fetchSID',count:0},function(err, result) {
+      config.actions['X_AVM-DE_CreateUrlSID'](null,{name:device.config.name + ': fetchSID',count:0},function(err, result) {
         if(result){
-          self.sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          if(device.config.master)self.sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          let sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          self.sidArray[device.config.name] = sid;
+          if(Object.keys(self.deviceArray).length==self.sidCount){
+            self.sidCount = 0;
+            if(Object.keys(self.accessories).length){
+              for(const j in self.accessories){
+                self.accessories[j].context.sids = self.sidArray;
+              }       
+            }
+          }
           if(Object.keys(self.accessories).length){
             for(const l in self.accessories){
-              self.accessories[l].context.newSid = self.sid;
+              if(device.config.master)self.accessories[l].context.newSid = sid;
             }
           }
           setTimeout(function(){
-            self.fetchSID(devices);
+            self.fetchSID(device);
           }, 10000);
         } else {
+          self.sidCount = 0;
           if(err.ping){
             self.logger.warn(device.config.name + ' fetchSID: Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in 30 seconds...');
           } else {
@@ -196,13 +205,13 @@ FritzPlatform.prototype = {
             self.logger.errorinfo(JSON.stringify(err,null,4));
           }
           setTimeout(function(){
-            self.fetchSID(devices);
+            self.fetchSID(device);
           }, 30000);
         }
       });
     } else {
       setTimeout(function(){
-        self.fetchSID(devices);
+        self.fetchSID(device);
       }, 2000);
     }
   },
