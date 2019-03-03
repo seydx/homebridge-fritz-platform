@@ -1367,12 +1367,20 @@ class Fritz_Box {
   checkDeviceLEDbeta(accessory,service){
     const self = this;
     if(!accessory.context.stopPolling){
-      let device;
+      let device, thisSid;
       for(const i in accessory.context.devices){
         if(accessory.displayName == i){
           device = accessory.context.devices[i];
         }
-      }
+      }     
+      if(accessory.context.sids){
+        for(const l in accessory.context.sids){
+          if(accessory.displayName == l){
+            thisSid = accessory.context.sids[l];
+          }
+        }
+      }  
+      accessory.context.newSid = thisSid;
       if(accessory.context.newSid){
         let sid = accessory.context.newSid;
         let formData = querystring.stringify({
@@ -1415,13 +1423,20 @@ class Fritz_Box {
 
   setDeviceLEDbeta(accessory, service, state, callback){
     const self = this;
-    let formData;
-    let device;
+    let device, thisSid, formData;
     for(const i in accessory.context.devices){
       if(accessory.displayName == i){
         device = accessory.context.devices[i];
       }
-    }
+    }     
+    if(accessory.context.sids){
+      for(const l in accessory.context.sids){
+        if(accessory.displayName == l){
+          thisSid = accessory.context.sids[l];
+        }
+      }
+    }  
+    accessory.context.newSid = thisSid;
     if(accessory.context.newSid){
       let sid = accessory.context.newSid;
       if(state){
@@ -1478,12 +1493,20 @@ class Fritz_Box {
   checkDeviceLED(accessory,service){
     const self = this;
     if(!accessory.context.stopPolling){
-      let device;
+      let device, thisSid;
       for(const i in accessory.context.devices){
         if(accessory.displayName == i){
           device = accessory.context.devices[i];
         }
-      }
+      }     
+      if(accessory.context.sids){
+        for(const l in accessory.context.sids){
+          if(accessory.displayName == l){
+            thisSid = accessory.context.sids[l];
+          }
+        }
+      }  
+      accessory.context.newSid = thisSid;
       if(accessory.context.newSid){
         let sid = accessory.context.newSid;
         self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid);
@@ -1530,13 +1553,20 @@ class Fritz_Box {
 
   setDeviceLED(accessory, service, state, callback){
     const self = this;
-    let formData;
-    let device;
+    let device, thisSid, formData;
     for(const i in accessory.context.devices){
       if(accessory.displayName == i){
         device = accessory.context.devices[i];
       }
-    }
+    }     
+    if(accessory.context.sids){
+      for(const l in accessory.context.sids){
+        if(accessory.displayName == l){
+          thisSid = accessory.context.sids[l];
+        }
+      }
+    }  
+    accessory.context.newSid = thisSid;
     if(accessory.context.newSid){
       let sid = accessory.context.newSid;
       if(state){
@@ -1591,12 +1621,20 @@ class Fritz_Box {
   checkDeviceLock(accessory,service){
     const self = this;
     if(!accessory.context.stopPolling){
-      let device;
+      let device, thisSid;
       for(const i in accessory.context.devices){
         if(accessory.displayName == i){
           device = accessory.context.devices[i];
         }
-      }
+      }     
+      if(accessory.context.sids){
+        for(const l in accessory.context.sids){
+          if(accessory.displayName == l){
+            thisSid = accessory.context.sids[l];
+          }
+        }
+      }  
+      accessory.context.newSid = thisSid;
       if(accessory.context.newSid){
         let sid = accessory.context.newSid;
         request('http://' + device.config.host + '/system/keylock.lua?sid='+sid, function(error, response, body){
@@ -1639,13 +1677,20 @@ class Fritz_Box {
 
   setDeviceLock(accessory, service, state, callback){
     const self = this;
-    let formData;
-    let device;
+    let device, thisSid, formData;
     for(const i in accessory.context.devices){
       if(accessory.displayName == i){
         device = accessory.context.devices[i];
       }
-    }
+    }     
+    if(accessory.context.sids){
+      for(const l in accessory.context.sids){
+        if(accessory.displayName == l){
+          thisSid = accessory.context.sids[l];
+        }
+      }
+    }  
+    accessory.context.newSid = thisSid;
     if(!device.config.host.match('myfritz')){
       if(accessory.context.newSid){
         let sid = accessory.context.newSid;
