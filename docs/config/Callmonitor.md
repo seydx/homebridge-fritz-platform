@@ -29,7 +29,9 @@ If you do not have a connected device, you can also do it via the phone book. Ac
   "disable": false,
   "ip": "192.168.178.1",
   "port": 1012,
-  "country": "DE"
+  "country": "DE",
+  "incomingTo":"12345678",
+  "outgoingFrom":"12345678"
 }
 ```
 
@@ -50,6 +52,8 @@ If you do not have a connected device, you can also do it via the phone book. Ac
 | Attributes | Usage |
 |------------|-------|
 | country | Country prefix of current location, needed for phonebook storage and to detect if the nr that is calling or the number you call is in storage |
+| incomingTo | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for incoming calls |
+| outgoingFrom | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls |
 
 
 
