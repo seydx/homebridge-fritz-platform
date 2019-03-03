@@ -83,7 +83,9 @@
         "active": true,
         "ip": "192.168.1.1", //should be the same with main router
         "port": 1012,
-        "country":"DE" //country where you live for better fetching numbers (callmonitor)
+        "country":"DE", //country where you live for better fetching numbers (callmonitor)
+	"incomingTo":"12345678", // If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for incoming calls
+	"outgoingFrom":"12345678" // If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls
       },
       "presence":{
 	      "USER 1":"40:98:AD:1E:E5:E0", //ip/mac addresse - Recommended: MAC addresse
