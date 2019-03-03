@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "homebridge-fritz-platform",
   "main": "index.js",
   "devDependencies": {},
@@ -26,8 +26,8 @@
     "presence"
   ],
   "engines": {
-    "node": "^8.9.1",
-    "homebridge": "^0.4.38"
+    "node": "^10.15.2",
+    "homebridge": "^0.4.46"
   },
   "dependencies": {
     "async": "2.6.1",
