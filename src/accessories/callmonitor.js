@@ -77,6 +77,8 @@ class Fritz_Box {
     accessory.context.ip = parameter.config.ip;
     accessory.context.port = parameter.config.port;
     accessory.context.config = parameter.config;
+    accessory.context.incomingTo = parameter.incomingTo;
+    accessory.context.outgoingFrom = parameter.outgoingFrom;
     accessory.context.lastState = 0;
 
     accessory.context.caller = 'No entry';
@@ -239,54 +241,113 @@ class Fritz_Box {
             caller: data[3],
             called: data[4]
           };
-          accessory.context.lastState = 1;
-          accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
-          service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
-          service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
-          service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
-          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
-          if(self.storage.getItem('PhoneBook.js')){
-            let phonebook = self.storage.getItem('PhoneBook.js');
-            let skip = false;
-            for(const i in phonebook){
-              if(message.caller == phonebook[i].number){
-                text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' ) to ' + message.called;
-                self.callerName = phonebook[i].name;
-                self.callerNr = phonebook[i].number;
-                skip = true;
+          
+          if(accessory.context.incomingTo){     
+            self.logger.info(accessory.displayName + ': Checking incoming calls only to Nr ' + accessory.context.incomingTo);
+            if(accessory.context.incomingTo==message.called){
+              self.logger.info(accessory.displayName + ': Incoming nr matched!');
+              accessory.context.lastState = 1;
+              accessory.context.timesOpened += 1;
+              accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+              accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
+              service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+              service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
+              service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
+              service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
+              self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+              if(self.storage.getItem('PhoneBook.js')){
+                let phonebook = self.storage.getItem('PhoneBook.js');
+                let skip = false;
+                for(const i in phonebook){
+                  if(message.caller == phonebook[i].number){
+                    text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' ) to ' + message.called;
+                    self.callerName = phonebook[i].name;
+                    self.callerNr = phonebook[i].number;
+                    skip = true;
+                  }
+                }
+                if(!skip){
+                  text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
+                  self.callerNr = message.caller;
+                  self.callerName = false;
+                }
+              } else {
+                text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
+                self.callerNr = message.caller;
+                self.callerName = false;
               }
+              self.logger.info(text);
+              accessory.context.caller = message.caller;
+              service.getCharacteristic(Characteristic.Caller).updateValue(accessory.context.caller);
+              if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.incoming){
+                let parseInfo;
+                if(self.callerName&&!self.callerNr){
+                  parseInfo = self.callerName;
+                } else if(!self.callerName&&self.callerNr){
+                  parseInfo = self.callerNr;
+                } else if(self.callerName&&self.callerNr){
+                  parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
+                } else {
+                  parseInfo = 'Unknown';
+                }
+                text = self.telegram.callmonitor.incoming;
+                text = text.replace('@', parseInfo).replace('%', message.called);
+                self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
+              }
+            } else {
+              self.logger.info(accessory.displayName + ': Incoming to nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called);
             }
-            if(!skip){
+          } else {
+            accessory.context.lastState = 1;
+            accessory.context.timesOpened += 1;
+            accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+            accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
+            service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+            service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
+            service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
+            service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
+            self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+            if(self.storage.getItem('PhoneBook.js')){
+              let phonebook = self.storage.getItem('PhoneBook.js');
+              let skip = false;
+              for(const i in phonebook){
+                if(message.caller == phonebook[i].number){
+                  text = 'Incoming call from: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' ) to ' + message.called;
+                  self.callerName = phonebook[i].name;
+                  self.callerNr = phonebook[i].number;
+                  skip = true;
+                }
+              }
+              if(!skip){
+                text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
+                self.callerNr = message.caller;
+                self.callerName = false;
+              }
+            } else {
               text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
               self.callerNr = message.caller;
               self.callerName = false;
             }
-          } else {
-            text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
-            self.callerNr = message.caller;
-            self.callerName = false;
-          }
-          self.logger.info(text);
-          accessory.context.caller = message.caller;
-          service.getCharacteristic(Characteristic.Caller).updateValue(accessory.context.caller);
-          if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.incoming){
-            let parseInfo;
-            if(self.callerName&&!self.callerNr){
-              parseInfo = self.callerName;
-            } else if(!self.callerName&&self.callerNr){
-              parseInfo = self.callerNr;
-            } else if(self.callerName&&self.callerNr){
-              parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
-            } else {
-              parseInfo = 'Unknown';
+            self.logger.info(text);
+            accessory.context.caller = message.caller;
+            service.getCharacteristic(Characteristic.Caller).updateValue(accessory.context.caller);
+            if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.incoming){
+              let parseInfo;
+              if(self.callerName&&!self.callerNr){
+                parseInfo = self.callerName;
+              } else if(!self.callerName&&self.callerNr){
+                parseInfo = self.callerNr;
+              } else if(self.callerName&&self.callerNr){
+                parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
+              } else {
+                parseInfo = 'Unknown';
+              }
+              text = self.telegram.callmonitor.incoming;
+              text = text.replace('@', parseInfo).replace('%', message.called);
+              self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
             }
-            text = self.telegram.callmonitor.incoming;
-            text = text.replace('@', parseInfo).replace('%', message.called);
-            self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
           }
+          
         }
       }
 
@@ -305,34 +366,72 @@ class Fritz_Box {
             caller: data[4],
             called: data[5]
           };
-          accessory.context.lastState = 1;
-          accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
-          service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
-          service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
-          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
-          let called = message.called.replace(/\D/g,''); 
-          if(self.storage.getItem('PhoneBook.js')){
-            let phonebook = self.storage.getItem('PhoneBook.js');
-            let skip = false;
-            for(const i in phonebook){
-              if(called == phonebook[i].number){
-                text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
-                skip = true;
+          
+          if(accessory.context.outgoingFrom){
+            self.logger.info(accessory.displayName + ': Checking outgoing calls only from Nr ' + accessory.context.outgoingFrom);
+            if(accessory.context.outgoingFrom==message.caller){
+              self.logger.info(accessory.displayName + ': Outgoing from nr matched!');
+              accessory.context.lastState = 1;
+              accessory.context.timesOpened += 1;
+              accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+              accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
+              service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+              service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
+              service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
+              self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+              let called = message.called.replace(/\D/g,''); 
+              if(self.storage.getItem('PhoneBook.js')){
+                let phonebook = self.storage.getItem('PhoneBook.js');
+                let skip = false;
+                for(const i in phonebook){
+                  if(called == phonebook[i].number){
+                    text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                    skip = true;
+                  }
+                }
+                if(!skip){
+                  text = 'Calling: ' + called;
+                }
+              } else {
+                text = 'Calling: ' + called;
               }
-            }
-            if(!skip){
-              text = 'Calling: ' + called;
+              accessory.context.called = called;
+
+              service.getCharacteristic(Characteristic.Called).updateValue(accessory.context.called);
+              self.logger.info(text);
+            } else {
+              self.logger.info(accessory.displayName + ': Outgoing from nr not matched. Calling from ' + message.caller + ' to ' + message.called);
             }
           } else {
-            text = 'Calling: ' + called;
-          }
-          accessory.context.called = called;
+            accessory.context.lastState = 1;
+            accessory.context.timesOpened += 1;
+            accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
+            accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
+            service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+            service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
+            service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
+            self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
+            let called = message.called.replace(/\D/g,''); 
+            if(self.storage.getItem('PhoneBook.js')){
+              let phonebook = self.storage.getItem('PhoneBook.js');
+              let skip = false;
+              for(const i in phonebook){
+                if(called == phonebook[i].number){
+                  text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                  skip = true;
+                }
+              }
+              if(!skip){
+                text = 'Calling: ' + called;
+              }
+            } else {
+              text = 'Calling: ' + called;
+            }
+            accessory.context.called = called;
 
-          service.getCharacteristic(Characteristic.Called).updateValue(accessory.context.called);
-          self.logger.info(text);
+            service.getCharacteristic(Characteristic.Called).updateValue(accessory.context.called);
+            self.logger.info(text);
+          }
         }
       }
 
@@ -356,28 +455,59 @@ class Fritz_Box {
           let call = self.call[data[2]];
           delete(self.call[data[2]]);
           message = call;
-          accessory.context.lastState = 0;
-          service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
-          self.logger.info('Call disconnected');
-          if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.disconnected){
-            let parseInfo;
-            if(self.callerName&&!self.callerNr){
-              parseInfo = self.callerName;
-            } else if(!self.callerName&&self.callerNr){
-              parseInfo = self.callerNr;
-            } else if(self.callerName&&self.callerNr){
-              parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
+          if(accessory.context.incomingTo||accessory.context.outgoingFrom){
+            if(accessory.context.incomingTo==message.called||accessory.context.outgoingFrom==message.caller){
+              accessory.context.lastState = 0;
+              service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+              self.logger.info('Call disconnected');
+              if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.disconnected){
+                let parseInfo;
+                if(self.callerName&&!self.callerNr){
+                  parseInfo = self.callerName;
+                } else if(!self.callerName&&self.callerNr){
+                  parseInfo = self.callerNr;
+                } else if(self.callerName&&self.callerNr){
+                  parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
+                } else {
+                  parseInfo = 'Unknown';
+                }
+                text = self.telegram.callmonitor.disconnected;
+                text = text.replace('@', parseInfo).replace('%', message.called);
+                self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
+              }
+              accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
+              service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
+              self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
             } else {
-              parseInfo = 'Unknown';
+              if(message.type=='inbound'){
+                self.logger.info(accessory.displayName + ': Incoming to nr not matched. Call disconnected with from ' + message.caller + ' to ' + message.called);
+              } else {
+                self.logger.info(accessory.displayName + ': Outgoing from nr not matched. Call disconnected with from ' + message.caller + ' to ' + message.called);
+              }
             }
-            text = self.telegram.callmonitor.disconnected;
-            text = text.replace('@', parseInfo).replace('%', message.called);
-            self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
+          } else {
+            accessory.context.lastState = 0;
+            service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
+            self.logger.info('Call disconnected');
+            if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.disconnected){
+              let parseInfo;
+              if(self.callerName&&!self.callerNr){
+                parseInfo = self.callerName;
+              } else if(!self.callerName&&self.callerNr){
+                parseInfo = self.callerNr;
+              } else if(self.callerName&&self.callerNr){
+                parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
+              } else {
+                parseInfo = 'Unknown';
+              }
+              text = self.telegram.callmonitor.disconnected;
+              text = text.replace('@', parseInfo).replace('%', message.called);
+              self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
+            }
+            accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
+            service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
+            self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
           }
-          accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
-          self.historyService.addEntry({time: moment().unix(), status: accessory.context.lastState});
-
         }
       }
 
