@@ -219,15 +219,15 @@ FritzPlatform.prototype = {
   getSmartHomeList(devices){
     const self = this;
     let device, stopPolling;
-    for(const i in devices){
-      if(devices[i].config.master){
-        device = devices[i];
-      }
-    }
     for(const a in self.accessories){
       stopPolling = self.accessories[a].context.stopPolling;
     }
-    if(!stopPolling&&self.sid){
+    for(const i in devices){
+      if(devices[i].config&&devices[i].config.master){
+        device = devices[i];
+      }
+    }
+    if(!stopPolling&&self.sid&&device){
       self.smartCount++;
       let cmd = 'getdevicelistinfos';
       let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?switchcmd='+cmd+'&sid='+self.sid;
@@ -246,10 +246,12 @@ FritzPlatform.prototype = {
                 self.smartDevices = [];
                 let list = result.devicelist.device;
                 for(const i in list){
-                  let ident = list[i]['$'].identifier;
-                  ident = ident.replace(/\s+/g, '');
-                  delete list[i]['$'];
-                  self.smartDevices[ident] = list[i];
+                  if(list[i]['$']){
+                    let ident = list[i]['$'].identifier;
+                    ident = ident.replace(/\s+/g, '');
+                    delete list[i]['$'];
+                    self.smartDevices[ident] = list[i];
+                  }
                 }
                 if(self.smartCount===1){
                   self.initPlatform(self.deviceArray);
@@ -290,8 +292,8 @@ FritzPlatform.prototype = {
     let mesh, device;
     this.hosts = [];
     for(const i in devices){
-      if(devices[i].config.master&&devices[i].config.mesh){
-        mesh=true;
+      if(devices[i].config&&devices[i].config.master){
+        mesh=devices[i].config.mesh;
         device = devices[i];
       }
     }
