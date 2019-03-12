@@ -866,13 +866,13 @@ FritzPlatform.prototype = {
       for(const i in self.smartDevices){
         switch(accessory.context.accType){
           case 'temp':
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].temperature){
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].temperature&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               accessory.context.unit===0?accessory.context.lastTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastTemp = self.smartDevices[i].temperature.fahrenheit/10;
               accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
             }
             break;
           case 'switch':
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch){
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               if(self.smartDevices[i].switch.state==='1'||self.smartDevices[i].switch.state===1){
                 accessory.context.lastSwitchState = true;
               } else {
@@ -887,7 +887,7 @@ FritzPlatform.prototype = {
             }           
             break;
           case 'contact':
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].alert){
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].alert&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               if(self.smartDevices[i].alert.state==='1'||self.smartDevices[i].alert.state===1){
                 accessory.context.lastSensorState = 1;
               } else {
@@ -897,7 +897,7 @@ FritzPlatform.prototype = {
             }
             break;
           case 'thermo':
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr){
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               accessory.context.unit===0?accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.fahrenheit/10;
               accessory.context.lastThermoTargetTemp = self.smartDevices[i].hkr.tsoll/2;
               accessory.context.batteryLevel = self.smartDevices[i].hkr.battery;
