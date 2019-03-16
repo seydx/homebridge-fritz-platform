@@ -61,7 +61,9 @@ function fetchNewSID(device, data){
   let config = device.services['urn:dslforum-org:service:DeviceConfig:1'];
   config.actions['X_AVM-DE_CreateUrlSID'](null,{name:'fetchSID',count:0},function(err, result) {
     if(result){
-      let sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+      console.log(result);
+      let sid;
+      if(result['NewX_AVM-DE_UrlSID'])sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
       switch (data){
         case 'smarthome\n':
           getDevices(device,sid);
