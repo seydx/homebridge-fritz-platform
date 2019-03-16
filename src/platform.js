@@ -247,8 +247,13 @@ FritzPlatform.prototype = {
               parseString(body,{explicitArray: false},function(err, result) {
                 self.smartDevices = [];
                 let list = result.devicelist.device;
-                for(const i in list){
-                  if(list[i]['$']){
+                if(typeof list === 'object'){
+                  let ident = list['$'].identifier;
+                  ident = ident.replace(/\s+/g, '');
+                  delete list['$'];
+                  self.smartDevices[ident] = list;
+                } else {
+                  for(const i in list){
                     let ident = list[i]['$'].identifier;
                     ident = ident.replace(/\s+/g, '');
                     delete list[i]['$'];
