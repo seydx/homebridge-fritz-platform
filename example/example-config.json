@@ -88,8 +88,8 @@
 	"outgoingFrom":"12345678" // If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls
       },
       "presence":{
-	      "USER 1":"40:98:AD:1E:E5:E0", //ip/mac addresse - Recommended: MAC addresse
-	      "USER 2":"E0:33:8E:CE:9D:BD" //ip/mac addresse - Recommended: MAC addresse
+	      "USER 1":"40:98:AD:1E:E5:E0", //ip/mac addresse
+	      "USER 2":"E0:33:8E:CE:9D:BD" //ip/mac addresse
       },
       "wol":{
         "Device 1":"04:5D:4B:0C:E3:47" //MAC addresse from device for WOL
