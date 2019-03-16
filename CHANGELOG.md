@@ -1,5 +1,9 @@
 # Changelog
 
+
+## v3.0.7 - 2019-03-16
+- Fixed a bug with smarthome
+
 ## v3.0.6 - 2019-03-16
 - Fixed a bug with callmonitor (outgoing calls)
 - Added "test" file
