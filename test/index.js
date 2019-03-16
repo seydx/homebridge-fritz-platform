@@ -7,8 +7,8 @@ let options = {
   host: '192.168.178.1', //IP HERE
   port: 49000,
   ssl: true,
-  username: 'Seyd55', //USERNAME HERE
-  password: 'Samsun55', //PASSWORD HERE
+  username: 'Admin', //USERNAME HERE
+  password: '12345', //PASSWORD HERE
   headers: {
     'Content-Type': 'text/xml; charset="utf-8"'
   }
