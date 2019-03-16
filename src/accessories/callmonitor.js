@@ -280,16 +280,7 @@ class Fritz_Box {
               accessory.context.caller = message.caller;
               service.getCharacteristic(Characteristic.Caller).updateValue(accessory.context.caller);
               if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.incoming){
-                let parseInfo;
-                if(self.callerName&&!self.callerNr){
-                  parseInfo = self.callerName;
-                } else if(!self.callerName&&self.callerNr){
-                  parseInfo = self.callerNr;
-                } else if(self.callerName&&self.callerNr){
-                  parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
-                } else {
-                  parseInfo = 'Unknown';
-                }
+                let parseInfo = (self.callerName?self.callerName:'Unknown') + ' ( ' + (self.callerNr?self.callerNr:'unknown nr') + ' )';
                 text = self.telegram.callmonitor.incoming;
                 text = text.replace('@', parseInfo).replace('%', message.called);
                 self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
@@ -332,16 +323,7 @@ class Fritz_Box {
             accessory.context.caller = message.caller;
             service.getCharacteristic(Characteristic.Caller).updateValue(accessory.context.caller);
             if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.incoming){
-              let parseInfo;
-              if(self.callerName&&!self.callerNr){
-                parseInfo = self.callerName;
-              } else if(!self.callerName&&self.callerNr){
-                parseInfo = self.callerNr;
-              } else if(self.callerName&&self.callerNr){
-                parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
-              } else {
-                parseInfo = 'Unknown';
-              }
+              let parseInfo = (self.callerName?self.callerName:'Unknown') + ' ( ' + (self.callerNr?self.callerNr:'unknown nr') + ' )';
               text = self.telegram.callmonitor.incoming;
               text = text.replace('@', parseInfo).replace('%', message.called);
               self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
@@ -386,17 +368,22 @@ class Fritz_Box {
                 for(const i in phonebook){
                   if(called == phonebook[i].number){
                     text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                    self.callerName = phonebook[i].name;
+                    self.callerNr = phonebook[i].number;
                     skip = true;
                   }
                 }
                 if(!skip){
                   text = 'Calling: ' + called;
+                  self.callerName = false;
+                  self.callerNr = called;
                 }
               } else {
                 text = 'Calling: ' + called;
+                self.callerName = false;
+                self.callerNr = called;
               }
               accessory.context.called = called;
-
               service.getCharacteristic(Characteristic.Called).updateValue(accessory.context.called);
               self.logger.info(text);
             } else {
@@ -418,17 +405,22 @@ class Fritz_Box {
               for(const i in phonebook){
                 if(called == phonebook[i].number){
                   text = 'Calling: ' + phonebook[i].name + ' ( '+ phonebook[i].number + ' )';
+                  self.callerName = phonebook[i].name;
+                  self.callerNr = phonebook[i].number;
                   skip = true;
                 }
               }
               if(!skip){
                 text = 'Calling: ' + called;
+                self.callerName = false;
+                self.callerNr = called;
               }
             } else {
               text = 'Calling: ' + called;
+              self.callerName = false;
+              self.callerNr = called;
             }
             accessory.context.called = called;
-
             service.getCharacteristic(Characteristic.Called).updateValue(accessory.context.called);
             self.logger.info(text);
           }
@@ -461,16 +453,7 @@ class Fritz_Box {
               service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
               self.logger.info('Call disconnected');
               if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.disconnected){
-                let parseInfo;
-                if(self.callerName&&!self.callerNr){
-                  parseInfo = self.callerName;
-                } else if(!self.callerName&&self.callerNr){
-                  parseInfo = self.callerNr;
-                } else if(self.callerName&&self.callerNr){
-                  parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
-                } else {
-                  parseInfo = 'Unknown';
-                }
+                let parseInfo = (self.callerName?self.callerName:'Unknown') + ' ( ' + (self.callerNr?self.callerNr:'unknown nr') + ' )';
                 text = self.telegram.callmonitor.disconnected;
                 text = text.replace('@', parseInfo).replace('%', message.called);
                 self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
@@ -490,16 +473,7 @@ class Fritz_Box {
             service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
             self.logger.info('Call disconnected');
             if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.callmonitor.disconnected){
-              let parseInfo;
-              if(self.callerName&&!self.callerNr){
-                parseInfo = self.callerName;
-              } else if(!self.callerName&&self.callerNr){
-                parseInfo = self.callerNr;
-              } else if(self.callerName&&self.callerNr){
-                parseInfo = self.callerName + ' ( ' + self.callerNr + ' )';
-              } else {
-                parseInfo = 'Unknown';
-              }
+              let parseInfo = (self.callerName?self.callerName:'Unknown') + ' ( ' + (self.callerNr?self.callerNr:'unknown nr') + ' )';
               text = self.telegram.callmonitor.disconnected;
               text = text.replace('@', parseInfo).replace('%', message.called);
               self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
