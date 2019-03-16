@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.5 - 2019-03-16
+- Fixed a bug with empty config.json
+- Fixed several bugs with smarthome
+- Added 'present' function to smarthome
+
 ## v3.0.4 - 2019-03-03
 - Fixed a bug with fetching SIDs for multiple devices
 
