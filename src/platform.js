@@ -27,6 +27,7 @@ module.exports = function (homebridge) {
 };
 
 function FritzPlatform (log, config, api) {
+  if (!api||!config) return;
 
   // HB
   Service = api.hap.Service;
@@ -62,6 +63,7 @@ function FritzPlatform (log, config, api) {
   this.polling = (config.polling&&config.polling>=5) ? config.polling*1000:5*1000;
   this.timeout = (config.timeout&&config.timeout>=5) ? config.timeout*1000:5*1000;
   this.anyone = config.anyone||false;
+  
   this.hostsCount = 0;
   this.smartCount = 0;
   this.sidCount = 0;
@@ -556,13 +558,11 @@ FritzPlatform.prototype = {
           }
         }
         if(!tempSensor){
-          //for(const a in self.smarthome){
           for(const j in self.accessories){
             if(self.accessories[j].context.type == 'smarthome'&&self.accessories[j].context.accType=='temp'&&self.accessories[j].displayName == i+' Temperature'){
               self.removeAccessory(self.accessories[j]);
             }
           }
-          //}
         }  
         if(!skipSmartHome){
           let options = {
