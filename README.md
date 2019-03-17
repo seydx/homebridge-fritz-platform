@@ -62,6 +62,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
    * [Multiple instances (for extended reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
    * [Telegram Notification instructions](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Telegram.md)
 - [Fritz!Platform Debug util](https://github.com/SeydX/fritzplatform-util)
+- [Fritz!Platform Config Generator](https://github.com/SeydX/fritzplatform-config)
 
 
 
