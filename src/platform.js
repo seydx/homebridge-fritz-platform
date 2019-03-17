@@ -67,6 +67,14 @@ function FritzPlatform (log, config, api) {
   this.hostsCount = 0;
   this.smartCount = 0;
   this.sidCount = 0;
+  
+  this.isArray = function(a) {
+    return (!!a) && (a.constructor === Array);
+  };
+  
+  this.isObject = function(a) {
+    return (!!a) && (a.constructor === Object);
+  };
 
   if (api) {
     if (api.version < 2.2) {
@@ -247,17 +255,22 @@ FritzPlatform.prototype = {
               parseString(body,{explicitArray: false},function(err, result) {
                 self.smartDevices = [];
                 let list = result.devicelist.device;
-                if(!Array.isArray(list)){
-                  let ident = list['$'].identifier;
-                  ident = ident.replace(/\s+/g, '');
-                  delete list['$'];
-                  self.smartDevices[ident] = list;
-                } else {
+                self.logger.debug(list);
+                if(self.isArray(list)){
                   for(const i in list){
-                    let ident = list[i]['$'].identifier;
+                    if(list[i]['$']){
+                      let ident = list[i]['$'].identifier;
+                      ident = ident.replace(/\s+/g, '');
+                      delete list[i]['$'];
+                      self.smartDevices[ident] = list[i];
+                    }
+                  }
+                } else {
+                  if(self.isObject(list)&&list['$']){
+                    let ident = list['$'].identifier;
                     ident = ident.replace(/\s+/g, '');
-                    delete list[i]['$'];
-                    self.smartDevices[ident] = list[i];
+                    delete list['$'];
+                    self.smartDevices[ident] = list;
                   }
                 }
                 if(self.smartCount===1){
@@ -381,7 +394,7 @@ FritzPlatform.prototype = {
                   hostArray = hostArray.concat(result.List.Item);
                   self.hosts = hostArray;
                   if(self.hostsCount===1){
-                    if(Object.keys(self.presence).length){
+                    if(Object.keys(self.smarthome).length){
                       self.getSmartHomeList(self.deviceArray);
                     } else {
                       self.initPlatform(self.deviceArray);
@@ -912,7 +925,7 @@ FritzPlatform.prototype = {
               }
               accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
             } else {
-              accessory.context.lastSensorState = 1;
+              accessory.context.lastSensorState = 0;
               accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
             }
             break;
