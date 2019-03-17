@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 - 2019-03-17
+- Smarthome: Changed "switch" accessory to "outlet" accessory
+- Smarthome: Better "present" detection for smarthome devices
+- PhoneBook: Auto refresh phonebook (polling: 1h)
+
+Info: If you have Smarthome devices of type "switch" please REMOVE it first from HomeKit and config.json, restart homebridge and be sure that the accessory is removed from HomeKit! Re-add it again to config.json with the same parameter as before! This time it will expose as "outlet" to HomeKit, otherwise it can break your setup!
 
 ## v3.0.7 - 2019-03-16
 - Fixed a bug with smarthome
