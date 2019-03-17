@@ -43,7 +43,7 @@ function FritzPlatform (log, config, api) {
   this.config = config;
   this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
   this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  
+
   this.devices = config.devices||{};
   this.deviceArray = [];
   this.sidArray = [];
@@ -56,22 +56,22 @@ function FritzPlatform (log, config, api) {
   this.ringlock = config.ringlock||{};
   this.broadband = config.broadband||{};
   this.extReboot = config.extReboot||{};
-  
+
   this.readOnlySwitches = config.readOnlySwitches||false;
   this.telegram = config.telegram||{};
   this.delay = (config.delay&&config.delay>=10) ? config.delay*1000:10*1000;
   this.polling = (config.polling&&config.polling>=5) ? config.polling*1000:5*1000;
   this.timeout = (config.timeout&&config.timeout>=5) ? config.timeout*1000:5*1000;
   this.anyone = config.anyone||false;
-  
+
   this.hostsCount = 0;
   this.smartCount = 0;
   this.sidCount = 0;
-  
+
   this.isArray = function(a) {
     return (!!a) && (a.constructor === Array);
   };
-  
+
   this.isObject = function(a) {
     return (!!a) && (a.constructor === Object);
   };
@@ -101,7 +101,7 @@ FritzPlatform.prototype = {
       callback(available);
     });
   },
-  
+
   didFinishLaunching: function(){
     const self = this;
     if(Object.keys(self.devices).length){
@@ -122,7 +122,7 @@ FritzPlatform.prototype = {
         };
         self.tcp(options.name, options.host,options.port,function(available){
           if(available){
-          //Init device & Login
+            //Init device & Login
             let tr064 = new tr.TR064(options);
             tr064.initDevice()
               .then(result => {
@@ -175,7 +175,7 @@ FritzPlatform.prototype = {
       throw new Error('NO DEVICES SETTED UP IN CONFIG.JSON - PLEASE ADD A NEW DEVICE AND RESTART HOMEBRIDGE!');
     }
   },
-  
+
   fetchSID(device){
     const self = this;
     let stopPolling;
@@ -195,7 +195,7 @@ FritzPlatform.prototype = {
             if(Object.keys(self.accessories).length){
               for(const j in self.accessories){
                 self.accessories[j].context.sids = self.sidArray;
-              }       
+              } 
             }
           }
           if(Object.keys(self.accessories).length){
@@ -225,7 +225,7 @@ FritzPlatform.prototype = {
       }, 2000);
     }
   },
-  
+
   getSmartHomeList(devices){
     const self = this;
     let device, stopPolling;
@@ -305,7 +305,7 @@ FritzPlatform.prototype = {
       }, 2000);
     }
   },
-  
+
   hostsList: function(devices){
     const self = this;
     let count = 0;
@@ -349,7 +349,7 @@ FritzPlatform.prototype = {
             self.logger.debug('Storing host path in config');
             self.logger.debug('Path: ' + 'http://' + devices[j].config.host + ':' + devices[j].config.port + devices[j].config.hostpath);
             if(Object.keys(devices).length===count){
-              self.getList(devices, mesh);  
+              self.getList(devices, mesh);
             }
           } else {
             if(err.ping){
@@ -366,7 +366,7 @@ FritzPlatform.prototype = {
       }
     }
   },
-  
+
   getList(device, mesh){
     const self = this;
     let stopPolling;
@@ -446,7 +446,7 @@ FritzPlatform.prototype = {
                       setTimeout(function(){
                         self.getList(device, mesh);
                       }, self.polling);
-                    }               
+                    } 
                     if(Object.keys(device).length===self.hostsCount){
                       self.logger.info('Initializing platform...');
                       if(Object.keys(self.smarthome).length){
@@ -495,7 +495,7 @@ FritzPlatform.prototype = {
             boxArray.push(i);
             skipBox = true;
             self.configureDevice(self.accessories[l],true);
-          }                   
+          } 
         }
         if(!skipBox){
           let options = {
@@ -531,7 +531,7 @@ FritzPlatform.prototype = {
         }
       }
     } 
-    
+
     //SmartHome
     var skipSmartHome, skipTemp, tempSensor;
     let smartHomeArray = [];
@@ -542,9 +542,9 @@ FritzPlatform.prototype = {
         tempSensor = false;
         for(const l in self.accessories){
           if(self.accessories[l].context.type == 'smarthome' && self.accessories[l].displayName==i){
-            smartHomeArray.push(i);            
+            smartHomeArray.push(i);
             skipSmartHome = true;
-            self.configureSmartHome(self.accessories[l],true);            
+            self.configureSmartHome(self.accessories[l],true);
           }
         }
         for(const o in self.accessories){
@@ -562,9 +562,6 @@ FritzPlatform.prototype = {
             accType: 'temp'||false,
             ain: self.smarthome[i].ain||false,
             unit: self.smarthome[i].unit=='fahrenheit'?1:0,
-            //heatValue: self.smarthome[i].heatValue||5,
-            //coolValue: self.smarthome[i].coolValue||5,
-            //tempSensor: self.smarthome[i].tempSensor||false,
             devices: devices
           };
           smartHomeArray.push(i+' Temperature');
@@ -581,7 +578,7 @@ FritzPlatform.prototype = {
               self.removeAccessory(self.accessories[j]);
             }
           }
-        }  
+        }
         if(!skipSmartHome){
           let options = {
             name: i,
@@ -611,7 +608,7 @@ FritzPlatform.prototype = {
         }
       }
     }
-       
+ 
     //Presence
     var skipPresence, skipAnyone;
     let presenceArray = [];
@@ -680,7 +677,7 @@ FritzPlatform.prototype = {
         }
       }
     }
-    
+
     //WOL
     var skipWol;
     let wolArray = [];
@@ -694,7 +691,7 @@ FritzPlatform.prototype = {
               wolArray.push(i);
               skipWol = true;
               self.configureWOL(self.accessories[l],true);
-            }                   
+            } 
           }
           if(!skipWol){
             let options = {
@@ -705,9 +702,9 @@ FritzPlatform.prototype = {
             };
             wolArray.push(i);
             new wolAccessory(self,options,true);
-          }          
-        } else {        
-          self.logger.warn('No valid MAC adresse for ' + i + '! Skipping...');      
+          }
+        } else {
+          self.logger.warn('No valid MAC adresse for ' + i + '! Skipping...');
         }
       }
     } else {
@@ -717,7 +714,7 @@ FritzPlatform.prototype = {
           self.removeAccessory(self.accessories[i]);
         }
       }
-    }    
+    }
     if(Object.keys(self.callmonitor).length&&self.callmonitor.active){
       self.cm(devices);
     } else {
@@ -727,9 +724,9 @@ FritzPlatform.prototype = {
         }
       }
     }
-    
+
     //Base Remove
-    
+
     //SmartHome
     if(!smartHomeArray.length){
       for(const i in self.accessories){
@@ -746,7 +743,7 @@ FritzPlatform.prototype = {
         }
       }
     }
-    
+
     //Presences
     if(!presenceArray.length){
       for(const i in self.accessories){
@@ -763,7 +760,7 @@ FritzPlatform.prototype = {
         }
       }
     }
-   
+ 
     //Boxes
     if(!boxArray.length){
       for(const i in self.accessories){
@@ -780,7 +777,7 @@ FritzPlatform.prototype = {
         }
       }
     }
-    
+
     //WOL
     if(!wolArray.length){
       for(const i in self.accessories){
@@ -798,18 +795,18 @@ FritzPlatform.prototype = {
       }
     }
   },
-  
+
   cm: function(devices){
     const self = this;
     self.client = net.createConnection(self.callmonitor.port, self.callmonitor.ip, function(){
-      self.logger.initinfo('Callmonitor connection established with ' + self.callmonitor.ip + ':' + self.callmonitor.port);     
-      let skipCallmonitor = false;        
+      self.logger.initinfo('Callmonitor connection established with ' + self.callmonitor.ip + ':' + self.callmonitor.port); 
+      let skipCallmonitor = false;
       for (const j in self.accessories) {
         if (self.accessories[j].context.type == 'callmonitor') {
           skipCallmonitor = true;
           self.configureCallmonitor(self.accessories[j],true);
         }
-      }        
+      }
       if (!skipCallmonitor) {
         let cmArray = [];
         let incoming = {
@@ -857,7 +854,7 @@ FritzPlatform.prototype = {
       self.logger.warninfo('Callmonitor connection were closed!');
     });
   },
-  
+
   //Telegram
 
   sendTelegram: function(token,chatID,text){
@@ -875,122 +872,129 @@ FritzPlatform.prototype = {
       }
     });
   },
-  
+
   //Configure
-  
+
   refreshSmartHome(accessory){
     const self = this;
-    if(self.smartDevices){
+    if(Object.keys(self.smartDevices).length){
       for(const i in self.smartDevices){
         switch(accessory.context.accType){
           case 'temp':
-            accessory.context.devPresent=self.smartDevices[i].present;
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].temperature&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
-              accessory.context.unit===0?accessory.context.lastTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastTemp = self.smartDevices[i].temperature.fahrenheit/10;
-              accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
-            } else {
-              accessory.context.lastTemp=0;
-              accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
+            if(i.includes(accessory.context.ain)){
+              accessory.context.devPresent=self.smartDevices[i].present;
+              if((self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)&&self.smartDevices[i].temperature){
+                accessory.context.unit===0?accessory.context.lastTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastTemp = self.smartDevices[i].temperature.fahrenheit/10;
+                accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
+              } else {
+                accessory.context.lastTemp=0;
+                accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
+              }
             }
             break;
           case 'switch':
-            accessory.context.devPresent=self.smartDevices[i].present;
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
-              if(self.smartDevices[i].switch.state==='1'||self.smartDevices[i].switch.state===1){
-                accessory.context.lastSwitchState = true;
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch){
+              accessory.context.devPresent=self.smartDevices[i].present;
+              if(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1){
+                if(self.smartDevices[i].switch.state==='1'||self.smartDevices[i].switch.state===1){
+                  accessory.context.lastSwitchState = true;
+                } else {
+                  accessory.context.lastSwitchState = false;
+                }
+                if(accessory.context.lastlastSwitchState!==accessory.context.lastSwitchState){
+                  accessory.context.lastlastSwitchState = accessory.context.lastSwitchState;
+                  accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                  accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
+                } else if(accessory.context.newState===accessory.context.lastSwitchState){
+                  accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                  accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
+                }
               } else {
                 accessory.context.lastSwitchState = false;
-              }
-              if(accessory.context.lastlastSwitchState!==accessory.context.lastSwitchState){
-                accessory.context.lastlastSwitchState = accessory.context.lastSwitchState;
-                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
-                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
-              } else if(accessory.context.newState===accessory.context.lastSwitchState){
                 accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
                 accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
               }
-            } else {
-              accessory.context.lastSwitchState = false;
-              accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
-              accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
-            }         
+            } 
             break;
           case 'contact':
-            accessory.context.devPresent=self.smartDevices[i].present;
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].alert&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
-              if(self.smartDevices[i].alert.state==='1'||self.smartDevices[i].alert.state===1){
-                accessory.context.lastSensorState = 1;
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].alert){
+              accessory.context.devPresent=self.smartDevices[i].present;
+              if(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1){
+                if(self.smartDevices[i].alert.state==='1'||self.smartDevices[i].alert.state===1){
+                  accessory.context.lastSensorState = 1;
+                } else {
+                  accessory.context.lastSensorState = 0;
+                }
+                accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
               } else {
                 accessory.context.lastSensorState = 0;
+                accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
               }
-              accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
-            } else {
-              accessory.context.lastSensorState = 0;
-              accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
             }
             break;
           case 'thermo':
-            accessory.context.devPresent=self.smartDevices[i].present;
-            if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
-              accessory.context.unit===0?accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.fahrenheit/10;
-              accessory.context.lastThermoTargetTemp = self.smartDevices[i].hkr.tsoll/2;
-              accessory.context.batteryLevel = self.smartDevices[i].hkr.battery;
-              accessory.context.batteryStatus = self.smartDevices[i].hkr.batterylow;
-              if((accessory.context.lastThermoTargetTemp*2)===253){
-                accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp;
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr){
+              accessory.context.devPresent=self.smartDevices[i].present;
+              if(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1){
+                accessory.context.unit===0?accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.fahrenheit/10;
+                accessory.context.lastThermoTargetTemp = self.smartDevices[i].hkr.tsoll/2;
+                accessory.context.batteryLevel = self.smartDevices[i].hkr.battery;
+                accessory.context.batteryStatus = self.smartDevices[i].hkr.batterylow;
+                if((accessory.context.lastThermoTargetTemp*2)===253){
+                  accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp;
+                  accessory.context.lastThermoCurrentState = 0;
+                  accessory.context.lastThermoTargetState = 0;
+                } else {
+                  if(accessory.context.lastThermoCurrentTemp<=accessory.context.lastThermoTargetTemp){
+                    accessory.context.lastThermoCurrentState = 1;
+                    accessory.context.lastThermoTargetState = 1;
+                  } else {
+                    accessory.context.lastThermoCurrentState = 2;
+                    accessory.context.lastThermoTargetState = 2;
+                  }
+                }
+                if(accessory.context.lastlastState!==accessory.context.lastThermoTargetState){
+                  accessory.context.lastlastState = accessory.context.lastThermoTargetState;
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
+                } else if(accessory.context.newState===accessory.context.lastThermoTargetState){
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
+                }
+
+                if(accessory.context.lastlastCurrState!==accessory.context.lastThermoCurrentState){
+                  accessory.context.lastlastCurrState = accessory.context.lastThermoCurrentState;
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
+                } else if(accessory.context.newCurrState===accessory.context.lastThermoCurrentState){
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
+                }
+
+                if(accessory.context.lastlastTarTemp!==accessory.context.lastThermoTargetTemp){
+                  accessory.context.lastlastTarTemp = accessory.context.lastThermoTargetTemp;
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
+                } else if(accessory.context.newTarTemp===accessory.context.lastThermoCurrentState){
+                  accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
+                }
+                accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
+                accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
+                accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
+              } else {
+                accessory.context.lastThermoCurrentTemp = 0;
+                accessory.context.lastThermoTargetTemp = 0;
+                accessory.context.batteryLevel = 100;
+                accessory.context.batteryStatus = 0;
                 accessory.context.lastThermoCurrentState = 0;
                 accessory.context.lastThermoTargetState = 0;
-              } else {
-                if(accessory.context.lastThermoCurrentTemp<=accessory.context.lastThermoTargetTemp){
-                  accessory.context.lastThermoCurrentState = 1;
-                  accessory.context.lastThermoTargetState = 1;
-                } else {
-                  accessory.context.lastThermoCurrentState = 2;
-                  accessory.context.lastThermoTargetState = 2;
-                }
-              }
-              if(accessory.context.lastlastState!==accessory.context.lastThermoTargetState){
-                accessory.context.lastlastState = accessory.context.lastThermoTargetState;
                 accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
-              } else if(accessory.context.newState===accessory.context.lastThermoTargetState){
-                accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
-              }
-              
-              if(accessory.context.lastlastCurrState!==accessory.context.lastThermoCurrentState){
-                accessory.context.lastlastCurrState = accessory.context.lastThermoCurrentState;
                 accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
-              } else if(accessory.context.newCurrState===accessory.context.lastThermoCurrentState){
-                accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
-              }
-              
-              if(accessory.context.lastlastTarTemp!==accessory.context.lastThermoTargetTemp){
-                accessory.context.lastlastTarTemp = accessory.context.lastThermoTargetTemp;
                 accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
-              } else if(accessory.context.newTarTemp===accessory.context.lastThermoCurrentState){
-                accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
-              }
-              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
-              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
-              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
-            } else {
-              accessory.context.lastThermoCurrentTemp = 0;
-              accessory.context.lastThermoTargetTemp = 0;
-              accessory.context.batteryLevel = 100;
-              accessory.context.batteryStatus = 0;
-              accessory.context.lastThermoCurrentState = 0;
-              accessory.context.lastThermoTargetState = 0;
-              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
-              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
-              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
-              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
-              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
-              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
+                accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
+                accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
+                accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
+              } 
             }
             break;
           default:
             // err
         }
-        
       }
       setTimeout(function(){
         self.refreshSmartHome(accessory);
@@ -1001,7 +1005,7 @@ FritzPlatform.prototype = {
       }, 1000);
     }
   },
-  
+
   refreshPresence(accessory){
     const self = this;
     if(self.hosts){
@@ -1040,7 +1044,7 @@ FritzPlatform.prototype = {
       }, 1000);
     }
   },
-  
+
   configurePresence: function(accessory, conf){
     const self = this;
     accessory.context.type = 'presence';
@@ -1058,7 +1062,7 @@ FritzPlatform.prototype = {
       new presAccessory(self, accessory, false);
     }
   },
-  
+
   configureDevice: function(accessory, conf){
     const self = this;
     accessory.context.type = 'box';
@@ -1092,7 +1096,7 @@ FritzPlatform.prototype = {
       new boxAccessory(self, accessory, false);
     }
   },
-  
+
   configureSmartHome: function(accessory, conf){
     const self = this;
     accessory.context.type = 'smarthome';
@@ -1118,7 +1122,7 @@ FritzPlatform.prototype = {
       new smartHomeAccessory(self, accessory, accessory.context.accType, false);
     }
   },
-  
+
   configureWOL: function(accessory, conf){
     const self = this;
     accessory.context.type = 'wol';
@@ -1134,7 +1138,7 @@ FritzPlatform.prototype = {
       new wolAccessory(self, accessory, false);
     }
   },
-  
+
   configureCallmonitor: function(accessory,conf){
     const self = this;
     accessory.context.type = 'callmonitor';
@@ -1157,7 +1161,7 @@ FritzPlatform.prototype = {
       new callAccessory(self, accessory, false);
     }
   },
-  
+
   configureAccessory: function(accessory){
     const self = this;
     let conf=false;
