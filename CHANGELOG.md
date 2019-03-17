@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.1.1 - 2019-03-17
+- Bugfixes (Smarthome, presence)
+
 ## 3.1.0 - 2019-03-17
 - Smarthome: Changed "switch" accessory to "outlet" accessory
 - Smarthome: Better "present" detection for smarthome devices
