@@ -871,12 +871,17 @@ FritzPlatform.prototype = {
       for(const i in self.smartDevices){
         switch(accessory.context.accType){
           case 'temp':
+            accessory.context.devPresent=self.smartDevices[i].present;
             if(i.includes(accessory.context.ain)&&self.smartDevices[i].temperature&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               accessory.context.unit===0?accessory.context.lastTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastTemp = self.smartDevices[i].temperature.fahrenheit/10;
+              accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
+            } else {
+              accessory.context.lastTemp=0;
               accessory.getService(Service.TemperatureSensor).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastTemp);
             }
             break;
           case 'switch':
+            accessory.context.devPresent=self.smartDevices[i].present;
             if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               if(self.smartDevices[i].switch.state==='1'||self.smartDevices[i].switch.state===1){
                 accessory.context.lastSwitchState = true;
@@ -885,13 +890,20 @@ FritzPlatform.prototype = {
               }
               if(accessory.context.lastlastSwitchState!==accessory.context.lastSwitchState){
                 accessory.context.lastlastSwitchState = accessory.context.lastSwitchState;
-                accessory.getService(Service.Switch).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
               } else if(accessory.context.newState===accessory.context.lastSwitchState){
-                accessory.getService(Service.Switch).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+                accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
               }
-            }           
+            } else {
+              accessory.context.lastSwitchState = false;
+              accessory.getService(Service.Outlet).getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);
+              accessory.getService(Service.Outlet).getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);
+            }         
             break;
           case 'contact':
+            accessory.context.devPresent=self.smartDevices[i].present;
             if(i.includes(accessory.context.ain)&&self.smartDevices[i].alert&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               if(self.smartDevices[i].alert.state==='1'||self.smartDevices[i].alert.state===1){
                 accessory.context.lastSensorState = 1;
@@ -899,15 +911,18 @@ FritzPlatform.prototype = {
                 accessory.context.lastSensorState = 0;
               }
               accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
+            } else {
+              accessory.context.lastSensorState = 1;
+              accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastSensorState);
             }
             break;
           case 'thermo':
+            accessory.context.devPresent=self.smartDevices[i].present;
             if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr&&(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1)){
               accessory.context.unit===0?accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.celsius/10:accessory.context.lastThermoCurrentTemp = self.smartDevices[i].temperature.fahrenheit/10;
               accessory.context.lastThermoTargetTemp = self.smartDevices[i].hkr.tsoll/2;
               accessory.context.batteryLevel = self.smartDevices[i].hkr.battery;
               accessory.context.batteryStatus = self.smartDevices[i].hkr.batterylow;
-              
               if((accessory.context.lastThermoTargetTemp*2)===253){
                 accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp;
                 accessory.context.lastThermoCurrentState = 0;
@@ -921,7 +936,6 @@ FritzPlatform.prototype = {
                   accessory.context.lastThermoTargetState = 2;
                 }
               }
-              
               if(accessory.context.lastlastState!==accessory.context.lastThermoTargetState){
                 accessory.context.lastlastState = accessory.context.lastThermoTargetState;
                 accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
@@ -942,6 +956,19 @@ FritzPlatform.prototype = {
               } else if(accessory.context.newTarTemp===accessory.context.lastThermoCurrentState){
                 accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
               }
+              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
+              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
+              accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
+            } else {
+              accessory.context.lastThermoCurrentTemp = 0;
+              accessory.context.lastThermoTargetTemp = 0;
+              accessory.context.batteryLevel = 100;
+              accessory.context.batteryStatus = 0;
+              accessory.context.lastThermoCurrentState = 0;
+              accessory.context.lastThermoTargetState = 0;
+              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
+              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState);
+              accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
               accessory.getService(Service.Thermostat).getCharacteristic(Characteristic.CurrentTemperature).updateValue(accessory.context.lastThermoCurrentTemp);
               accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.BatteryLevel).updateValue(accessory.context.batteryLevel);
               accessory.getService(Service.BatteryService).getCharacteristic(Characteristic.StatusLowBattery).updateValue(accessory.context.batteryStatus);
