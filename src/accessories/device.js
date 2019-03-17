@@ -297,6 +297,7 @@ class Fritz_Box {
       service.getCharacteristic(Characteristic.PhoneBook)
         .updateValue(false)
         .on('set', self.setPhoneBook.bind(this, accessory, service));
+      this.refreshPhoneBook(accessory, service);
     } else {
       if(service.testCharacteristic(Characteristic.PhoneBook)){
         self.logger.initinfo('Removing PhoneBook from ' + accessory.displayName);
@@ -916,6 +917,37 @@ class Fritz_Box {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // PhoneBook
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+  
+  refreshPhoneBook(accessory, service){
+    const self = this;
+    this.logger.debug('Refreshing PhoneBook!');
+    let device;
+    for(const i in accessory.context.devices){
+      if(accessory.displayName == i){
+        device = accessory.context.devices[i];
+      }
+    }
+    let book = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
+    !self.entryID ? self.entryID = 0 : self.entryID;
+    !self.bookIDs ? self.bookIDs = [] : self.bookIDs;
+    !self.currentID ? self.currentID = 0 : self.currentID;
+    !self.telBook ? self.telBook = [] : self.telBook;
+    self.logger.info('Refreshing phone book...');
+    book.actions.GetPhonebookList(null,{name:accessory.displayName + ' SetPhoneBook', count:0},function(err, res) {
+      if(!err){
+        self.bookIDs = res.NewPhonebookList.split(',');
+        self.logger.info('Found ' + self.bookIDs.length + ' book(s)! Fetching entries...');
+        self.storePhoneBook(accessory,service,device,true);
+      } else {
+        if(err.ping){
+          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
+        } else {
+          self.logger.errorinfo('An error occured while getting phone books!');
+          self.logger.errorinfo(JSON.stringify(err,null,4));
+        }
+      }
+    });
+  }
 
   setPhoneBook(accessory,service,state,callback){
     const self = this;
@@ -954,7 +986,7 @@ class Fritz_Box {
 
   }
 
-  storePhoneBook(accessory,service,device){
+  storePhoneBook(accessory,service,device,refresh){
     const self = this;
     let country;
     for(const l in self.accessories){
@@ -1008,7 +1040,7 @@ class Fritz_Box {
                 }
                 self.currentID += 1;
                 self.logger.info('Phone book [' + self.currentID + '] done. Looking for another books!');
-                setTimeout(function(){self.storePhoneBook(accessory,service,device);},500);
+                setTimeout(function(){self.storePhoneBook(accessory,service,device,refresh);},500);
               } else {
                 self.logger.errorinfo(accessory.displayName + ': An error occured while fetching phone book!');
                 self.logger.errorinfo(JSON.stringify(error,null,4));
@@ -1045,6 +1077,12 @@ class Fritz_Box {
             self.bookIDs = [];
             self.currentID = 0;
           }
+        }
+        if(refresh){
+          self.logger.debug('Next poll in 1h!');
+          setTimeout(function(){
+            self.refreshPhoneBook(accessory,service);
+          }, 60*60*1000); //1h
         } 
       }
     });
