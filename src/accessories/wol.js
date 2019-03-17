@@ -3,7 +3,6 @@
 const HomeKitTypes = require('../types/types.js');
 const LogUtil = require('../../lib/LogUtil.js');
 const packageFile = require('../../package.json');
-//const request = require('request');
 
 var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory;
 
@@ -122,13 +121,16 @@ class Fritz_Box {
 
   setState(accessory,service,state,callback){
     const self = this;
+    let device;
     if(!accessory.context.stopPolling){
       for(const i in accessory.context.devices){
-        let device = accessory.context.devices[i];
+        if(accessory.context.devices[i].config.master)device = accessory.context.devices[i];
+      }
+      if(device){
         let wol = device.services['urn:dslforum-org:service:Hosts:1'];
         wol.actions['X_AVM-DE_WakeOnLANByMACAddress']([{name:'NewMACAddress', value:accessory.context.adresse}],{name:accessory.displayName, count:0},function(err) {
           if(!err){
-            self.logger.info('Turning on ' + accessory.displayName);
+            self.logger.info('Turning on ' + accessory.displayName);      
           } else {
             if(err.tr064code!=='401'){
               if(err.ping){
@@ -142,6 +144,10 @@ class Fritz_Box {
           setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
           callback(null, false);
         });
+      } else {
+        self.logger.warn('Can not change ' + accessory.displayName + ' state, can not find master device!');
+        setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(false);},500);
+        callback(null, false);
       }
     } else {
       self.logger.warn('Can not change ' + accessory.displayName + ' state, Broadband active...');
