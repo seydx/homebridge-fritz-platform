@@ -52,8 +52,8 @@ class Fritz_Box {
 
     switch(type){
       case 'switch':
-        deviceType = Accessory.Categories.SWITCH;
-        accessoryType = Service.Switch;
+        deviceType = Accessory.Categories.OUTLET;
+        accessoryType = Service.Outlet;
         break;
       case 'contact':
         deviceType = Accessory.Categories.SENSOR;
@@ -172,15 +172,15 @@ class Fritz_Box {
         service.getCharacteristic(Characteristic.CurrentTemperature)
           .updateValue(accessory.context.lastTemp)
           .on('change', self.refreshData.bind(this, accessory, service, type));
-        
         self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
         break;
       case 'switch':
-        service = accessory.getService(Service.Switch);
+        service = accessory.getService(Service.Outlet);
         service.getCharacteristic(Characteristic.On)
           .updateValue(accessory.context.lastSwitchState)
           .on('set', self.setSwitchState.bind(this,accessory,service, device));
-        //.on('change', self.refreshData.bind(this, accessory, service, type));
+        service.getCharacteristic(Characteristic.OutletInUse)
+          .updateValue(accessory.context.lastSwitchState);
         break;
       case 'contact':
         service = accessory.getService(Service.ContactSensor);
@@ -267,7 +267,7 @@ class Fritz_Box {
 
   setSwitchState(accessory,service,device,state,callback){
     const self = this;
-    if(accessory.context.newSid){
+    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
       let sid = accessory.context.newSid;
       let cmd = state?'setswitchon':'setswitchoff';
       let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?ain='+accessory.context.ain+'&switchcmd='+cmd+'&sid='+sid;
@@ -284,6 +284,7 @@ class Fritz_Box {
           //accessory.context.lastSwitchState = state;
           accessory.context.newState = state;
           service.getCharacteristic(Characteristic.On).updateValue(state);
+          service.getCharacteristic(Characteristic.OutletInUse).updateValue(state);
           callback(null,state);
         } else {
           self.logger.errorinfo(accessory.displayName + ': An error occured while setting new switch state!');
@@ -293,12 +294,18 @@ class Fritz_Box {
           };
           self.logger.errorinfo(JSON.stringify(showError,null,4));
           setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);},500);
+          setTimeout(function(){service.getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);},500);
           callback(null, state?false:true);
         }
       });
     } else {
-      self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
+        self.logger.warn(accessory.displayName + ': Device not present!');
+      } else {
+        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      }
       setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);},500);
+      setTimeout(function(){service.getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);},500);
       callback(null, state?false:true);
     }
   }
@@ -345,7 +352,7 @@ class Fritz_Box {
   setThermostatState(accessory,service,device,state,callback){
     const self = this;
     let cmd;
-    if(accessory.context.newSid){
+    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
       let sid = accessory.context.newSid;
       switch(state){
         case 0: //OFF
@@ -407,7 +414,11 @@ class Fritz_Box {
         }         
       });   
     } else {
-      self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
+        self.logger.warn(accessory.displayName + ': Device not present!');
+      } else {
+        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      }
       setTimeout(function(){service.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);},500);
       callback(null, accessory.context.lastThermoTargetState);
     }
@@ -415,7 +426,7 @@ class Fritz_Box {
 
   setThermostatTemp(accessory,service,device,value,callback){
     const self = this;
-    if(accessory.context.newSid){
+    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
       let sid = accessory.context.newSid;   
       let cmd = 'sethkrtsoll&param='+(value*2);
       let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?ain='+accessory.context.ain+'&switchcmd='+cmd+'&sid='+sid;
@@ -456,7 +467,11 @@ class Fritz_Box {
         }           
       });       
     } else {
-      self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
+        self.logger.warn(accessory.displayName + ': Device not present!');
+      } else {
+        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
+      }
       setTimeout(function(){service.getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);},500);
       callback(null, accessory.context.lastThermoTargetTemp);
     }
