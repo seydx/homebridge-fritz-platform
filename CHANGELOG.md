@@ -1,6 +1,9 @@
 # Changelog
 
 
+# 3.1.3 - 2019-03-18
+- Rewrite smarthome (fixed a bug with 404 not found error)
+
 ## 3.1.2 - 2019-03-17
 - Bugfixes
 
