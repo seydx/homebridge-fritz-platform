@@ -377,104 +377,176 @@ FritzPlatform.prototype = {
       let persistCount = 0;
       let hostArray = [];
       if(mesh){
-        let opt = {
-          uri: 'http://'+device.config.host+':'+device.config.port+device.config.hostpath,
-          method: 'GET',
-          rejectUnauthorized: false,
-          requestCert: true,
-          agent: false,
-          timeout: self.timeout
-        };
-        self.tcp(device.config.name, device.config.host, device.config.port, function(res){
-          if(res){
-            request(opt,function(error, response, body) {
-              if (!error && response.statusCode == 200) {
-                parseString(body,{explicitArray: false},function(err, result) {
-                  self.hostsCount++;
-                  hostArray = hostArray.concat(result.List.Item);
-                  self.hosts = hostArray;
-                  if(self.hostsCount===1){
-                    if(Object.keys(self.smarthome).length){
-                      self.getSmartHomeList(self.deviceArray);
-                    } else {
-                      self.initPlatform(self.deviceArray);
-                    }
-                  }
-                  setTimeout(function(){
-                    self.getList(device, mesh);
-                  }, self.polling);
-                });
-              } else {
-                self.logger.errorinfo('An error occured while getting new host list, trying again in 15 seconds...');
-                let showError = {
-                  error: error?error.errno:response.statusMessage,
-                  errorCode: error?error.code:response.statusCode
-                };
-                self.logger.errorinfo(JSON.stringify(showError,null,4));
-                setTimeout(function(){
-                  self.getList(device, mesh);
-                }, 15000);
-              }
-            });
-          } else {
-            self.logger.warn('Can not reach ' + device.config.host + ':' + device.config.port + device.config.hostpath + ' - Trying again in 30 seconds');
-            setTimeout(function(){
-              self.getList(device, mesh);
-            }, 30000);
-          }
-        });
-      } else {
-        for(const i in device){
+        if(device.config.hostpath){
           let opt = {
-            uri: 'http://'+device[i].config.host+':'+device[i].config.port+device[i].config.hostpath,
+            uri: 'http://'+device.config.host+':'+device.config.port+device.config.hostpath,
             method: 'GET',
             rejectUnauthorized: false,
             requestCert: true,
             agent: false,
             timeout: self.timeout
           };
-          self.tcp(device[i].config.name, device[i].config.host, device[i].config.port, function(res){
+          self.tcp(device.config.name, device.config.host, device.config.port, function(res){
             if(res){
               request(opt,function(error, response, body) {
                 if (!error && response.statusCode == 200) {
                   parseString(body,{explicitArray: false},function(err, result) {
                     self.hostsCount++;
-                    persistCount++;
                     hostArray = hostArray.concat(result.List.Item);
-                    if(Object.keys(device).length===persistCount){
-                      self.hosts=hostArray;
-                      setTimeout(function(){
-                        self.getList(device, mesh);
-                      }, self.polling);
-                    } 
-                    if(Object.keys(device).length===self.hostsCount){
-                      self.logger.info('Initializing platform...');
+                    self.hosts = hostArray;
+                    if(self.hostsCount===1){
                       if(Object.keys(self.smarthome).length){
                         self.getSmartHomeList(self.deviceArray);
                       } else {
                         self.initPlatform(self.deviceArray);
                       }
                     }
+                    setTimeout(function(){
+                      self.getList(device, mesh);
+                    }, self.polling);
                   });
                 } else {
-                  self.logger.errorinfo('An error occured while getting new host list, trying again in 15 seconds...');
                   let showError = {
                     error: error?error.errno:response.statusMessage,
                     errorCode: error?error.code:response.statusCode
                   };
-                  self.logger.errorinfo(JSON.stringify(showError,null,4));
-                  setTimeout(function(){
-                    self.getList(device, mesh);
-                  }, 15000);
+                  if(showError.errorCode===404||showError.errorCode==='404'){
+                    device.config.hostpath = false;
+                    device.config.warn = true;
+                    self.hostsCount++;
+                    if(self.hostsCount===1){
+                      if(Object.keys(self.smarthome).length){
+                        self.getSmartHomeList(self.deviceArray);
+                      } else {
+                        self.initPlatform(self.deviceArray);
+                      }
+                    }
+                  } else {
+                    self.logger.errorinfo(device.config.name + ': An error occured while getting new host list, trying again in 15 seconds...');
+                    self.logger.errorinfo(JSON.stringify(showError,null,4));
+                    setTimeout(function(){
+                      self.getList(device, mesh);
+                    }, 15000);
+                  }
                 }
               });
             } else {
-              self.logger.warn('Can not reach ' + device[i].config.host + ':' + device[i].config.port + device[i].config.hostpath + ' - Trying again in 30 seconds');
+              self.logger.warn(device.config.name + ': Can not reach ' + device.config.host + ':' + device.config.port + device.config.hostpath + ' - Trying again in 30 seconds');
               setTimeout(function(){
                 self.getList(device, mesh);
               }, 30000);
             }
           });
+        } else {
+          self.hostsCount++;
+          if(device.config.warn){
+            self.logger.warn(device.config.name + ' does not support host lists. Skipping...');
+            device.config.warn = false;
+          }
+          if(self.hostsCount===1){
+            if(Object.keys(self.smarthome).length){
+              self.getSmartHomeList(self.deviceArray);
+            } else {
+              self.initPlatform(self.deviceArray);
+            }
+          }
+        }
+      } else {
+        for(const i in device){        
+          if(device[i].config.hostpath){
+            let opt = {
+              uri: 'http://'+device[i].config.host+':'+device[i].config.port+device[i].config.hostpath,
+              method: 'GET',
+              rejectUnauthorized: false,
+              requestCert: true,
+              agent: false,
+              timeout: self.timeout
+            };
+            self.tcp(device[i].config.name, device[i].config.host, device[i].config.port, function(res){
+              if(res){
+                request(opt,function(error, response, body) {
+                  if (!error && response.statusCode == 200) {
+                    parseString(body,{explicitArray: false},function(err, result) {
+                      self.hostsCount++;
+                      persistCount++;
+                      hostArray = hostArray.concat(result.List.Item);
+                      if(Object.keys(device).length===persistCount){
+                        self.hosts=hostArray;
+                        setTimeout(function(){
+                          self.getList(device, mesh);
+                        }, self.polling);
+                      } 
+                      if(Object.keys(device).length===self.hostsCount){
+                        self.logger.info('Initializing platform...');
+                        if(Object.keys(self.smarthome).length){
+                          self.getSmartHomeList(self.deviceArray);
+                        } else {
+                          self.initPlatform(self.deviceArray);
+                        }
+                      }
+                    });
+                  } else {
+                    let showError = {
+                      error: error?error.errno:response.statusMessage,
+                      errorCode: error?error.code:response.statusCode
+                    };
+                    if(showError.errorCode===404||showError.errorCode==='404'){
+                      device[i].config.warn = true;
+                      device[i].config.hostpath = false;
+                      self.hostsCount++;
+                      persistCount++;
+                      if(Object.keys(device).length===persistCount){
+                        self.hosts=hostArray;
+                        setTimeout(function(){
+                          self.getList(device, mesh);
+                        }, self.polling);
+                      }             
+                      if(Object.keys(device).length===self.hostsCount){
+                        self.logger.info('Initializing platform...');
+                        if(Object.keys(self.smarthome).length){
+                          self.getSmartHomeList(self.deviceArray);
+                        } else {
+                          self.initPlatform(self.deviceArray);
+                        }
+                      }
+                    } else {
+                      self.logger.errorinfo(device[i].config.name + ': An error occured while getting new host list, trying again in 15 seconds...');
+                      self.logger.errorinfo(JSON.stringify(showError,null,4));
+                      setTimeout(function(){
+                        self.getList(device, mesh);
+                      }, 15000);
+                    }
+                  }
+                });
+              } else {
+                self.logger.warn(device[i].config.name + ': Can not reach ' + device[i].config.host + ':' + device[i].config.port + device[i].config.hostpath + ' - Trying again in 30 seconds');
+                setTimeout(function(){
+                  self.getList(device, mesh);
+                }, 30000);
+              }
+            });
+          } else {
+            self.hostsCount++;
+            persistCount++;
+            if(device[i].config.warn){
+              self.logger.warn(device[i].config.name + ' does not support host lists. Skipping...');
+              device[i].config.warn = false;
+            }
+            if(Object.keys(device).length===persistCount){
+              self.hosts=hostArray;
+              setTimeout(function(){
+                self.getList(device, mesh);
+              }, self.polling);
+            }             
+            if(Object.keys(device).length===self.hostsCount){
+              self.logger.info('Initializing platform...');
+              if(Object.keys(self.smarthome).length){
+                self.getSmartHomeList(self.deviceArray);
+              } else {
+                self.initPlatform(self.deviceArray);
+              }
+            }
+          }
         }
       }
     } else {
