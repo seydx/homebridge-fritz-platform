@@ -1,6 +1,8 @@
 # Common Issues / Frequently Asked Questions
 
+
 Below, i have listed some frequently asked questions and errors that may be appear during the installation process.
+
 
 ## Presence not working properly
 
@@ -8,11 +10,13 @@ Presence works as follows: As soon as a user is no longer registered on the netw
 
 **Fix:** To work properly, the user setted in config.json needs full read/write rights. [First Steps](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md#installation---first-steps)
 
+
 ## Error 713/714 (presence)
 
 That is not an issue by the plugin, it means only it can not find the, in config defined ip/mac adress, in the list of your main device/repeater.
 
 **Fix:** Connect to your repeater/main device so it can save your ip/mac adress in the list of known devices
+
 
 ## ETIMEDOUT/ESOCKETTIMEDOUT
 
@@ -20,7 +24,8 @@ That is not an issue by the plugin, it means only it can not find the, in config
 
 `"error": "ESOCKETTIMEDOUT"`
 
-**Fix:** There are several things to do. First, check if the user have full rights. If yes, try with creating a new user on FritzBox and give him also full rights. Put the new credentials in your config.json and look ifthe error appears again. You can also try to increase polling and timeout in your config.json
+**Fix:** There are several things to do. First, check if the user have full rights. If yes, try with creating a new user on FritzBox and give him also full rights. Put the new credentials in your config.json and look if the error appears again. You can also try to increase polling and timeout in your config.json
+
 
 ## Deflection error
 
@@ -31,6 +36,7 @@ That is not an issue by the plugin, it means only it can not find the, in config
 ![Deflection Settings](https://raw.githubusercontent.com/SeydX/homebridge-fritz-platform/master/docs/images/deflection.png)
 
 <hr>
+
 
 ## Device state error (Invalid Action / 401)
 
