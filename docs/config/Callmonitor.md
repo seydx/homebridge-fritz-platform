@@ -31,7 +31,7 @@ If you do not have a connected device, you can also do it via the phone book. Ac
   "port": 1012,
   "country": "DE",
   "incomingTo":"12345678",
-  "outgoingFrom":"12345678"
+  "outgoingFrom":["12345", "67890", "131234"]
 }
 ```
 
@@ -52,8 +52,8 @@ If you do not have a connected device, you can also do it via the phone book. Ac
 | Attributes | Usage |
 |------------|-------|
 | country | Country prefix of current location, needed for phonebook storage and to detect if the nr that is calling or the number you call is in storage |
-| incomingTo | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for incoming calls |
-| outgoingFrom | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls |
+| incomingTo | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for incoming calls, it is possible to use multiple numbers, eg. only one number > "incomingTo": "12345" - or for multiple numbers > "incomingTo": ["12345", "12345", "34546"] |
+| outgoingFrom | If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls, it is possible to use multiple numbers, eg. only one number > "outgoingFrom": "12345" - or for multiple numbers > "outgoingFrom": ["12345", "12345", "34546"] |
 
 
 
