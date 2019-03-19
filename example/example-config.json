@@ -1,145 +1,139 @@
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-// PLEASE REMOVE THE COMMENTS IF YOU DO COPY&PASTE
-
 {
- "bridge": {
-   ...
-},
- "accessories": [
-   ...
-],
- "platforms": [
+  "bridge": {
+    ...
+  },
+  "accessories": [
+    ...
+  ],
+  "platforms": [
     {
       "platform": "FritzPlatform",
-      "devices":{
-	      "FritzBox":{
-	        "host":"fritz.box",
-	        "port":49000,
-	        "username":"USERNAME",
-	        "password":"PASSWORD",
-	        "type":"dsl", //types: dsl, cable, repeater
-	        "wifi2":true,
-	        "wifi5":true,
-	        "wifiGuest":true,
-	        "phoneBook":true,
-	        "wps":true,
-	        "aw":true,
-	        "deflection":true,
-	        "led": true,
-	        "lock":true,
-          "beta":true, //true if using beta firmware
-          "mesh":false, //true if using mesh (7590 i.e)
-          "master":true //set master true if it is your main router! REQUIRED!
-	      },
-	      "FritzBox Extend":{
-	        "host":"192.168.1.1",
-	        "port":49000,
-	        "username":"USERNAME",
-	        "password":"PASSWORD",
-	        "type":"cable", //types: dsl, cable, repeater
-	        "wifi2":true,
-	        "wifi5":false,
-	        "wifiGuest":false,
-	        "led": true,
-          "beta":false //true if using beta firmware
-	      },
-	      "FritzRepeater":{
-	        "host":"fritz.repeater",
-	        "port":49000,
-	        "username":"USERNAME",
-	        "password":"PASSWORD",
-	        "type":"repeater", //types: dsl, cable, repeater
-	        "wifi2":true,
-	        "wifi5":false,
-	        "wifiGuest":false,
-	        "led": true,
-          "beta":false //true if using beta firmware
-	      }
+      "devices": {
+        "FritzBox": {
+          "host": "fritz.box",
+          "port": 49000,
+          "username": "USERNAME",
+          "password": "PASSWORD",
+          "type": "dsl",
+          "wifi2": true,
+          "wifi5": true,
+          "wifiGuest": true,
+          "phoneBook": true,
+          "wps": true,
+          "aw": true,
+          "deflection": true,
+          "led": true,
+          "lock": true,
+          "beta": true,
+          "mesh": false,
+          "master": true
+        },
+        "FritzBox Living Room": {
+          "host": "192.168.1.1",
+          "port": 49000,
+          "username": "USERNAME",
+          "password": "PASSWORD",
+          "type": "cable",
+          "wifi2": true,
+          "wifi5": false,
+          "wifiGuest": false,
+          "led": true,
+          "beta": false
+        },
+        "FritzRepeater Sleep room": {
+          "host": "fritz.repeater",
+          "port": 49000,
+          "username": "USERNAME",
+          "password": "PASSWORD",
+          "type": "repeater",
+          "wifi2": true,
+          "wifi5": false,
+          "wifiGuest": false,
+          "led": true,
+          "beta": false
+        }
       },
-      "smarthome":{
+      "smarthome": {
         "DECT 200": {
-          "ain":"01234567890", //actor ident number
-          "type":"switch",  // type: switch, contact, thermo
-          "tempSensor":true, // if true, a temp accessory will be exposed to homekit
-          "unit":"celsius" // celsius/fahrenheit, for temp sensor
+          "ain": "01234567890",
+          "type": "switch",
+          "tempSensor": true,
+          "unit": "celsius"
         },
-        "Window contact":{
-          "ain":"01234567890", //actor ident number
-          "type":"contact" // type: switch, contact, thermo
+        "Window contact": {
+          "ain": "01234567890",
+          "type": "contact"
         },
-        "DECT 301":{
-          "ain":"01234567890", //actor ident number
-          "type":"thermo", // type: switch, contact, thermo
-          "unit":"celsius", // units: celsius, fahrenheit
-          "heatValue":5,
-          "coolValue":5
+        "DECT 301": {
+          "ain": "01234567890",
+          "type": "thermo",
+          "unit": "celsius",
+          "heatValue": 5,
+          "coolValue": 5
         }
       },
       "callmonitor": {
         "active": true,
-        "ip": "192.168.1.1", //should be the same with main router
+        "ip": "192.168.1.1",
         "port": 1012,
-        "country":"DE", //country where you live for better fetching numbers (callmonitor)
-	"incomingTo":"12345678", // If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for incoming calls
-	"outgoingFrom":"12345678" // If several numbers are in use, this option can also be used to specify which number Callmonitor should react to for outgoing calls
+        "country": "DE",
+        "incomingTo": "12345678",
+        "outgoingFrom": ["12345678", "21323445", "12345212"]
       },
-      "presence":{
-	      "USER 1":"40:98:AD:1E:E5:E0", //ip/mac addresse
-	      "USER 2":"E0:33:8E:CE:9D:BD" //ip/mac addresse
+      "presence": {
+        "USER 1": "40:98:AD:1E:E5:E0",
+        "USER 2": "E0:33:8E:CE:9D:BD"
       },
-      "wol":{
-        "Device 1":"04:5D:4B:0C:E3:47" //MAC addresse from device for WOL
+      "wol": {
+        "Device 1": "04:5D:4B:0C:E3:47",
+        "Device 2": "14:4D:2B:AC:13:57"
       },
-      "alarm":{
-	      "active":true,
-	      "telNr":"0123456789",
-	      "duration":30 //in seconds
+      "alarm": {
+        "active": true,
+        "telNr": "0123456789",
+        "duration": 30
       },
-      "wakeup":{
-	      "active":true,
-	      "internNr":"**620",
-	      "duration":60 //in seconds
+      "wakeup": {
+        "active": true,
+        "internNr": "**620",
+        "duration": 60
       },
-      "ringlock":{
-	      "active":true,
-	      "DECTphones":1, //only DECT phones
-	      "start":"15:00", //24h format hh:mm
-	      "end":"21:00" //24h format hh:mm
+      "ringlock": {
+        "active": true,
+        "DECTphones": 1,
+        "start": "15:00",
+        "end": "21:00"
       },
-      "broadband":{
-	    "active":true,
-	      "measureTime":5, //time to measure in seconds
-	      "polling":30 //in minutes
+      "broadband": {
+        "active": true,
+        "measureTime": 5,
+        "polling": 30
       },
-      "extReboot":{
-	      "active":true,
-	      "cmdOn":"sh /PATHTOSCRIPT/reboot-start.sh",  //change path to your script!
-	      "cmdOff":"sh /PATHTOSCRIPT/reboot-finished.sh"  //change path to your script!
+      "extReboot": {
+        "active": true,
+        "cmdOn": "sh /PATHTOSCRIPT/reboot-start.sh",
+        "cmdOff": "sh /PATHTOSCRIPT/reboot-finished.sh"
       },
-      "telegram":{
-	      "active":true,
-	      "token":"TOKEN",
-	      "chatID":"CHATID",
-	      "presence":{
-	        "in":"Willkommen zu Hause @", //@ will be replaced automatically with name
-	        "out":"Auf Wiedersehen @", //@ will be replaced automatically with name
-	        "anyoneIn":"Jemand ist zu Hause!",                
-	        "anyoneOut":"Niemand zu Hause!"
-	      },
-	      "callmonitor":{
-	        "incoming":"Ankommende Anruf! @", //@ will be replaced automatically with name and nr
-	        "disconnected":"Anruf mit @ wurde beendet!" //@ will be replaced automatically with name and nr
-	      }
+      "telegram": {
+        "active": true,
+        "token": "TOKEN",
+        "chatID": "CHATID",
+        "presence": {
+          "in": "Willkommen zu Hause @",
+          "out": "Auf Wiedersehen @",
+          "anyoneIn": "Jemand ist zu Hause!",
+          "anyoneOut": "Niemand zu Hause!"
+        },
+        "callmonitor": {
+          "incoming": "Ankommende Anruf! @",
+          "disconnected": "Anruf mit @ wurde beendet!"
+        }
       },
-      "readOnlySwitches":false, //If true, the device switches will not trigger for reboot if set to on on/off
-      "anyone":true, //for anyone sensor (presence)
-      "delay":60, //in seconds
-      "polling":5, //in seconds
-      "timeout": 5 //in seconds
+      "readOnlySwitches": false,
+      "anyone": true,
+      "delay": 60,
+      "polling": 5,
+      "timeout": 5
     }
- ]
+  ]
 }
