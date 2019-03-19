@@ -26,7 +26,7 @@ If you do not have a connected device, you can also do it via the phone book. Ac
 
 ```
 "callmonitor": {
-  "disable": false,
+  "active": true,
   "ip": "192.168.178.1",
   "port": 1012,
   "country": "DE",
