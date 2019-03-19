@@ -242,9 +242,9 @@ class Fritz_Box {
             called: data[4]
           };
           
-          if(accessory.context.incomingTo){     
+          if(accessory.context.incomingTo){
             self.logger.info(accessory.displayName + ': Checking incoming calls only to Nr ' + accessory.context.incomingTo);
-            if(accessory.context.incomingTo==message.called){
+            if(accessory.context.incomingTo.includes(message.called)){
               self.logger.info(accessory.displayName + ': Incoming nr matched!');
               accessory.context.lastState = 1;
               accessory.context.timesOpened += 1;
@@ -351,7 +351,7 @@ class Fritz_Box {
           
           if(accessory.context.outgoingFrom){
             self.logger.info(accessory.displayName + ': Checking outgoing calls only from Nr ' + accessory.context.outgoingFrom);
-            if(accessory.context.outgoingFrom==message.caller){
+            if(accessory.context.outgoingFrom.includes(message.caller)){
               self.logger.info(accessory.displayName + ': Outgoing from nr matched!');
               accessory.context.lastState = 1;
               accessory.context.timesOpened += 1;
@@ -448,7 +448,7 @@ class Fritz_Box {
           delete(self.call[data[2]]);
           message = call;
           if(accessory.context.incomingTo||accessory.context.outgoingFrom){
-            if(accessory.context.incomingTo==message.called||accessory.context.outgoingFrom==message.caller){
+            if(accessory.context.incomingTo.includes(message.called)||accessory.context.outgoingFrom.includes(message.caller)){
               accessory.context.lastState = 0;
               service.getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastState);
               self.logger.info('Call disconnected');
