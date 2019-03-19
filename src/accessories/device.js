@@ -936,7 +936,7 @@ class Fritz_Box {
     book.actions.GetPhonebookList(null,{name:accessory.displayName + ' SetPhoneBook', count:0},function(err, res) {
       if(!err){
         self.bookIDs = res.NewPhonebookList.split(',');
-        self.logger.info('Found ' + self.bookIDs.length + ' book(s)! Fetching entries...');
+        self.logger.info('Found ' + self.bookIDs.length + ' book' + (self.bookIDs.length>1?'s!':'!') + ' Fetching entries...');
         self.storePhoneBook(accessory,service,device,true);
       } else {
         if(err.ping){
@@ -967,7 +967,7 @@ class Fritz_Box {
       book.actions.GetPhonebookList(null,{name:accessory.displayName + ' SetPhoneBook', count:0},function(err, res) {
         if(!err){
           self.bookIDs = res.NewPhonebookList.split(',');
-          self.logger.info('Found ' + self.bookIDs.length + ' book(s)! Fetching entries...');
+          self.logger.info('Found ' + self.bookIDs.length + ' book' + (self.bookIDs.length>1?'s!':'!') + ' Fetching entries...');
           self.storePhoneBook(accessory,service,device);
         } else {
           if(err.ping){
@@ -1039,7 +1039,7 @@ class Fritz_Box {
                   }
                 }
                 self.currentID += 1;
-                self.logger.info('Phone book [' + self.currentID + '] done. Looking for another books!');
+                self.logger.debug('Phone book [' + self.currentID + '] done. Looking for another books!');
                 setTimeout(function(){self.storePhoneBook(accessory,service,device,refresh);},500);
               } else {
                 self.logger.errorinfo(accessory.displayName + ': An error occured while fetching phone book!');
@@ -1061,8 +1061,8 @@ class Fritz_Box {
         }); 
       } else {
         if(err.tr064code&&err.tr064code == '713'){
-          self.logger.info('Cant find other books. Fetching result...');
-          self.logger.info('Found ' + self.telBook.length + ' entries in phone book [' + self.currentID + ']. Setting it to storage!');
+          self.logger.debug('Cant find other books. Fetching result...');
+          self.logger.info('Found ' + self.telBook.length + ' entries in phone book. Setting it to storage!');
           self.storage.setItem('PhoneBook.js', self.telBook);
           self.currentID = 0;
           self.telBook = [];
