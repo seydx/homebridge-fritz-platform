@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 3.1.4 - 2019-03-18
+- [NEW] It is now possible to add multiple numbers to "incomingTo" and "outgoingFrom" (Callmonitor)
+- Code cleanup
+- Bugfixes
+
 ## 3.1.3 - 2019-03-18
 - Rewrite smarthome (fixed a bug with 404 not found error)
 
