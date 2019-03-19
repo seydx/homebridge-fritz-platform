@@ -5,7 +5,9 @@
 
 ## Fritz!Box
 - [x] Fritz!Box 7590
+- [x] Fritz!Box 7530
 - [x] Fritz!Box 7490
+- [x] Fritz!Box 7430
 - [x] Fritz!Box 7390 WLAN
 - [x] Fritz!Box 7360 WLAN
 - [x] Fritz!Box 6590 Cable
@@ -14,7 +16,7 @@
 ## Fritz!Repeater
 - [x] Fritz!Repeater 1750E
 - [x] Fritz!Wlan Repeater 450E
-- [x] Fritz!Wlan Repeater 310 *(works partial if no mesh)*
+- [x] Fritz!Wlan Repeater 310
 
 ## Fritz!DECT Smart Home
 - [x] Fritz!DECT Repeater 1000
