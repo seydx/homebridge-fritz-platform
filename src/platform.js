@@ -60,6 +60,7 @@ function FritzPlatform (log, config, api) {
   this.readOnlySwitches = config.readOnlySwitches||false;
   this.telegram = config.telegram||{};
   this.delay = (config.delay&&config.delay>=10) ? config.delay*1000:10*1000;
+  this.onDelay = config.onDelay||false;
   this.polling = (config.polling&&config.polling>=5) ? config.polling*1000:5*1000;
   this.timeout = (config.timeout&&config.timeout>=5) ? config.timeout*1000:5*1000;
   this.anyone = config.anyone||false;
@@ -1241,6 +1242,7 @@ FritzPlatform.prototype = {
     accessory.context.polling = self.polling;
     accessory.context.stopPolling = false;
     accessory.context.delay = self.delay;
+    accessory.context.onDelay = self.onDelay;
     accessory.context.telegram = (Object.keys(self.telegram).length&&self.telegram.active)?self.telegram:false;
     if(accessory.context.type == 'presence'){
       self.configurePresence(accessory,conf);
