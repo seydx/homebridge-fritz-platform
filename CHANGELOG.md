@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 3.1.5 - 2019-03-19
+- Bump dependencies
+- Code cleanup
+
 ## 3.1.4 - 2019-03-18
 - [NEW] It is now possible to add multiple numbers to "incomingTo" and "outgoingFrom" (Callmonitor)
 - Code cleanup
