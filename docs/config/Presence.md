@@ -34,9 +34,9 @@ You can also add a "Anyone" sensor to HomeKit for checking presence at home to c
 
 There is also a possibility to set two types of delays.
 
-- **delay: ** This prevents the occupancy sensor from going to "no occupancy" (in case of if device logs out and immediately logs in and again). Only if there is still no connection in the specified time, the occupancy sensor goes to "no occupancy". If delay = 0 or removed, this option is deactivated. 
+- **delay**:  This prevents the occupancy sensor from going to "no occupancy" (in case of if device logs out and immediately logs in and again). Only if there is still no connection in the specified time, the occupancy sensor goes to "no occupancy". If delay = 0 or removed, this option is deactivated. 
 
-- **onDelay: ** This prevents the occupancy sensor from going to "occupancy detected" (in case of if device logs in and immediately logs out and again). Only if there is still connection in the specified time, the occupancy sensor goes to "occupancy detected". If onDelay = 0 or removed, this option is deactivated. 
+- **onDelay**: This prevents the occupancy sensor from going to "occupancy detected" (in case of if device logs in and immediately logs out and again). Only if there is still connection in the specified time, the occupancy sensor goes to "occupancy detected". If onDelay = 0 or removed, this option is deactivated. 
 
 Check the **[General config](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/General.md)** section for this!
 
