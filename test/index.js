@@ -4,11 +4,13 @@ const parseString = require('xml2js').parseString;
 const self = this;
 
 let options = {
-  host: '192.168.178.1', //IP HERE
+  name: 'Fritz!Box 7590',
+  type: 'dsl', // dsl|cable|repeater
+  host: '192.168.178.1', // IP HERE
   port: 49000,
   ssl: true,
-  username: 'Admin', //USERNAME HERE
-  password: '12345', //PASSWORD HERE
+  username: 'Admin', // USERNAME HERE
+  password: '12345', // PASSWORD HERE
   headers: {
     'Content-Type': 'text/xml; charset="utf-8"'
   }
@@ -22,6 +24,7 @@ input.on('data', function (data) {
     console.log('User input complete, program exit.');
     process.exit();
   }else{
+    console.log('')
     initTR064(options, data);
   }
 });
@@ -34,6 +37,7 @@ function initTR064(config, data){
       secureLog(result, data);
     })
     .catch(err => {
+      console.log('')
       console.log('An error occured by initializing device!');
       console.log(err);
       console.log('');
@@ -45,11 +49,14 @@ function secureLog(device, data){
   device.startEncryptedCommunication()
     .then(res => {
       res.login(device.config.username,device.config.password);
+      console.log('')
       console.log('Encrypted communication started with: %s',res.deviceInfo.friendlyName);
+      console.log('')
       self.device = res;
       fetchNewSID(res, data);
     })
     .catch(err => {
+      console.log('')
       console.log('An error occured by starting encypted communication with: %s',device.deviceInfo.friendlyName);
       console.log(err);
       console.log('');
@@ -61,6 +68,7 @@ function fetchNewSID(device, data){
   let config = device.services['urn:dslforum-org:service:DeviceConfig:1'];
   config.actions['X_AVM-DE_CreateUrlSID'](null,{name:'fetchSID',count:0},function(err, result) {
     if(result){
+      console.log('')
       console.log(result);
       let sid;
       if(result['NewX_AVM-DE_UrlSID'])sid = result['NewX_AVM-DE_UrlSID'].split('sid=')[1];
