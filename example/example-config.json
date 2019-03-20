@@ -132,6 +132,7 @@
       "readOnlySwitches": false,
       "anyone": true,
       "delay": 60,
+      "onDelay":15,
       "polling": 5,
       "timeout": 5
     }
