@@ -10,6 +10,8 @@ Here you can see how to set up extra characteristics such as alarm, broadband et
 
 If setted up in config.json, the plugin will create an alarm switch assigned to your main router for creating automations to receive a call from your router for a given time to a given nr
 
+_Note: If you want to use this function, you need to activate phone dialer in your FritzBox WebUI !_
+
 
 
 ## Example Alarm Configuration
@@ -37,6 +39,8 @@ If setted up in config.json, the plugin will create an alarm switch assigned to 
 # Wake up
 
 If setted up in config.json, the plugin will create an wake up switch assigned to your main router for creating an automation to ring to a connected phone with an intern nr gor a given time
+
+_Note: If you want to use this function, you need to activate phone dialer in your FritzBox WebUI !_
 
 
 
