@@ -30,6 +30,7 @@ class Fritz_Box {
     this.polling = platform.polling;
     this.timeout = platform.timeout;
     this.delay = platform.delay;
+    this.onDelay = platform.onDelay;
     this.telegram = platform.telegram;
     this.sendTelegram = platform.sendTelegram;
     this.tcp = platform.tcp;
@@ -73,6 +74,7 @@ class Fritz_Box {
     accessory.context.adresse = parameter.adresse;
     accessory.context.polling = self.polling;
     accessory.context.delay = self.delay;
+    accessory.context.onDelay = self.onDelay;
     accessory.context.telegram = self.telegram;
     accessory.context.lastState = 0;
     accessory.context.ipmac = '0.0.0.0';
@@ -153,13 +155,43 @@ class Fritz_Box {
     const self = this;
     if(accessory.displayName !== 'Anyone'){
       if(accessory.context.newState===1){
-        accessory.context.lastState = 1;
-        if(self.retry){
-          self.logger.info(accessory.displayName + ': Presence detected again');
-          //Reset
-          self.info = false;
-          self.presenceTime = false;
-          self.retry = false;
+        if(!accessory.context.lastState&&self.onDelay>0){
+          if(!self.represenceTime)self.represenceTime=moment().unix();
+          if((moment().unix()-self.represenceTime)<=(self.onDelay/1000)){
+            accessory.context.lastState = 0;
+            if(!self.reinfo){
+              self.logger.info(accessory.displayName + ': Presence detected! Re-Presence delay is active.');
+              self.logger.info(accessory.displayName + ': Wait ' + (self.onDelay/1000) + ' seconds before switching to presence detected');
+              self.reinfo = true;
+              self.reretry = true;
+            }
+          } else {
+            accessory.context.lastState = 1;
+            if(self.reinfo){
+              self.logger.info(accessory.displayName + ': Presence still after ' + (self.onDelay/1000) + ' seconds');
+              self.logger.info(accessory.displayName + ': Switching to presence detected');
+              //Reset
+              self.reinfo = false;
+              self.represenceTime = false;
+              self.reretry = false;
+            }
+            if(self.retry){
+              self.logger.info(accessory.displayName + ': Presence detected again');
+              //Reset
+              self.info = false;
+              self.presenceTime = false;
+              self.retry = false;
+            }
+          }
+        } else {
+          accessory.context.lastState = 1;
+          if(self.retry){
+            self.logger.info(accessory.displayName + ': Presence detected again');
+            //Reset
+            self.info = false;
+            self.presenceTime = false;
+            self.retry = false;
+          }
         }
       } else {
         if(accessory.context.newState!==undefined){
@@ -183,9 +215,23 @@ class Fritz_Box {
                 self.presenceTime = false;
                 self.retry = false;
               }
+              if(self.reretry){
+                self.logger.info(accessory.displayName + ': Again no presence');
+                //Reset
+                self.reinfo = false;
+                self.represenceTime = false;
+                self.reretry = false;
+              }
             }
           } else {
             accessory.context.lastState = 0;
+            if(self.reretry){
+              self.logger.info(accessory.displayName + ': Again no presence');
+              //Reset
+              self.reinfo = false;
+              self.represenceTime = false;
+              self.reretry = false;
+            }
           }
         }
       }          
