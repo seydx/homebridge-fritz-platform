@@ -412,7 +412,6 @@ class Fritz_Box {
         .updateValue(accessory.context.lastUL);
       service.getCharacteristic(Characteristic.Ping)
         .updateValue(accessory.context.lastPing);
-      //setTimeout(function(){self.checkBroadband(accessory,service);},3000);
       self.checkBroadband(accessory,service);
     } else {
       if(service.testCharacteristic(Characteristic.Download)){
@@ -429,7 +428,6 @@ class Fritz_Box {
       }
     }
 
-    //this.fetchSID(accessory);
     this.getState(accessory,service);
 
   }
@@ -1079,10 +1077,10 @@ class Fritz_Box {
           }
         }
         if(refresh){
-          self.logger.debug('Next poll in 1h!');
+          self.logger.debug('Next poll in 24h!');
           setTimeout(function(){
             self.refreshPhoneBook(accessory,service);
-          }, 60*60*1000); //1h
+          }, 24*60*60*1000); //24h
         } 
       }
     });
@@ -1365,15 +1363,19 @@ class Fritz_Box {
         if(!err||result){
           self.logger.info(accessory.displayName + ': Calling ' + accessory.context.wakeup.internNr + ' for ' + accessory.context.wakeup.duration + ' seconds');
           setTimeout(function(){
-            service.getCharacteristic(Characteristic.WakeUp).setValue(false);
+            if(service.getCharacteristic(Characteristic.WakeUp).value)service.getCharacteristic(Characteristic.WakeUp).setValue(false);
           }, accessory.context.wakeup.duration*1000);
           callback(null, true);
         } else {
           if(err.ping){
             self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
           } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Wake Up!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
+            if(err.tr064==='Action Failed'&&(err.tr064code==='501'||err.tr064code===501)){
+              self.logger.warn(accessory.displayName + ': Please activate phone dialer in your FritzBox WebUI!');
+            } else {
+              self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Wake Up!');
+              self.logger.errorinfo(JSON.stringify(err,null,4));
+            }
           }
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(false);},500);
           callback(null, false);
@@ -1388,8 +1390,12 @@ class Fritz_Box {
           if(err.ping){
             self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
           } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Wake Up!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
+            if(err.tr064==='Action Failed'&&(err.tr064code==='501'||err.tr064code===501)){
+              self.logger.warn(accessory.displayName + ': Please activate phone dialer in your FritzBox WebUI!');
+            } else {
+              self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Wake Up!');
+              self.logger.errorinfo(JSON.stringify(err,null,4));
+            }
           }
           setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(true);},500);
           callback(null, true);
