@@ -606,13 +606,15 @@ FritzPlatform.prototype = {
     } 
 
     //SmartHome
-    var skipSmartHome, skipTemp, tempSensor;
+    var skipSmartHome, skipTemp, tempSensor, skipWindow, windowSensor;
     let smartHomeArray = [];
     if(Object.keys(self.smarthome).length){
       for(const i in self.smarthome){
         skipSmartHome = false;
         skipTemp = false;
         tempSensor = false;
+        skipWindow = false;
+        windowSensor = false;
         for(const l in self.accessories){
           if(self.accessories[l].context.type == 'smarthome' && self.accessories[l].displayName==i){
             smartHomeArray.push(i);
@@ -648,6 +650,37 @@ FritzPlatform.prototype = {
         if(!tempSensor){
           for(const j in self.accessories){
             if(self.accessories[j].context.type == 'smarthome'&&self.accessories[j].context.accType=='temp'&&self.accessories[j].displayName == i+' Temperature'){
+              self.removeAccessory(self.accessories[j]);
+            }
+          }
+        }
+        for(const o in self.accessories){
+          if(self.accessories[o].context.type == 'smarthome' && self.accessories[o].displayName==i+' Window'){
+            skipWindow = true;
+            smartHomeArray.push(i+' Window');
+            if(self.smarthome[i].windowSensor)self.configureSmartHome(self.accessories[o],true);
+          }
+        }
+        if(self.smarthome[i].type=='thermo'&&self.smarthome[i].windowSensor)windowSensor = true;
+        if(!skipWindow&&windowSensor){
+          let options = {
+            name: i+' Window',
+            type: 'smarthome',
+            accType: 'window'||false,
+            ain: self.smarthome[i].ain||false,
+            devices: devices
+          };
+          smartHomeArray.push(i+' Window');
+          new smartHomeAccessory(self,options,options.accType,true);
+          for(const l in self.accessories){
+            if(self.accessories[l].context.type == 'smarthome'){
+              self.refreshSmartHome(self.accessories[l]);
+            }
+          }
+        }
+        if(!windowSensor){
+          for(const j in self.accessories){
+            if(self.accessories[j].context.type == 'smarthome'&&self.accessories[j].context.accType=='window'&&self.accessories[j].displayName == i+' Window'){
               self.removeAccessory(self.accessories[j]);
             }
           }
@@ -965,6 +998,22 @@ FritzPlatform.prototype = {
               }
             }
             break;
+          case 'window':
+            if(i.includes(accessory.context.ain)&&self.smartDevices[i].hkr){
+              accessory.context.devPresent=self.smartDevices[i].present;
+              if(self.smartDevices[i].present==='1'||self.smartDevices[i].present===1){
+                if(self.smartDevices[i].hkr.windowopenactiv==='1'||self.smartDevices[i].hkr.windowopenactiv===1){
+                  accessory.context.lastWindowState = 1;
+                } else {
+                  accessory.context.lastWindowState = 0;
+                }
+                accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastWindowState);
+              } else {
+                accessory.context.lastWindowState = 0;
+                accessory.getService(Service.ContactSensor).getCharacteristic(Characteristic.ContactSensorState).updateValue(accessory.context.lastWindowState);
+              }
+            }
+            break;
           case 'switch':
             if(i.includes(accessory.context.ain)&&self.smartDevices[i].switch){
               accessory.context.devPresent=self.smartDevices[i].present;
@@ -1185,6 +1234,12 @@ FritzPlatform.prototype = {
         !accessory.context.lastActivation?accessory.context.lastActivation=0:accessory.context.lastActivation;
         !accessory.context.closeDuration?accessory.context.closeDuration=0:accessory.context.closeDuration;
         !accessory.context.openDuration?accessory.context.openDuration=0:accessory.context.openDuration;
+        
+        accessory.context.windowSensor = self.smarthome[i].windowSensor||false;
+        !accessory.context.timesWindowOpened?accessory.context.timesWindowOpened=0:accessory.context.timesWindowOpened;
+        !accessory.context.lastWindowActivation?accessory.context.lastWindowActivation=0:accessory.context.lastWindowActivation;
+        !accessory.context.closeWindowDuration?accessory.context.closeWindowDuration=0:accessory.context.closeWindowDuration;
+        !accessory.context.openWindowDuration?accessory.context.openWindowDuration=0:accessory.context.openWindowDuration;
       }
     }
     self.accessories[accessory.displayName] = accessory;
