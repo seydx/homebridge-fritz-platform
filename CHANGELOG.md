@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 3.2 - 2019-03-21
+- [NEW] Presence: new function 'onDelay'
+- [NEW] Smarthome: New accessory (contact sensor) for **window open active** function (thermo)
+- Code cleanup
+
 ## 3.1.5 - 2019-03-19
 - Bump dependencies
 - Code cleanup
