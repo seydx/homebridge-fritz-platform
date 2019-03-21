@@ -69,7 +69,8 @@
           "type": "thermo",
           "unit": "celsius",
           "heatValue": 5,
-          "coolValue": 5
+          "coolValue": 5,
+          "windowSensor": true
         }
       },
       "callmonitor": {
