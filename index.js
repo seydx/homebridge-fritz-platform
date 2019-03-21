@@ -1,5 +1,5 @@
 /**
- * v3.1
+ * v3
  *
  * @url https://github.com/SeydX/homebridge-fritz-platform
  * @author SeydX <seyd55@outlook.de>
