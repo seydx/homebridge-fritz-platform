@@ -67,6 +67,10 @@ class Fritz_Box {
         deviceType = Accessory.Categories.SENSOR;
         accessoryType = Service.TemperatureSensor;
         break;
+      case 'window':
+        deviceType = Accessory.Categories.SENSOR;
+        accessoryType = Service.ContactSensor;
+        break;
       default:
         self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
         return;
@@ -115,9 +119,24 @@ class Fritz_Box {
         accessory.context.lastTemp = 0;
         accessory.context.unit = parameter.unit;
         break;
+      case 'window':
+        accessory.context.lastWindowState = 0;
+        //EVE
+        accessory.context.lastWindowActivation = 0;
+        accessory.context.timesWindowOpened = 0;
+        accessory.context.closeWindowDuration = 0;
+        accessory.context.openWindowDuration = 0;
+        break;
       default:
         self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
         return;
+    }
+    
+    let serial;
+    if(type=='temp'){
+      serial='-T';
+    } else if(type=='window'){
+      serial='-W';
     }
 
     //AccessoryInformation
@@ -126,7 +145,7 @@ class Fritz_Box {
       .setCharacteristic(Characteristic.Identify, accessory.displayName)
       .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
       .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, parameter.ain+(type=='temp'?'-T':''))
+      .setCharacteristic(Characteristic.SerialNumber, parameter.ain+(serial?serial:''))
       .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
 
     // Publish
@@ -145,6 +164,13 @@ class Fritz_Box {
 
   getService (accessory, type) {
     const self = this;
+    
+    let serial;
+    if(type=='temp'){
+      serial='-T';
+    } else if(type=='window'){
+      serial='-W';
+    }
 
     //Refresh AccessoryInformation
     accessory.getService(Service.AccessoryInformation)
@@ -152,7 +178,7 @@ class Fritz_Box {
       .setCharacteristic(Characteristic.Identify, accessory.displayName)
       .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
       .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, accessory.context.ain+(type=='temp'?'-T':''))
+      .setCharacteristic(Characteristic.SerialNumber, accessory.context.ain+(serial?serial:''))
       .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
 
     accessory.on('identify', function (paired, callback) {
@@ -173,6 +199,30 @@ class Fritz_Box {
           .updateValue(accessory.context.lastTemp)
           .on('change', self.refreshData.bind(this, accessory, service, type));
         self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
+        break;
+      case 'window':
+        service = accessory.getService(Service.ContactSensor);
+        if (!service.testCharacteristic(Characteristic.LastActivation))service.addCharacteristic(Characteristic.LastActivation);
+        service.getCharacteristic(Characteristic.LastActivation)
+          .updateValue(accessory.context.lastWindowActivation);
+      
+        if (!service.testCharacteristic(Characteristic.TimesOpened))service.addCharacteristic(Characteristic.TimesOpened);
+        service.getCharacteristic(Characteristic.TimesOpened)
+          .updateValue(accessory.context.timesWindowOpened);
+
+        if (!service.testCharacteristic(Characteristic.OpenDuration))service.addCharacteristic(Characteristic.OpenDuration);
+        service.getCharacteristic(Characteristic.OpenDuration)
+          .updateValue(accessory.context.openWindowDuration);
+
+        if (!service.testCharacteristic(Characteristic.ClosedDuration))service.addCharacteristic(Characteristic.ClosedDuration);
+        service.getCharacteristic(Characteristic.ClosedDuration)
+          .updateValue(accessory.context.closeWindowDuration);
+        
+        service.getCharacteristic(Characteristic.ContactSensorState)
+          .updateValue(accessory.context.lastWindowState)
+          .on('change', self.refreshData.bind(this, accessory, service, type));
+        
+        self.historyService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
         break;
       case 'switch':
         service = accessory.getService(Service.Outlet);
@@ -320,6 +370,21 @@ class Fritz_Box {
       case 'temp':
         self.historyService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
         self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastTemp);
+        break;
+      case 'window':
+        self.historyService.addEntry({time: moment().unix(), status:value.newValue});
+        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastWindowState);
+        if(value.newValue){
+          accessory.context.timesWindowOpened += 1;
+          accessory.context.lastWindowActivation = moment().unix() - self.historyService.getInitialTime();
+          accessory.context.closeWindowDuration = moment().unix() - self.historyService.getInitialTime();
+          service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastWindowActivation);
+          service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeWindowDuration);
+          service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesWindowOpened);
+        } else {
+          accessory.context.openWindowDuration = moment().unix() - self.historyService.getInitialTime();
+          service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openWindowDuration);
+        }
         break;
       case 'contact':
         self.historyService.addEntry({time: moment().unix(), status:value.newValue});
