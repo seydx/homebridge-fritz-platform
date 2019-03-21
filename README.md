@@ -13,6 +13,7 @@ This dynamic platform plugin allows almost full control of **AVM** hardware like
 - Fritz!WLAN Repeater,
 - Fritz!DECT Repeater,
 - Fritz!DECT Outlets,
+- Fritz!DECT Thermostats,
 - Comet!DECT Thermostats,
 - Fritz!Powerline Outlets (510, 540),
 - HAN-FUN sensors (e.g. Deutsche Telekom)
