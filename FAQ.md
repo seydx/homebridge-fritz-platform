@@ -70,4 +70,4 @@ That is not an issue by the plugin, it means only it can not find the, in config
 }
 ```
 
-**Fix:** You need to activate phone dialer in your FritzBox WebUI!
+**Fix:** You need to activate phone dialer in your FritzBox WebUI! If you only have LAN/IP phones, you can also create a dummy phone to line "FON" and select that. 
