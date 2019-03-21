@@ -19,7 +19,8 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
     "ain":"1234567890",
     "unit":"celsius",
     "heatValue":5,
-    "coolValue":5
+    "coolValue":5,
+    "windowSensor":true
   },
   "Kitchen Window":{
     "type":"contact",
@@ -62,6 +63,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | unit        | "celsius" or "fahrenheit" (fahrenheit may be buggy) (Default: celsius) |      |
 | heatValue   | Value for the "Heat" mode. Example: a value of 4 will heat up the room to **Current Room Temperature + 4 degrees** (Default: 5) |      |
 | coolValue   | Value for the "Cool" mode. Example: a value of 4 will cool up the room to **Current Room Temperature - 4 degrees** (Default: 5) |      |
+| windowSensor | If true, a contact sensor will be exposed to HomeKit that reacts to the window open detection from the DECT device with Fakegato support (Default: false) | |
 
 
 
