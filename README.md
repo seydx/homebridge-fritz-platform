@@ -9,11 +9,13 @@
 This dynamic platform plugin allows almost full control of **AVM** hardware like:
 
 - Fritz!Box, 
-- Fritz!WLAN Repeater,
 - Fritz!Fon,
-- Fritz!DECT plugs and repeater,
-- Comet!DECT thermostats,
-- HAN-FUN sensors
+- Fritz!WLAN Repeater,
+- Fritz!DECT Repeater,
+- Fritz!DECT Outlets,
+- Comet!DECT Thermostats,
+- Fritz!Powerline Outlets (510, 540),
+- HAN-FUN sensors (e.g. Deutsche Telekom)
 
 Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run **homebridge-fritz-platform**. The only need is network access to the device or program in question.
 
