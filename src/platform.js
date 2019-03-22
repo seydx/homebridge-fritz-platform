@@ -60,7 +60,7 @@ function FritzPlatform (log, config, api) {
   this.readOnlySwitches = config.readOnlySwitches||false;
   this.telegram = config.telegram||{};
   this.delay = (config.delay&&config.delay>=10) ? config.delay*1000:10*1000;
-  this.onDelay = config.onDelay||false;
+  this.onDelay = config.onDelay*1000||false;
   this.polling = (config.polling&&config.polling>=5) ? config.polling*1000:5*1000;
   this.timeout = (config.timeout&&config.timeout>=5) ? config.timeout*1000:5*1000;
   this.anyone = config.anyone||false;
