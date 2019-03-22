@@ -134,9 +134,11 @@ class Fritz_Box {
     
     let serial;
     if(type=='temp'){
-      serial='-T';
+      serial=accessory.context.ain+'-T';
     } else if(type=='window'){
-      serial='-W';
+      serial=accessory.context.ain+'-W';
+    } else {
+      serial=accessory.context.ain
     }
 
     //AccessoryInformation
@@ -145,7 +147,7 @@ class Fritz_Box {
       .setCharacteristic(Characteristic.Identify, accessory.displayName)
       .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
       .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, parameter.ain+(serial?serial:''))
+      .setCharacteristic(Characteristic.SerialNumber, serial)
       .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
 
     // Publish
@@ -167,9 +169,11 @@ class Fritz_Box {
     
     let serial;
     if(type=='temp'){
-      serial='-T';
+      serial=accessory.context.ain+'-T';
     } else if(type=='window'){
-      serial='-W';
+      serial=accessory.context.ain+'-W';
+    } else {
+      serial=accessory.context.ain
     }
 
     //Refresh AccessoryInformation
@@ -178,7 +182,7 @@ class Fritz_Box {
       .setCharacteristic(Characteristic.Identify, accessory.displayName)
       .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
       .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, accessory.context.ain+(serial?serial:''))
+      .setCharacteristic(Characteristic.SerialNumber, serial)
       .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
 
     accessory.on('identify', function (paired, callback) {
