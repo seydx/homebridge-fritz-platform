@@ -965,7 +965,7 @@ FritzPlatform.prototype = {
 
   sendTelegram: function(token,chatID,text){
     const self = this;
-    request.post('https://api.telegram.org/bot' + token + '/sendMessage',{body:{'chat_id': chatID,'text': text},json:true}, function(error, response, body){
+    request.post('https://api.telegram.org/bot' + token + '/sendMessage',{body:{'chat_id': chatID,'text': text, 'parse_mode': 'Markdown'},json:true}, function(error, response, body){
       if (!error && (response.statusCode == 200 || response.statusCode == 303)){
         self.logger.debug('Successfully send telegram notification!');
       } else {
