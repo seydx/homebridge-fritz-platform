@@ -33,5 +33,20 @@ Replace **YOURBOTTOKENTHATYOUCOPIEDABOVE** with your bot token. Remember to writ
 **-yyyyyyyyy** is the groups chatid (it should have a negative sign)
 
 
-
 Now you have both the Bot's token and Group's chatID. Have Fun.
+
+
+## Markdown
+
+FritzPlatform supports Markdown for Telegram notifications. Below you find a list how to customize your messages:
+
+```
+*bold text*
+_italic text_
+[inline URL](http://www.example.com/)
+[inline mention of a user](tg://user?id=123456789)
+`inline fixed-width code`
+```block_language
+pre-formatted fixed-width code block
+```
+```
