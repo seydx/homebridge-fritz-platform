@@ -589,7 +589,7 @@ class Fritz_Box {
               self.logger.info(accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
               reboot.actions.Reboot(null,{name:accessory.displayName + ' SetExtReboot',count:0},function() {
                 //Telegram Start
-                if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot.start){
+                if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot&&self.telegram.extReboot.start){
                   self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.extReboot.start); 
                   self.logger.info(self.telegram.extReboot.start);
                 } else {
@@ -607,7 +607,7 @@ class Fritz_Box {
                 });
                 //Telegram Finish
                 setTimeout(function(){
-                  if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot.finish){
+                  if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot&&self.telegram.extReboot.finish){
                     self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.extReboot.finish); 
                     self.logger.info(self.telegram.extReboot.finish);
                   } else {
