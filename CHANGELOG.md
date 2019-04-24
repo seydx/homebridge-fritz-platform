@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 3.2.3 - 2019-04-24
+- Bugfix (extReboot Telegram)
+
+
 ## 3.2.2 - 2019-04-24
 - [NEW] Markdown Support for telegram notifications
 
