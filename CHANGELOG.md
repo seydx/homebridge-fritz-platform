@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 3.2.4 - 2019-04-26
+- Bugfix
+
+
 ## 3.2.3 - 2019-04-24
 - Bugfix (extReboot Telegram)
 
