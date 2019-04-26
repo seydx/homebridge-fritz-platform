@@ -951,7 +951,7 @@ FritzPlatform.prototype = {
       } else if(error.errno == 'ENETUNREACH') {
         self.logger.warninfo('Network currently not reachable!');
       } else {
-        self.logger.errorinfo(JSON.stringlockify(error,null,4));
+        self.logger.errorinfo(JSON.stringify(error,null,4));
       }
       self.logger.info('Trying again in 30 seconds..');
       setTimeout(function(){self.cm(devices);},30000);
@@ -974,7 +974,7 @@ FritzPlatform.prototype = {
           error: error?error.errno:response.statusMessage,
           errorCode: error?error.code:response.statusCode
         };
-        self.logger.errorinfo(JSON.stringlockify(showError,null,4));
+        self.logger.errorinfo(JSON.stringify(showError,null,4));
       }
     });
   },
