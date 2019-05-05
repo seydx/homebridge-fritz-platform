@@ -11,13 +11,11 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
   "Work room DECT 200":{
     "type":"switch",
     "ain":"1234567890",
-    "tempSensor":true,
-    "unit":"celsius"
+    "tempSensor":true
   },
   "Living room DECT 301":{
     "type":"thermo",
-    "ain":"1234567890",
-    "unit":"celsius",
+    "ain":"1234567890"
     "heatValue":5,
     "coolValue":5,
     "windowSensor":true
@@ -39,7 +37,6 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | type        | Must be "switch"            | X |
 | ain         | AIN adresse from the device | X |
 | tempSensor  | If true AND the switch provides a temperature sensor, a temperature sensor will be exposed to HomeKit (Default: false) |  |
-| unit        | Unit for temperature sensor - celsius/fahrenheit (Default: celsius, fahrenheit may be buggy) |  |
 
 
 
@@ -60,7 +57,6 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | name | Unique name for the accessory, eg Kitchen window |  X   |
 | type        | Must be "thermo"                                             |  X   |
 | ain         | AIN adresse from the device                                  |  X   |
-| unit        | "celsius" or "fahrenheit" (fahrenheit may be buggy) (Default: celsius) |      |
 | heatValue   | Value for the "Heat" mode. Example: a value of 4 will heat up the room to **Current Room Temperature + 4 degrees** (Default: 5) |      |
 | coolValue   | Value for the "Cool" mode. Example: a value of 4 will cool up the room to **Current Room Temperature - 4 degrees** (Default: 5) |      |
 | windowSensor | If true, a contact sensor will be exposed to HomeKit that reacts to the window open detection from the DECT device with Fakegato support (Default: false) | |
