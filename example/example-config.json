@@ -13,7 +13,7 @@
           "active": false,
           "host": "192.168.178.1",
           "port": 49000,
-          "username": "Username123
+          "username": "Username123,
           "password": "pw3456",
           "type": "dsl",
           "master": true,
