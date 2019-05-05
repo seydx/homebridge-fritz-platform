@@ -41,7 +41,7 @@ Among other things, **homebridge-fritz-platform** allows the switching of all WL
 
 See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/master/CHANGELOG.md) for changes between versions of this package.
 
-**<u>NOTE:</u>** Updating from **v2.x** to **v3.x** will crash your homebridge, please **REMOVE** the old version first and check also the new [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json) !
+**<u>NOTE:</u>** Updating from **v2.x** to **v3.x** or **v3.x** to **v4.x** will crash your homebridge, please **REMOVE** the old version first and check also the new [example-config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json) !
 
 
 
