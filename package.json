@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "3.2.4",
+  "version": "4.0.0-dev.1",
   "description": "homebridge-fritz-platform",
   "main": "index.js",
   "devDependencies": {},
@@ -32,14 +32,14 @@
     "homebridge": "^0.4.49"
   },
   "dependencies": {
-    "async": "^2.6.2",
-    "moment": "^2.24.0",
-    "request": "^2.88.0",
-    "xml2js": "^0.4.19",
-    "node-persist": "0.0.8",
     "cheerio": "^0.22.0",
     "fakegato-history": "^0.5.3",
+    "moment": "^2.24.0",
+    "speedtest-net": "^1.5.1",
     "tcp-ping": "^0.1.1",
-    "speedtest-net": "^1.5.1"
+    "xml2js": "^0.4.19",
+    "axios": "^0.18.0",
+    "debug": "^4.1.1",
+    "json-fs-store": "1.0.1"
   }
 }
