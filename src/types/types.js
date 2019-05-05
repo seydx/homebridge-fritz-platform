@@ -285,53 +285,6 @@ module.exports = {
     };
     inherits(Characteristic.RingLock, Characteristic);
     Characteristic.RingLock.UUID = 'cab7d43e-422c-4452-bc9a-11c89454332b';
-    
-    /// /////////////////////////////////////////////////////////////////////////
-    // CurrentHeatingCoolingState Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.CurrentHeatingCoolingState = function() {
-      Characteristic.call(this, 'Current Heating Cooling State', '0000000F-0000-1000-8000-0026BB765291');
-      this.setProps({
-        format: Characteristic.Formats.UINT8,
-        maxValue: 2,
-        minValue: 0,
-        validValues: [0,1,2],
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-
-    inherits(Characteristic.CurrentHeatingCoolingState, Characteristic);
-    Characteristic.CurrentHeatingCoolingState.UUID = '0000000F-0000-1000-8000-0026BB765291';
-
-    // The value property of CurrentHeatingCoolingState must be one of the following:
-    Characteristic.CurrentHeatingCoolingState.OFF = 0;
-    Characteristic.CurrentHeatingCoolingState.HEAT = 1;
-    Characteristic.CurrentHeatingCoolingState.COOL = 2;
-
-    /// /////////////////////////////////////////////////////////////////////////
-    // CurrentHeatingCoolingState Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.TargetHeatingCoolingState = function() {
-      Characteristic.call(this, 'Target Heating Cooling State', '00000033-0000-1000-8000-0026BB765291');
-      this.setProps({
-        format: Characteristic.Formats.UINT8,
-        maxValue: 2,
-        minValue: 0,
-        validValues: [0,1,2],
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-
-    inherits(Characteristic.TargetHeatingCoolingState, Characteristic);
-
-    Characteristic.TargetHeatingCoolingState.UUID = '00000033-0000-1000-8000-0026BB765291';
-
-    // The value property of TargetHeatingCoolingState must be one of the following:
-    Characteristic.TargetHeatingCoolingState.OFF = 0;
-    Characteristic.TargetHeatingCoolingState.HEAT = 1;
-    Characteristic.TargetHeatingCoolingState.COOL = 2;
 
   }
 };
