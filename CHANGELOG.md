@@ -1,6 +1,15 @@
 # Changelog
 
 
+## 4.0.0 - ???
+- Refactored code
+- Refactored API
+- Support async/await
+- Debug
+- Auto config generator
+- Bugfixes
+
+
 ## 3.2.4 - 2019-04-26
 - Bugfix
 
