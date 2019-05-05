@@ -47,8 +47,9 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | type       | Type of the device (Choices: cable/dsl/repeater - Default: "dsl") |  |
 | username   | Username for logging in to the above device                  | x |
 | password | Password for logging in to the above device | x |
-
-
+| readOnly | If true, the device switches will not trigger anymore if on/off (Default: false) | |
+| mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
+| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
 
 ## Optional parameter
 
@@ -63,8 +64,6 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | deflection | Parameter for enable/disable deflection switch (Default: false) |
 | led | Parameter for enable/disable LED switch (Default: false) |
 | lock | Parameter for enable/disable device lock switch (Default: false) |
-| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
-| mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
 
 
 
