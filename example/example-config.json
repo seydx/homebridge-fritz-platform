@@ -129,12 +129,12 @@
       ],
       "alarm": {
         "active": false,
-        "telNr": "",
+        "telNr": "012514587",
         "duration": 30
       },
       "wakeup": {
         "active": false,
-        "internNr": "",
+        "internNr": "**620",
         "duration": 30
       },
       "ringlock": {
@@ -150,8 +150,8 @@
       },
       "extReboot": {
         "active": false,
-        "cmdOn": "",
-        "cmdOff": ""
+        "cmdOn": "sh /PATH/TO/SCRIPT/on.sh",
+        "cmdOff": "sh /PATH/TO/SCRIPT/off.sh"
       },
       "telegram": {
         "active": true,
