@@ -3,7 +3,7 @@
     ...
   },
   "accessories": [
-   ...
+    ...
   ],
   "platforms": [
     {
@@ -13,7 +13,7 @@
           "active": false,
           "host": "192.168.178.1",
           "port": 49000,
-          "username": "Username123,
+          "username": "Username123",
           "password": "pw3456",
           "type": "dsl",
           "master": true,
@@ -32,7 +32,7 @@
             "lock": false
           }
         },
-        "FRITZ!Box 7430 BU":{
+        "FRITZ!Box 7430 BU": {
           "active": false,
           "host": "192.168.178.82",
           "port": 49000,
@@ -98,7 +98,10 @@
         "port": 1012,
         "country": "DE",
         "incomingTo": "015245879",
-        "outgoingFrom": ["8845668", "5497854"]
+        "outgoingFrom": [
+          "8845668",
+          "5497854"
+        ]
       },
       "presence": {
         "user": [
