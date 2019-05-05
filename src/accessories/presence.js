@@ -1,304 +1,326 @@
 'use strict';
 
-const HomeKitTypes = require('../types/types.js');
-const LogUtil = require('../../lib/LogUtil.js');
-const packageFile = require('../../package.json');
 const moment = require('moment');
 
-var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory;
+var Service, Characteristic;
 
-const pluginName = 'homebridge-fritz-platform';
-const platformName = 'FritzPlatform';
-
-class Fritz_Box {
-  constructor (platform, parameter, publish) {
+class PresenceAccessory {
+  constructor (platform, accessory, hosts) {
 
     // HB
-    PlatformAccessory = platform.api.platformAccessory;
-    Accessory = platform.api.hap.Accessory;
     Service = platform.api.hap.Service;
     Characteristic = platform.api.hap.Characteristic;
-    UUIDGen = platform.api.hap.uuid;
-    HomeKitTypes.registerWith(platform.api.hap);
 
     this.platform = platform;
     this.log = platform.log;
-    this.logger = new LogUtil(null, platform.log);
+    this.logger = platform.logger;
+    this.debug = platform.debug;
     this.api = platform.api;
     this.config = platform.config;
     this.accessories = platform.accessories;
-    this.polling = platform.polling;
-    this.timeout = platform.timeout;
-    this.delay = platform.delay;
-    this.onDelay = platform.onDelay;
-    this.telegram = platform.telegram;
-    this.sendTelegram = platform.sendTelegram;
-    this.tcp = platform.tcp;
-    this.errorpoll = 60000;
-    this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
-    this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     
-    this.refreshPresence = platform.refreshPresence;
-
-    if(publish){
-      this.addAccessory(parameter);
-    } else {
-      this.getService(parameter);
-    }
-
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Add Accessories
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  addAccessory (parameter) {
-    const self = this;
-    let name = parameter.name;
-    let deviceType = Accessory.Categories.SENSOR;
-    let accessoryType = Service.OccupancySensor;
-
-    this.logger.initinfo('Publishing new accessory: ' + name);
-
-    let accessory = this.accessories[name];
-    const uuid = UUIDGen.generate(name);
-
-    accessory = new PlatformAccessory(name, uuid, deviceType);
-    accessory.addService(accessoryType, name);
-
-    // Setting reachable to true
-    accessory.reachable = true;
-    accessory.context = {};
-
-    accessory.context.devices = parameter.devices;
-    accessory.context.adresse = parameter.adresse;
-    accessory.context.polling = self.polling;
-    accessory.context.delay = self.delay;
-    accessory.context.onDelay = self.onDelay;
-    accessory.context.telegram = self.telegram;
-    accessory.context.lastState = 0;
-    accessory.context.ipmac = '0.0.0.0';
-    accessory.context.hostname = 'Unknown';
-    accessory.context.type = parameter.type;
-
-    //AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, 'Occupancy')
-      .setCharacteristic(Characteristic.SerialNumber, 'O-1234567890')
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    // Publish
-    this.platform.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
-
-    // Cache
-    this.accessories[name] = accessory;
-
-    self.getService(accessory);
-
+    this.telegram = platform.telegram;
+    this.hosts = hosts;
+    
+    this.accessory = accessory;
+    this.mainService = this.accessory.getService(Service.OccupancySensor);
+    
+    this.getService();
+    
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService (accessory) {
-    const self = this;
+  getService () {
+  
+    this.mainService.getCharacteristic(Characteristic.OccupancyDetected)
+      .on('change', this.changeOccupany.bind(this));
 
-    //Refresh AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, 'Occupancy')
-      .setCharacteristic(Characteristic.SerialNumber, 'O-1234567890')
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    accessory.on('identify', function (paired, callback) {
-      self.logger.info(accessory.displayName + ': Hi!');
-      callback();
-    });
-
-    let service = accessory.getService(Service.OccupancySensor);
-
-    service.getCharacteristic(Characteristic.OccupancyDetected)
-      .updateValue(accessory.context.lastState)
-      .on('change', self.changeOccupany.bind(this,accessory,service));
-
-    service.getCharacteristic(Characteristic.StatusActive)
+    this.mainService.getCharacteristic(Characteristic.StatusActive)
       .updateValue(true);
 
-    service.getCharacteristic(Characteristic.StatusFault)
+    this.mainService.getCharacteristic(Characteristic.StatusFault)
       .updateValue(0);
 
-    service.getCharacteristic(Characteristic.StatusTampered)
+    this.mainService.getCharacteristic(Characteristic.StatusTampered)
       .updateValue(0);
 
-    service.getCharacteristic(Characteristic.StatusLowBattery)
+    this.mainService.getCharacteristic(Characteristic.StatusLowBattery)
       .updateValue(0);
 
-    if (!service.testCharacteristic(Characteristic.Adresse))service.addCharacteristic(Characteristic.Adresse);
-    service.getCharacteristic(Characteristic.Adresse)
-      .updateValue(accessory.context.ipmac);
-
-    if (!service.testCharacteristic(Characteristic.Host))service.addCharacteristic(Characteristic.Host);
-    service.getCharacteristic(Characteristic.Host)
-      .updateValue(accessory.context.host);
-
-    this.getStates(accessory,service);
+    this.getStates();
 
   }
   
-  getStates(accessory,service){
-    const self = this;
-    if(accessory.displayName !== 'Anyone'){
-      if(accessory.context.newState===1){
-        if(!accessory.context.lastState&&self.onDelay>0){
-          if(!self.represenceTime)self.represenceTime=moment().unix();
-          if((moment().unix()-self.represenceTime)<=(self.onDelay/1000)){
-            accessory.context.lastState = 0;
-            if(!self.reinfo){
-              self.logger.info(accessory.displayName + ': Presence detected! Re-Presence delay is active.');
-              self.logger.info(accessory.displayName + ': Wait ' + (self.onDelay/1000) + ' seconds before switching to presence detected');
-              self.reinfo = true;
-              self.reretry = true;
-            }
-          } else {
-            accessory.context.lastState = 1;
-            if(self.reinfo){
-              self.logger.info(accessory.displayName + ': Presence still after ' + (self.onDelay/1000) + ' seconds');
-              self.logger.info(accessory.displayName + ': Switching to presence detected');
-              //Reset
-              self.reinfo = false;
-              self.represenceTime = false;
-              self.reretry = false;
-            }
-            if(self.retry){
-              self.logger.info(accessory.displayName + ': Presence detected again');
-              //Reset
-              self.info = false;
-              self.presenceTime = false;
-              self.retry = false;
-            }
+  getStates(){
+  
+    let hosts = this.hosts.getHostList();
+    
+    if(hosts){
+    
+      if(this.accessory.displayName !== 'Anyone'){
+    
+        hosts.map( host => {
+      
+          if(this.accessory.context.address == host.MACAddress || this.accessory.context.address == host.IPAddress){
+          
+            this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
+            this.accessory.context.newState = parseInt(host.Active);
+          
           }
-        } else {
-          accessory.context.lastState = 1;
-          if(self.retry){
-            self.logger.info(accessory.displayName + ': Presence detected again');
-            //Reset
-            self.info = false;
-            self.presenceTime = false;
-            self.retry = false;
-          }
-        }
-      } else {
-        if(accessory.context.newState!==undefined){
-          if(accessory.context.lastState&&self.delay>0){
-            if(!self.presenceTime)self.presenceTime=moment().unix();
-            if((moment().unix()-self.presenceTime)<=(self.delay/1000)){
-              accessory.context.lastState = 1;
-              if(!self.info){
-                self.logger.info(accessory.displayName + ': No presence! Presence delay is active.');
-                self.logger.info(accessory.displayName + ': Wait ' + (self.delay/1000) + ' seconds before switching to no presence');
-                self.info = true;
-                self.retry = true;
+      
+        });
+      
+        if(this.accessory.context.newState === 1){
+       
+          if(!this.accessory.context.lastState && this.accessory.context.onDelay>0){
+       
+            if(!this.represenceTime)
+              this.represenceTime = moment().unix();
+          
+            if((moment().unix() - this.represenceTime) <= (this.accessory.context.onDelay/1000)){
+            
+              this.accessory.context.lastState = 0;
+            
+              if(!this.reinfo){
+             
+                this.logger.info(this.accessory.displayName + ': Presence detected! Re-Presence delay is active.');
+            
+                this.logger.info(this.accessory.displayName + ': Wait ' + (this.accessory.context.onDelay/1000) + ' seconds before switching to presence detected');
+             
+                this.reinfo = true;
+                this.reretry = true;
+            
               }
+         
             } else {
-              accessory.context.lastState = 0;
-              if(self.info){
-                self.logger.info(accessory.displayName + ': No presence after ' + (self.delay/1000) + ' seconds');
-                self.logger.info(accessory.displayName + ': Switching to no presence');
+            
+              this.accessory.context.lastState = 1;
+            
+              if(this.reinfo){
+             
+                this.logger.info(this.accessory.displayName + ': Presence still after ' + (this.accessory.context.onDelay/1000) + ' seconds');
+             
+                this.logger.info(this.accessory.displayName + ': Switching to presence detected');
+             
                 //Reset
-                self.info = false;
-                self.presenceTime = false;
-                self.retry = false;
+                this.reinfo = false;
+                this.represenceTime = false;
+                this.reretry = false;
+          
               }
-              if(self.reretry){
-                self.logger.info(accessory.displayName + ': Again no presence');
+          
+              if(this.retry){
+             
+                this.logger.info(this.accessory.displayName + ': Presence detected again');
+              
                 //Reset
-                self.reinfo = false;
-                self.represenceTime = false;
-                self.reretry = false;
+                this.info = false;
+                this.presenceTime = false;
+                this.retry = false;
+          
               }
+         
             }
+      
           } else {
-            accessory.context.lastState = 0;
-            if(self.reretry){
-              self.logger.info(accessory.displayName + ': Again no presence');
+          
+            this.accessory.context.lastState = 1;
+          
+            if(this.retry){
+            
+              this.logger.info(this.accessory.displayName + ': Presence detected again');
+            
               //Reset
-              self.reinfo = false;
-              self.represenceTime = false;
-              self.reretry = false;
+              this.info = false;
+              this.presenceTime = false;
+              this.retry = false;
+          
             }
+       
           }
-        }
-      }          
-    } else {
-      let states = [];
-      for(const i in self.accessories){
-        if(self.accessories[i].context.type == 'presence' && self.accessories[i].displayName !== 'Anyone'){
-          states.push(self.accessories[i].context.lastState);
-        }
-      }
-      if(states.includes('1')||states.includes(1)){
-        accessory.context.lastState = 1;
+    
+        } else {
+        
+          if(this.accessory.context.newState !== undefined){
+          
+            if(this.accessory.context.lastState && this.accessory.context.offDelay>0){
+           
+              if(!this.presenceTime)
+                this.presenceTime = moment().unix();
+           
+              if((moment().unix() - this.presenceTime) <= (this.accessory.context.offDelay/1000)){
+             
+                this.accessory.context.lastState = 1;
+            
+                if(!this.info){
+              
+                  this.logger.info(this.accessory.displayName + ': No presence! Presence delay is active.');
+             
+                  this.logger.info(this.accessory.displayName + ': Wait ' + (this.accessory.context.offDelay/1000) + ' seconds before switching to no presence');
+             
+                  this.info = true;
+                  this.retry = true;
+           
+                }
+          
+              } else {
+            
+                this.accessory.context.lastState = 0;
+             
+                if(this.info){
+             
+                  this.logger.info(this.accessory.displayName + ': No presence after ' + (this.accessory.context.offDelay/1000) + ' seconds');
+               
+                  this.logger.info(this.accessory.displayName + ': Switching to no presence');
+              
+                  //Reset
+                  this.info = false;
+                  this.presenceTime = false;
+                  this.retry = false;
+             
+                }
+            
+                if(this.reretry){
+            
+                  this.logger.info(this.accessory.displayName + ': Again no presence');
+               
+                  //Reset
+                  this.reinfo = false;
+                  this.represenceTime = false;
+                  this.reretry = false;
+             
+                }
+          
+              }
+       
+            } else {
+            
+              this.accessory.context.lastState = 0;
+          
+              if(this.reretry){
+             
+                this.logger.info(this.accessory.displayName + ': Again no presence');
+            
+                //Reset
+                this.reinfo = false;
+                this.represenceTime = false;
+                this.reretry = false;
+          
+              }
+        
+            }
+       
+          }
+    
+        }          
+   
       } else {
-        accessory.context.lastState = 0;
+      
+        let states = [];
+      
+        this.accessories.map( accessory => {
+      
+          if(accessory.context.type == 'presence' && accessory.displayName !== 'Anyone')
+            states.push(accessory.context.lastState);
+      
+        });
+     
+        if(states.includes(1)){
+        
+          this.accessory.context.lastState = 1;
+     
+        } else {
+       
+          this.accessory.context.lastState = 0;
+    
+        }
+  
       }
-      accessory.context.hostname = 'Anyone';
-      accessory.context.ipmac = '0.0.0.0';    
+      this.mainService.getCharacteristic(Characteristic.OccupancyDetected).updateValue(this.accessory.context.lastState);
+   
+      setTimeout(this.getStates.bind(this), 1000);
+    
+    } else {
+    
+      setTimeout(this.getStates.bind(this), 1000);
+    
     }
-    service.getCharacteristic(Characteristic.OccupancyDetected).updateValue(accessory.context.lastState);
-    service.getCharacteristic(Characteristic.Host).updateValue(accessory.context.hostname);
-    service.getCharacteristic(Characteristic.Adresse).updateValue(accessory.context.ipmac); 
-    setTimeout(function(){
-      self.getStates(accessory, service);
-    }, 2000);
+ 
   }
 
-  changeOccupany(accessory,service,value){
-    const self = this;
-    if(accessory.displayName!='Anyone'){
+  changeOccupany(value){
+
+    if(this.accessory.displayName !== 'Anyone'){
+      
       if(value.newValue){
-        if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.presence.in){
-          let message = self.telegram.presence.in;
-          message = message.replace('@', accessory.displayName);
-          self.sendTelegram(self.telegram.token,self.telegram.chatID,message); 
-          self.logger.info(message);
-        } else {
-          self.logger.info('Welcome at home ' + accessory.displayName);
+        
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('presence', 'in')){
+                  
+            this.telegram.sendTelegram('presence', 'in', this.accessory.displayName);
+                    
+          }
+                
         }
+        
+        this.logger.info('Welcome at home ' + this.accessory.displayName);
+      
       } else {
-        if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.presence.out){
-          let message = self.telegram.presence.out;
-          message = message.replace('@', accessory.displayName);
-          self.sendTelegram(self.telegram.token,self.telegram.chatID,message); 
-          self.logger.info(message);
-        } else {
-          self.logger.info('Bye Bye ' + accessory.displayName);
+      
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('presence', 'out')){
+                  
+            this.telegram.sendTelegram('presence', 'out', this.accessory.displayName);
+                    
+          }
+                
         }
+        
+        this.logger.info('Bye Bye ' + this.accessory.displayName);
+    
       }
+   
     } else {
+     
       if(value.newValue){
-        if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.presence.anyoneIn){
-          self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.presence.anyoneIn); 
-          self.logger.info(self.telegram.presence.anyoneIn);
-        } else {
-          self.logger.info('Presence detected at home!');
+      
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('presence', 'anyoneIn')){
+                  
+            this.telegram.sendTelegram('presence', 'anyoneIn');
+                    
+          }
+                
         }
+        
+        this.logger.info('Presence detected at home!');
+    
       } else {
-        if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.presence.anyoneOut){
-          self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.presence.anyoneOut); 
-          self.logger.info(self.telegram.presence.anyoneOut);
-        } else {
-          self.logger.info('Nobody at home!');
+      
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('presence', 'anyoneOut')){
+                  
+            this.telegram.sendTelegram('presence', 'anyoneOut');
+                    
+          }
+                
         }
+        
+        this.logger.info('Nobody at home!');
+      
       }
+  
     }
+
   }
 
 }
 
-module.exports = Fritz_Box;
+module.exports = PresenceAccessory;
