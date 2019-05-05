@@ -9,24 +9,32 @@ The Plugin can also expose all available Wifi frequences and guest wifi access a
 ## Example Config
 
 ```
-  "devices": {
-    "FritzBox Repeater Kitchen": {
-      "host": "fritz.repeater",
-      "port": 49000,
-      "username": "USERNAME",
-      "password": "PASSWORD",
-      "type": "repeater",
-      "wifi2": true,
-      "wifi5": true,
-      "wifiGuest": true
-      "led": true
+"devices": {
+  "FritzBox Repeater Kitchen": {
+    "active": false,
+    "host": "192.168.178.66",
+    "port": 49000,
+    "username": "Seyd55",
+    "password": "Samsun55",
+    "type": "repeater",
+    "master": false,
+    "mesh": false,
+    "readOnly": false,
+    "beta": false,
+    "options": {
+      "wifi2": false,
+      "wifi5": false,
+      "wifiGuest": false,
+      "wps": false,
+      "led": false
     }
   }
+}
 ```
 
 
 
-## Required parameter
+## Main parameter
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
@@ -36,16 +44,19 @@ The Plugin can also expose all available Wifi frequences and guest wifi access a
 | type | Type of the device (Choices: repeater/cable/dsl, Default: "dsl") |  |
 | username | Username for logging in to the above device | x |
 | password | Password for logging in to the above device | x |
+| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) | |
+| mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) | |
 
 
 
-## Optional parameter
+## Options
 
 | Attributes | Usage |
 |------------|-------|
 | wifi2 | Parameter for enable/disable wifi 2.4ghz switch (Default: false) |
 | wifi5 | Parameter for enable/disable wifi 5ghz switch (Default: false) |
 | wifiGuest | Parameter for enable/disable guest wifi switch (Default: false) |
+| wps | Parameter for enable/disable wps switch (Default: false) |
 | led | Parameter for enable/disable LED switch (Default: false) |
 
 
