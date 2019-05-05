@@ -12,8 +12,21 @@ Presence also supports the Telegram notification service, via config.json it is 
 
 ```
 "presence": {
-  "Peter":"00:11:22:33:44.55",
-  "Maria":"123.456.123.1"
+  "user": [
+    {
+      "active": true,
+      "name": "User One",
+      "address": "192.168.178.59"
+    },
+    {
+      "active": true,
+      "name": "User Two",
+      "address": "192.168.178.91"
+    }
+  ],
+  "anyone": true,
+  "offDelay": 90,
+  "onDelay": 15
 }
 ```
 
@@ -23,8 +36,13 @@ Presence also supports the Telegram notification service, via config.json it is 
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
-| custom name | Own definef name for Home | x |
+| name | Own defined name for Home | x |
+| active | On/Off for activating accessory | x |
 | adress | MAC addresse  or IP addresse from the device | x |
+| anyone     | If true, the plugin will expose an "Anyone" occupancy sensor to HomeKit (Default: false) |      |
+| offDelay      | Delay in seconds before an occupancy sensor will go to "not detected" (Default: 10s) |     |
+| onDelay      | Delay in seconds before an occupancy sensor will go to "detected" (Default: false) |     |
+
 
 
 
@@ -34,7 +52,7 @@ You can also add a "Anyone" sensor to HomeKit for checking presence at home to c
 
 There is also a possibility to set two types of delays.
 
-- **delay**:  This prevents the occupancy sensor from going to "no occupancy" (in case of if device logs out and immediately logs in and again). Only if there is still no connection in the specified time, the occupancy sensor goes to "no occupancy". If delay = 0 or removed, this option is deactivated. 
+- **offDelay**:  This prevents the occupancy sensor from going to "no occupancy" (in case of if device logs out and immediately logs in and again). Only if there is still no connection in the specified time, the occupancy sensor goes to "no occupancy". If delay = 0 or removed, this option is deactivated. 
 
 - **onDelay**: This prevents the occupancy sensor from going to "occupancy detected" (in case of if device logs in and immediately logs out and again). Only if there is still connection in the specified time, the occupancy sensor goes to "occupancy detected". If onDelay = 0 or removed, this option is deactivated. 
 
