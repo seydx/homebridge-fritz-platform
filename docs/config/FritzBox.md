@@ -8,35 +8,31 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 
 ```
 "devices": {
-  "FRITZ!Box 7590": {
-    "active": true,
-    "host": "192.168.178.1",
-    "port": 49000,
-    "username": "MyUsername",
-    "password": "mypw123",
-    "type": "dsl",
+  "FritzBox": {
     "master": true,
-    "mesh": true,
-    "readOnly": false,
-    "beta": false,
-    "options": {
-      "wifi2": false,
-      "wifi5": false,
-      "wifiGuest": false,
-      "phoneBook": false,
-      "wps": false,
-      "aw": false,
-      "deflection": false,
-      "led": false,
-      "lock": false
-    }
+    "host": "fritz.box",
+    "port": 49000,
+    "username": "USERNAME",
+    "password": "PASSWORD",
+    "type": "dsl",
+    "wifi2": true,
+    "wifi5": true,
+    "wifiGuest": true,
+    "phoneBook": true,
+    "wps": true,
+    "aw": true,
+    "deflection": true,
+    "led": true,
+    "lock": true,
+    "beta": true,
+    "mesh": false
   }
 }
 ```
 
 
 
-## Main Parameter
+## Required parameter
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
@@ -47,11 +43,10 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | type       | Type of the device (Choices: cable/dsl/repeater - Default: "dsl") |  |
 | username   | Username for logging in to the above device                  | x |
 | password | Password for logging in to the above device | x |
-| readOnly | If true, the device switches will not trigger anymore if on/off (Default: false) | |
-| mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
-| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
 
-## Options
+
+
+## Optional parameter
 
 | Attributes | Usage |
 |------------|-------|
@@ -64,6 +59,8 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | deflection | Parameter for enable/disable deflection switch (Default: false) |
 | led | Parameter for enable/disable LED switch (Default: false) |
 | lock | Parameter for enable/disable device lock switch (Default: false) |
+| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
+| mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
 
 
 
