@@ -1,7 +1,7 @@
 # Tested devices & OS version
 
 ## Fritz!OS
-- [x] Fritz!OS 7.x & Beta
+- [x] Fritz!OS 7+
 
 ## Fritz!Box
 - [x] Fritz!Box 7590
@@ -16,7 +16,7 @@
 ## Fritz!Repeater
 - [x] Fritz!Repeater 1750E
 - [x] Fritz!Wlan Repeater 450E
-- [x] Fritz!Wlan Repeater 310
+- [x] Fritz!Wlan Repeater 310 (partial)
 
 ## Fritz!DECT Smart Home
 - [x] Fritz!DECT Repeater 1000
