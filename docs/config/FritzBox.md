@@ -36,7 +36,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 
 
 
-## Required parameter
+## Main Parameter
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
@@ -51,7 +51,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
 | beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
 
-## Optional parameter
+## Options
 
 | Attributes | Usage |
 |------------|-------|
