@@ -8,24 +8,28 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 
 ```
 "devices": {
-  "FritzBox": {
-    "master": true,
-    "host": "fritz.box",
+  "FRITZ!Box 7590": {
+    "active": true,
+    "host": "192.168.178.1",
     "port": 49000,
-    "username": "USERNAME",
-    "password": "PASSWORD",
+    "username": "MyUsername",
+    "password": "mypw123",
     "type": "dsl",
-    "wifi2": true,
-    "wifi5": true,
-    "wifiGuest": true,
-    "phoneBook": true,
-    "wps": true,
-    "aw": true,
-    "deflection": true,
-    "led": true,
-    "lock": true,
-    "beta": true,
-    "mesh": false
+    "master": true,
+    "mesh": true,
+    "readOnly": false,
+    "beta": false,
+    "options": {
+      "wifi2": false,
+      "wifi5": false,
+      "wifiGuest": false,
+      "phoneBook": false,
+      "wps": false,
+      "aw": false,
+      "deflection": false,
+      "led": false,
+      "lock": false
+    }
   }
 }
 ```
