@@ -77,7 +77,7 @@ class WolAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state!');
-      this.logger.error(JSON.stringify(err,null,4));
+      this.debug(JSON.stringify(err,null,4));
 
     } finally {
     

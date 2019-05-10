@@ -63,11 +63,11 @@ class PresenceAccessory {
       if(this.accessory.displayName !== 'Anyone'){
     
         hosts.map( host => {
-      
-          if(this.accessory.context.address == host.MACAddress || this.accessory.context.address == host.IPAddress){
+
+          if(this.accessory.context.address == host.MACAddress[0] || this.accessory.context.address == host.IPAddress[0]){
           
             this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
-            this.accessory.context.newState = parseInt(host.Active);
+            this.accessory.context.newState = parseInt(host.Active[0]);
           
           }
       

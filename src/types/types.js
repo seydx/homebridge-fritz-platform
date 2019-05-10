@@ -7,20 +7,6 @@ module.exports = {
     const Characteristic = hap.Characteristic;
     
     /// /////////////////////////////////////////////////////////////////////////
-    // ExtReboot Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.ExtReboot = function() {
-      Characteristic.call(this, 'Extended Reboot', '24e2db8d-8709-4513-bdd8-dcab13736b82');
-      this.setProps({
-        format: Characteristic.Formats.BOOL,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-    inherits(Characteristic.ExtReboot, Characteristic);
-    Characteristic.ExtReboot.UUID = '24e2db8d-8709-4513-bdd8-dcab13736b82';
-    
-    /// /////////////////////////////////////////////////////////////////////////
     // Download Characteristic
     /// ///////////////////////////////////////////////////////////////////////// 
     Characteristic.Download = function() {
