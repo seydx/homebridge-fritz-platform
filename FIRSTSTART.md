@@ -25,7 +25,7 @@ After installing this plugin, you need only put following in your config.json
 
 ...and restart homebridge
 
-# 2. First Start
+## 2. First Start
 
 After putting the above code in your config.json and restarting homebridge, the plugin will initalize the config and search for all devices in your network. After search is finished, the plugin will generate a first config.json without any credentials etc, thats looks like following:
 
@@ -186,7 +186,7 @@ After putting the above code in your config.json and restarting homebridge, the 
 
 ```
 
-# 2. Second Start
+## 2. Second Start
 
 After first start, you need to open your generated config.json and add your credentials to the founded devices AND you need to choose ONE "master" device. 
 Type is also recommended! (dsl|cable|repeater)
