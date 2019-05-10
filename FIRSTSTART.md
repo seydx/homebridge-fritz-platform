@@ -1,4 +1,9 @@
-# Init
+# Configuring - First Steps
+
+After enabling TR064 ([Enable TR064 API](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)) the next step will be generating the config.json
+
+
+## 1. Init
 
 After installing this plugin, you need only put following in your config.json
 
@@ -20,9 +25,9 @@ After installing this plugin, you need only put following in your config.json
 
 ...and restart homebridge
 
-# First Start
+# 2. First Start
 
-After putting the platform in your config.json and restarting homebridge, the plugin will initalize the config and search for all devices in your network. After search is finished, the plugin will generate a first config.json, ie:
+After putting the above code in your config.json and restarting homebridge, the plugin will initalize the config and search for all devices in your network. After search is finished, the plugin will generate a first config.json without any credentials etc, thats looks like following:
 
 ```
 {
@@ -181,7 +186,7 @@ After putting the platform in your config.json and restarting homebridge, the pl
 
 ```
 
-# After first start
+# 2. Second Start
 
 After first start, you need to open your generated config.json and add your credentials to the founded devices AND you need to choose ONE "master" device. 
 Type is also recommended! (dsl|cable|repeater)
@@ -191,4 +196,4 @@ The plugin will complete the config process and you will have a full config.json
 
 See [Example Config](https://github.com/SeydX/homebridge-fritz-platform/blob/dev/example/example-config.json)
 
-Now you can activate/deactivate devices you want to see in HomeKit.
+Now you can activate/deactivate devices you want to see in HomeKit and set up extras etc and/or change options 
