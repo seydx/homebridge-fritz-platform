@@ -155,8 +155,8 @@
       },
       "telegram": {
         "active": true,
-        "token": "463527131:AAECj0KFkxl0uCSIi8kdFpNZpRR_dH2OAT8",
-        "chatID": "-296280542",
+        "token": "TOKENHERE",
+        "chatID": "-CHATIDHERE",
         "presence": {
           "in": "Welcome at home @",
           "out": "Bye Bye @",
