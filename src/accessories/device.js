@@ -172,11 +172,17 @@ class DeviceAccessory {
           
       if(this.accessory.context.master){
       
-        if(this.accessory.context.options.phoneBook)
+        if(this.accessory.context.options.phoneBook){
+          
           this.mainService.getCharacteristic(Characteristic.PhoneBook)
             .on('set', this.setPhoneBook.bind(this))
             .on('get', callback => callback(null, false))
             .updateValue(false);
+            
+          this.mainService.getCharacteristic(Characteristic.PhoneBook)
+            .setValue(true);
+            
+        }
       
         if(this.accessory.context.options.lock)
           this.mainService.getCharacteristic(Characteristic.DeviceLock)
@@ -488,7 +494,7 @@ class DeviceAccessory {
       
       this.debug(this.accessory.displayName + ': Storing result...');
       
-      await this.storePhoneBook(telBook);
+      await this.storeData(telBook);
       
       this.debug(this.accessory.displayName + ': ' + telBook.phonebook.length + ' contacts stored in cache (' + this.configPath + '/phonebook.json)');
 
@@ -510,38 +516,6 @@ class DeviceAccessory {
     
     callback();
 
-  }
-  
-  async storePhoneBook(phonebook){
-
-    return new Promise((resolve, reject) => {
-    
-      store(this.configPath).add(phonebook, (err) => {
-              
-        if(err) reject(err);
-              
-        resolve(true);
-            
-      });
-    
-    });
-
-  }
-  
-  async xml2json(xml) {
-    
-    return new Promise((resolve, reject) => {
-      
-      parseString(xml, function (err, json) {
-        
-        if (err) return reject(err);
-        
-        resolve(json);
-      
-      });
-
-    });
-  
   }
   
   async setWifi(type,state,callback){
@@ -1187,6 +1161,38 @@ class DeviceAccessory {
       .updateValue('Loading...');
     
     callback(null, 'Loading...');
+  
+  }
+  
+  async storeData(data){
+
+    return new Promise((resolve, reject) => {
+    
+      store(this.configPath).add(data, (err) => {
+              
+        if(err) reject(err);
+              
+        resolve(true);
+            
+      });
+    
+    });
+
+  }
+  
+  async xml2json(xml) {
+    
+    return new Promise((resolve, reject) => {
+      
+      parseString(xml, function (err, json) {
+        
+        if (err) return reject(err);
+        
+        resolve(json);
+      
+      });
+
+    });
   
   }
 

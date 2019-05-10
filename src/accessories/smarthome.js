@@ -7,6 +7,8 @@ const moment = require('moment');
 
 var Service, Characteristic, FakeGatoHistoryService;
 
+const timeout = ms => new Promise(res => setTimeout(res, ms));
+
 class SmarthomeAccessory {
   constructor (platform, accessory, device, smarthome) {
 
@@ -41,6 +43,9 @@ class SmarthomeAccessory {
       this.getTemperatureService();
     
     } else if(this.accessory.context.devType === 'thermostat'){
+    
+      this.settedState = 0;
+      this.ruleSetState = 0;
     
       this.getThermostatService();
     
@@ -151,7 +156,11 @@ class SmarthomeAccessory {
   
     try {
     
-      let state, tstate, temp, ttemp, battery, batterylow;
+      let state, tstate, temp, ttemp, battery, batterylow, getSet;
+      
+      if(this.accessory.context.devType === 'thermostat')
+        getSet = await this.getSetStatus();
+      
       let device = await this.smarthome.getDevice(this.accessory.context.ain);
       
       if(device){
@@ -240,7 +249,9 @@ class SmarthomeAccessory {
                 this.mainService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temp);
                 this.mainService.getCharacteristic(Characteristic.TargetTemperature).updateValue(ttemp);
                 this.mainService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(state);
-                this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(tstate);
+               
+                if(getSet)
+                  this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(tstate);
                 
               }
               
@@ -310,51 +321,121 @@ class SmarthomeAccessory {
   // Thermostats
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  async setThermostatState(state,callback){
+  async setThermostatState(state,callback,context){
+  
+    this.ruleSetState++;
 
     try {
     
-      let cmd, temp;
+      this.settedState++;
+    
+      // from setTemp
       
-      switch(state){
-       
-        case 0: //OFF
-          
-          this.logger.info(this.accessory.displayName + ': Off');
-          cmd = 'sethkrtsoll&param=253';
-        
-          break;
-       
-        case 1: //HEAT
-          
-          this.logger.info(this.accessory.displayName + ': Heat');
-          temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.heatValue;
-          cmd = 'sethkrtsoll&param=' + temp*2;
-         
-          break;
+      if((context && !isNaN(parseInt(context.newState))) || this.settedTemp){
       
-        case 2: //COOL
+        if(this.settedTemp){
+          callback();
+          return;
+        }
         
-          this.logger.info(this.accessory.displayName + ': Cool');
-          temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.coolValue;
-          cmd = 'sethkrtsoll&param=' + temp*2;
-         
-          break;
-          
-        case 3: //AUTO
+        let mode, state, temp;
         
-          this.logger.info(this.accessory.displayName + ': Auto');
-          cmd = false;
-         
-          break;
+        if(context.newState === 1){
           
-        default:
+          mode = 'Heat Mode *';
+          state = 1;
+          temp = context.temp;
+        
+        } else if(context.newState === 2){
+          
+          mode = 'Cool Mode *';
+          state = 2;
+          temp = context.temp;
+       
+        } else if(context.newState === 3) {
+          
+          mode = 'Auto Mode not supported *';
+          state = 0;
+          temp = false;
+       
+        } else {
+          
+          mode = 'Off Mode *';
+          state = 0;
+          temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value;
+      
+        }
+    
+        this.logger.info(this.accessory.displayName + ': ' + mode);
+        
+        setTimeout(() => {
+        
+          this.mainService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+            .updateValue(state);
+          
+          this.mainService.getCharacteristic(Characteristic.TargetTemperature)
+            .updateValue(temp);   
+        
+        }, 100);
+      
+        this.settedTemp = true;
+      
+        setTimeout(() => {
+          
+          this.settedTemp = false;
+          
+        }, 500);
+        
+        callback();
+      
+        return;
+      
+      } else {
+      
+        let cmd, temp;
+      
+        switch(state){
+       
+          case 0: //OFF
+          
+            this.logger.info(this.accessory.displayName + ': Off');
+            cmd = 'sethkrtsoll&param=253';
+        
+            break;
+       
+          case 1: //HEAT
+          
+            this.logger.info(this.accessory.displayName + ': Heat');
+            temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.heatValue;
+            cmd = 'sethkrtsoll&param=' + temp*2;
+         
+            break;
+      
+          case 2: //COOL
+        
+            this.logger.info(this.accessory.displayName + ': Cool');
+            temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.coolValue;
+            cmd = 'sethkrtsoll&param=' + temp*2;
+         
+            break;
+          
+          case 3: //AUTO
+        
+            this.logger.info(this.accessory.displayName + ': Auto not supported');
+            cmd = false;
+         
+            break;
+          
+          default:
           //
      
-      }
+        }
       
-      if(cmd)
-        await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+        if(cmd)
+          await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+      
+      
+      }
     
     } catch(err){
     
@@ -369,22 +450,85 @@ class SmarthomeAccessory {
     
   }
 
-  async setThermostatTemp(value,callback){
+  async setThermostatTemp(value,callback,context){
   
-    try {
-    
-      let cmd = 'sethkrtsoll&param='+(value*2);
+    await timeout(500);
+    let targetService = this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).value;
+  
+    if(!this.ruleSetState){
+  
+      try {
+
+        let tarState;
+
+        this.logger.info(this.accessory.displayName + ': Setting new temperature: ' + value);
+        
+        let cmd = 'sethkrtsoll&param='+(value*2);
       
-      await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+        await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+  
+        if(value < this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value){
+          
+          tarState = 2;
+       
+        } else {
+          
+          tarState = 1;
+       
+        }
+      
+        if(context !== 'rule')  
+          this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).setValue(tarState, undefined, {newState:tarState, temp: value});
+
+      } catch (err){
+
+        this.logger.error(this.accessory.displayName + ': An error occured while setting new temp!'); 
+        this.debug(JSON.stringify(err,null,4));
+
+      } finally {
     
-    } catch(err){
+        callback();
+      
+      }
     
-      this.logger.error(this.accessory.displayName + ': An error occured while setting new temperature');
-      this.debug(JSON.stringify(err,null,4));
+    } else {
     
-    } finally {
+      this.ruleSetState = false; 
+    
+      if(targetService === 1 || targetService === 2){
+  
+        this.mainService.getCharacteristic(Characteristic.TargetTemperature).setValue(value, undefined, 'rule'); 
+  
+      }
     
       callback();
+    
+    }
+  
+  }
+  
+  async getSetStatus(){
+  
+    if(this.settedState){
+    
+      this.oldState = this.settedState; 
+    
+      await timeout(5000);
+    
+      if(this.settedState === this.oldState){
+    
+        this.settedState = 0;
+        return true;
+    
+      } else {
+    
+        return false;
+    
+      }
+    
+    } else {
+    
+      return true;
     
     }
   
