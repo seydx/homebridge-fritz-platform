@@ -20,7 +20,7 @@ This dynamic platform plugin allows almost full control of **AVM** hardware like
 
 Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run **homebridge-fritz-platform**. The only need is network access to the device or program in question.
 
-Among other things, **homebridge-fritz-platform** allows the switching of all WLAN frequencies, guest WLAN, answering machine, wake-up call, call monitor, presence sensors with [FakeGato](https://github.com/simont77/fakegato-history) and much more!
+Among other things, **homebridge-fritz-platform** allows the switching of all WLAN frequencies, guest WLAN, answering machine, wake-up call, occupancy sensors, callmonitor as motion sensors with [FakeGato](https://github.com/simont77/fakegato-history) and much more!
 
 
 
