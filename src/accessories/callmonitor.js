@@ -150,6 +150,25 @@ class CallmonitorAccessory {
                 caller: data[3],
                 called: data[4]
               };
+              
+              let lastState = 1;
+              this.accessory.context.timesOpened += 1;
+              let lastActivation = moment().unix() - this.historyService.getInitialTime();
+              let closeDuration = moment().unix() - this.historyService.getInitialTime();
+                  
+              this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+                .updateValue(lastState);
+                  
+              this.mainService.getCharacteristic(Characteristic.LastActivation)
+                .updateValue(lastActivation);
+                  
+              this.mainService.getCharacteristic(Characteristic.ClosedDuration)
+                .updateValue(closeDuration);
+                  
+              this.mainService.getCharacteristic(Characteristic.TimesOpened)
+                .updateValue(this.accessory.context.timesOpened);
+              
+              this.historyService.addEntry({time: moment().unix(), status: lastState});
           
               if(this.accessory.context.incomingTo.length){
               
@@ -158,17 +177,6 @@ class CallmonitorAccessory {
                 if(this.accessory.context.incomingTo.includes(message.called)){
             
                   this.logger.info(this.accessory.displayName + ': Incoming nr matched!');
-                
-                  let lastState = 1;
-                  this.accessory.context.timesOpened += 1;
-                  let lastActivation = moment().unix() - this.historyService.getInitialTime();
-                  let closeDuration = moment().unix() - this.historyService.getInitialTime();
-                  this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-                  this.mainService.getCharacteristic(Characteristic.LastActivation).updateValue(lastActivation);
-                  this.mainService.getCharacteristic(Characteristic.ClosedDuration).updateValue(closeDuration);
-                  this.mainService.getCharacteristic(Characteristic.TimesOpened).updateValue(this.accessory.context.timesOpened);
-              
-                  this.historyService.addEntry({time: moment().unix(), status: lastState});
                 
                   text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
                 
@@ -214,17 +222,6 @@ class CallmonitorAccessory {
          
               } else {
           
-                let lastState = 1;
-                this.accessory.context.timesOpened += 1;
-                let lastActivation = moment().unix() - this.historyService.getInitialTime();
-                let closeDuration = moment().unix() - this.historyService.getInitialTime();
-                this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-                this.mainService.getCharacteristic(Characteristic.LastActivation).updateValue(lastActivation);
-                this.mainService.getCharacteristic(Characteristic.ClosedDuration).updateValue(closeDuration);
-                this.mainService.getCharacteristic(Characteristic.TimesOpened).updateValue(this.accessory.context.timesOpened);
-            
-                this.historyService.addEntry({time: moment().unix(), status: lastState});
-            
                 text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
             
                 this.callerNr = message.caller;
@@ -287,6 +284,22 @@ class CallmonitorAccessory {
                 caller: data[4],
                 called: data[5]
               };
+              
+              let lastState = 1;
+              this.accessory.context.timesOpened += 1;
+              let lastActivation = moment().unix() - this.historyService.getInitialTime();
+              let closeDuration = moment().unix() - this.historyService.getInitialTime();
+              
+              this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+                .updateValue(lastState);
+                  
+              this.mainService.getCharacteristic(Characteristic.LastActivation)
+                .updateValue(lastActivation);
+                 
+              this.mainService.getCharacteristic(Characteristic.ClosedDuration)
+                .updateValue(closeDuration);
+              
+              this.historyService.addEntry({time: moment().unix(), status: lastState});
           
               if(this.accessory.context.outgoingFrom.length){
             
@@ -295,16 +308,6 @@ class CallmonitorAccessory {
                 if(this.accessory.context.outgoingFrom.includes(message.caller)){
               
                   this.logger.info(this.accessory.displayName + ': Outgoing from nr matched!');
-              
-                  let lastState = 1;
-                  this.accessory.context.timesOpened += 1;
-                  let lastActivation = moment().unix() - this.historyService.getInitialTime();
-                  let closeDuration = moment().unix() - this.historyService.getInitialTime();
-                  this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-                  this.mainService.getCharacteristic(Characteristic.LastActivation).updateValue(lastActivation);
-                  this.mainService.getCharacteristic(Characteristic.ClosedDuration).updateValue(closeDuration);
-              
-                  this.historyService.addEntry({time: moment().unix(), status: lastState});
               
                   let called = message.called.replace(/\D/g,''); 
 
@@ -340,17 +343,7 @@ class CallmonitorAccessory {
                 }
          
               } else {
-          
-                let lastState = 1;
-                this.accessory.context.timesOpened += 1;
-                let lastActivation = moment().unix() - this.historyService.getInitialTime();
-                let closeDuration = moment().unix() - this.historyService.getInitialTime();
-                this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-                this.mainService.getCharacteristic(Characteristic.LastActivation).updateValue(lastActivation);
-                this.mainService.getCharacteristic(Characteristic.ClosedDuration).updateValue(closeDuration);
-            
-                this.historyService.addEntry({time: moment().unix(), status: lastState});
-            
+              
                 let called = message.called.replace(/\D/g,''); 
             
                 text = 'Calling: ' + called;
@@ -386,6 +379,18 @@ class CallmonitorAccessory {
           }
 
           if (data[1] === 'disconnect') {
+          
+            let lastState = 0;
+            let openDuration = moment().unix() - this.historyService.getInitialTime();
+                  
+            this.mainService.getCharacteristic(Characteristic.OpenDuration)
+              .updateValue(openDuration);
+                  
+            this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+              .updateValue(lastState);
+             
+            this.historyService.addEntry({time: moment().unix(), status: lastState});
+              
       
             if(this.call[data[2]]){
           
@@ -397,17 +402,10 @@ class CallmonitorAccessory {
           
               message = call;
           
-              if(this.accessory.context.incomingTo || this.accessory.context.outgoingFrom.length){
+              if(this.accessory.context.incomingTo.length || this.accessory.context.outgoingFrom.length){
             
                 if(this.accessory.context.incomingTo.includes(message.called)||this.accessory.context.outgoingFrom.includes(message.caller)){
-              
-                  let lastState = 0;
-                  let openDuration = moment().unix() - this.historyService.getInitialTime();
-                  this.mainService.getCharacteristic(Characteristic.OpenDuration).updateValue(openDuration);
-                  this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-              
-                  this.historyService.addEntry({time: moment().unix(), status: lastState});
-              
+             
                   this.logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr));
                 
                   if(this.telegram){
@@ -435,14 +433,6 @@ class CallmonitorAccessory {
                 }
          
               } else {
-            
-                let lastState = 0;
-            
-                let openDuration = moment().unix() - this.historyService.getInitialTime();
-                this.mainService.getCharacteristic(Characteristic.OpenDuration).updateValue(openDuration);
-                this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(lastState);
-            
-                this.historyService.addEntry({time: moment().unix(), status: lastState});
             
                 this.logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr));
             
