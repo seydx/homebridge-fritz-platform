@@ -122,7 +122,7 @@ class CallmonitorAccessory {
     
     if(this.client){
       
-      this.debug(this.accessory.displayName + ': Getting client successfully');
+      this.debug(this.accessory.displayName + ': Client successfully initialized');
   
       this.client.on('data', async chunk => {
         
@@ -172,7 +172,7 @@ class CallmonitorAccessory {
           
               if(this.accessory.context.incomingTo.length){
               
-                this.logger.info(this.accessory.displayName + ': Checking incoming calls only to Nr ' + this.accessory.context.incomingTo);
+                this.logger.info(this.accessory.displayName + ': Checking incoming calls only to nr ' + this.accessory.context.incomingTo);
               
                 if(this.accessory.context.incomingTo.includes(message.called)){
             
@@ -216,7 +216,7 @@ class CallmonitorAccessory {
                 
                 } else {
              
-                  this.logger.info(this.accessory.displayName + ': Incoming to nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called);
+                  this.logger.info(this.accessory.displayName + ': IncomingTo nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called);
            
                 }
          
@@ -227,8 +227,7 @@ class CallmonitorAccessory {
                 this.callerNr = message.caller;
                 this.callerName = false;
               
-                let phonebook = await this.loadData('phonebook');
-                
+                let phonebook = await this.loadData('phonebook');          
                 
                 if(phonebook){
                 
@@ -303,7 +302,7 @@ class CallmonitorAccessory {
           
               if(this.accessory.context.outgoingFrom.length){
             
-                this.logger.info(this.accessory.displayName + ': Checking outgoing calls only from Nr ' + this.accessory.context.outgoingFrom);
+                this.logger.info(this.accessory.displayName + ': Checking outgoing calls only from nr ' + this.accessory.context.outgoingFrom);
             
                 if(this.accessory.context.outgoingFrom.includes(message.caller)){
               
@@ -338,7 +337,7 @@ class CallmonitorAccessory {
             
                 } else {
              
-                  this.logger.info(this.accessory.displayName + ': Outgoing from nr not matched. Calling from ' + message.caller + ' to ' + message.called);
+                  this.logger.info(this.accessory.displayName + ': OutgoingFrom nr not matched. Calling from ' + message.caller + ' to ' + message.called);
            
                 }
          
@@ -389,8 +388,7 @@ class CallmonitorAccessory {
             this.mainService.getCharacteristic(Characteristic.ContactSensorState)
               .updateValue(lastState);
              
-            this.historyService.addEntry({time: moment().unix(), status: lastState});
-              
+            this.historyService.addEntry({time: moment().unix(), status: lastState});    
       
             if(this.call[data[2]]){
           
@@ -462,10 +460,13 @@ class CallmonitorAccessory {
     
       });
       
-      this.client.on('error', () => {
+      this.client.on('error', error => {
         
         this.logger.error(this.accessory.displayName + ': An error occured with callmonitor!');
-        setTimeout(this.getContactState.bind(this), 10000);
+        
+        this.debug(err);
+        
+        //setTimeout(this.getContactState.bind(this), 10000);
     
       });
       
