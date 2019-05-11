@@ -72,7 +72,7 @@ class DeviceHandler {
         ip: this.config.callmonitor.ip||'0.0.0.0',
         port: this.config.callmonitor.port||1012,
         country: this.config.callmonitor.country||'',
-        incomingTo: this.config.callmonitor.incomingTo||'',
+        incomingTo: this.config.callmonitor.incomingTo||[],
         outgoingFrom: this.config.callmonitor.outgoingFrom||[],
       };
       

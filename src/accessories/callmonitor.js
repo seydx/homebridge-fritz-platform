@@ -151,7 +151,7 @@ class CallmonitorAccessory {
                 called: data[4]
               };
           
-              if(this.accessory.context.incomingTo){
+              if(this.accessory.context.incomingTo.length){
               
                 this.logger.info(this.accessory.displayName + ': Checking incoming calls only to Nr ' + this.accessory.context.incomingTo);
               
