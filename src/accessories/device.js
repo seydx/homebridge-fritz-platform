@@ -133,7 +133,7 @@ class DeviceAccessory {
       
       this.debug(this.accessory.displayName + ': Inspecting Characteristics and Services finished!');
       
-      if(!this.accessory.context.readOnly || this.accessory.context.extras.extReboot)
+      if(!this.accessory.context.readOnly || (this.accessory.context.extras && this.accessory.context.extras.extReboot))
         this.mainService.getCharacteristic(Characteristic.On)
           .on('set', this.setState.bind(this));
       
@@ -287,7 +287,7 @@ class DeviceAccessory {
     
       let status = this.device.services['urn:dslforum-org:service:DeviceConfig:1'];
 
-      if(this.accessory.context.extras.extReboot){
+      if(!(this.accessory.context.extras && this.accessory.context.extras.extReboot)){
         
         this.logger.info(this.accessory.displayName + ': Start Reboot'); 
         

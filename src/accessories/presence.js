@@ -61,17 +61,19 @@ class PresenceAccessory {
     if(hosts){
     
       if(this.accessory.displayName !== 'Anyone'){
+      
+        let status = [];
     
         hosts.map( host => {
 
-          if(this.accessory.context.address == host.MACAddress[0] || this.accessory.context.address == host.IPAddress[0]){
-          
-            this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
-            this.accessory.context.newState = parseInt(host.Active[0]);
-          
-          }
+          if(this.accessory.context.address == host.MACAddress[0] || this.accessory.context.address == host.IPAddress[0])
+            status.push(parseInt(host.Active[0]));
       
         });
+        
+        this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
+
+        status.includes(1) ? this.accessory.context.newState = 1 : this.accessory.context.newState = 0;
       
         if(this.accessory.context.newState === 1){
        

@@ -189,10 +189,10 @@ FritzPlatform.prototype = {
           debug('Initializing SID handler');
           this.sid = new SID(this);
            
-          if(this.Config.getHosts() && masterConfig.mesh){
+          if(this.Config.getHosts()){
             
             debug('Initializing host list');
-            this.hosts = new Hosts(this, masterConfig, this.device);
+            this.hosts = new Hosts(this, masterConfig, this.device, this.config.devices, this.config);
               
             await timeout(1000);
              

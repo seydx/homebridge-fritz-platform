@@ -190,6 +190,12 @@ class DeviceHandler {
             led: options ? options.led : false
           };
           
+          if(this.config.devices[dev.name].mesh !== undefined)
+            delete this.config.devices[dev.name].mesh
+            
+          if(this.config.devices[dev.name].master !== undefined)
+            delete this.config.devices[dev.name].master
+          
         }
         
         if(this.config.devices[dev.name].master === true && (this.config.devices[dev.name].type === 'dsl' || this.config.devices[dev.name].type === 'cable')){
