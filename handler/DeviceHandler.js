@@ -330,7 +330,7 @@ class DeviceHandler {
     
     } catch(err){
       
-      throw err
+      throw err;
     
     }
   

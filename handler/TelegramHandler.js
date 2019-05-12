@@ -14,8 +14,8 @@ class TelegramHandler {
   }
 
   sendTelegram(type, message, param1, param2){
-	  
-	this.debug('Telegram: Sending new message (' + type + ')');
+  
+    this.debug('Telegram: Sending new message (' + type + ')');
     
     return new Promise((resolve,reject) => {
     

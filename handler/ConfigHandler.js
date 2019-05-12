@@ -191,10 +191,10 @@ class DeviceHandler {
           };
           
           if(this.config.devices[dev.name].mesh !== undefined)
-            delete this.config.devices[dev.name].mesh
+            delete this.config.devices[dev.name].mesh;
             
           if(this.config.devices[dev.name].master !== undefined)
-            delete this.config.devices[dev.name].master
+            delete this.config.devices[dev.name].master;
           
         }
         

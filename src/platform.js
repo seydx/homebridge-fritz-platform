@@ -4,7 +4,6 @@ const api = require('../lib/TR064.js');
 const packageFile = require('../package.json');
 const LogUtil = require('../lib/LogUtil.js');
 
-const tcpp = require('tcp-ping');
 const debug = require('debug')('FritzPlatform');
 const store = require('json-fs-store');
 
@@ -301,13 +300,9 @@ FritzPlatform.prototype = {
         this.accessories.map( accessory => this.removeAccessory(accessory));
     
       } else {
-      
-        debug('Initializing following devices from config.json:');
          
-        for(const dev of this.deviceArray){
-          debug(dev.name);
+        for(const dev of this.deviceArray)
           this._devices.set(dev.name, dev);
-        }
 
         debug('Device initialization finished');
           
@@ -660,33 +655,6 @@ FritzPlatform.prototype = {
       throw err;
     
     }
-  
-  },
-  
-  tcp: function(name, host, port){
-
-    debug(name + ': Ping ' + host + ':' + port);
-    
-    return new Promise((resolve, reject) => {
-    
-      tcpp.probe(host, port, (err, available) => {
-      
-        if(err) return reject(err);
-      
-        if(available){
-      
-          debug(name + ': Pong ' + host + ':' + port + ' --> SUCCESFULL');
-          resolve(true);
-      
-        } else {
-      
-          resolve(false);
-      
-        }
-    
-      });
-   
-    });
   
   }
 

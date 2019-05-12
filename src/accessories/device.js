@@ -693,7 +693,9 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of device led!');
-      this.debug(JSON.stringify(err,null,4));
+      //this.debug(JSON.stringify(err,null,4));
+      
+      console.log(err);
       
     } finally {
     
@@ -748,7 +750,9 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of device lock!');
-      this.debug(JSON.stringify(err,null,4));
+      //this.debug(JSON.stringify(err,null,4));
+
+      console.log(err);
 
     } finally {
     

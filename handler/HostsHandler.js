@@ -11,7 +11,6 @@ class HostsHandler {
     this.log = platform.log;
     this.logger = platform.logger;
     this.debug = platform.debug;
-    this.tcp = platform.tcp;
     this.platform = platform;
 
     this.config = config;
@@ -140,26 +139,15 @@ class HostsHandler {
   
     try {
     
-      let ping = await this.tcp('Presence', device.config.host, device.config.port);
+      let url = 'http://' + device.config.host + ':' + device.config.port + endpoint;
+      let hostArray = [];
       
-      if(ping){
-    
-        let url = 'http://' + device.config.host + ':' + device.config.port + endpoint;
-        let hostArray = [];
-      
-        let hostList = await axios(url);  
-        let hostListXML = await this.xmlParser(hostList.data);
+      let hostList = await axios(url);  
+      let hostListXML = await this.xmlParser(hostList.data);
         
-        hostArray = hostArray.concat(hostListXML.List.Item);
+      hostArray = hostArray.concat(hostListXML.List.Item);
         
-        return hostArray;
-        
-      } else {
-      
-        this.debug('Host List (no mesh): Network currently not available!');
-        return false;
-        
-      }
+      return hostArray;
     
     } catch(error){
     
@@ -201,27 +189,16 @@ class HostsHandler {
   
     try {
     
-      let ping = await this.tcp('Host List', this.config.host, this.config.port);
+      let url = 'http://' + this.config.host + ':' + this.config.port + endpoint;
+      let hostArray = [];
       
-      if(ping){
-    
-        let url = 'http://' + this.config.host + ':' + this.config.port + endpoint;
-        let hostArray = [];
-      
-        let hostList = await axios(url);  
-        let hostListXML = await this.xmlParser(hostList.data);
+      let hostList = await axios(url);  
+      let hostListXML = await this.xmlParser(hostList.data);
         
-        hostArray = hostArray.concat(hostListXML.List.Item);
-        this.hosts = hostArray;
+      hostArray = hostArray.concat(hostListXML.List.Item);
+      this.hosts = hostArray;
         
-        setTimeout(this.generateHostList.bind(this, endpoint), this.platform.config.polling * 1000);
-    
-      } else {
-      
-        this.debug('Host List: Network currently not available!');
-        setTimeout(this.generateHostList.bind(this, endpoint), 30000);
-      
-      }
+      setTimeout(this.generateHostList.bind(this, endpoint), this.platform.config.polling * 1000);
     
     } catch(error){
     

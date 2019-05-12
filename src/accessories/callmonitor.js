@@ -464,9 +464,7 @@ class CallmonitorAccessory {
         
         this.logger.error(this.accessory.displayName + ': An error occured with callmonitor!');
         
-        this.debug(err);
-        
-        //setTimeout(this.getContactState.bind(this), 10000);
+        this.debug(error);
     
       });
       
