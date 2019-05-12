@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "4.0.0-dev.5",
+  "version": "4.0.0-dev.6",
   "description": "homebridge-fritz-platform",
   "main": "index.js",
   "devDependencies": {},
@@ -36,7 +36,6 @@
     "fakegato-history": "^0.5.3",
     "moment": "^2.24.0",
     "speedtest-net": "^1.5.1",
-    "tcp-ping": "^0.1.1",
     "xml2js": "^0.4.19",
     "axios": "^0.18.0",
     "debug": "^4.1.1",
