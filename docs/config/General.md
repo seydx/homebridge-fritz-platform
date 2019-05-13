@@ -22,8 +22,3 @@ Here are some points from the example-config.json which will be explained in mor
 | polling   | Polling in seconds (Default: 5s) |      |
 | timeout   | Timeout in seconds before a request will break (Default: 5s) |      |
 | clearCache   | If true, all accessories from cache AND HomeKit will be removed |      |
-
-
-"anyone":true,
-"delay": 90,
-"onDelay": 15,
