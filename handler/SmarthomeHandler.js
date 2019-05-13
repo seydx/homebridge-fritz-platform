@@ -94,8 +94,8 @@ class SmarthomeHandler {
           data: error.response.data
         };
       
-      this.logger.error('Smarthome List: An error occured while genersting smarthome list!');
-      console.log(err);
+      this.logger.error('Smarthome List: An error occured while generating smarthome list!');
+      console.log(error);
       
       setTimeout(this.generateSmarthomeList.bind(this), 15000);
     
