@@ -49,6 +49,20 @@ module.exports = {
     Characteristic.Ping.UUID = 'ce18aaef-1026-4538-943b-026501599dc0';
     
     /// /////////////////////////////////////////////////////////////////////////
+    // IPAdd Characteristic
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.IPAdd = function() {
+      Characteristic.call(this, 'IP', '011ec131-8185-444a-bc7d-df2e01d67c35');
+      this.setProps({
+        format: Characteristic.Formats.STRING,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.IPAdd, Characteristic);
+    Characteristic.IPAdd.UUID = '011ec131-8185-444a-bc7d-df2e01d67c35';
+    
+    /// /////////////////////////////////////////////////////////////////////////
     // Caller Characteristic
     /// ///////////////////////////////////////////////////////////////////////// 
     Characteristic.Caller = function() {

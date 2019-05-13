@@ -137,12 +137,15 @@ class DeviceAccessory {
         this.mainService.getCharacteristic(Characteristic.On)
           .on('set', this.setState.bind(this));
       
-      if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0]))
+      if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || 
+      (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0]))
         this.mainService.getCharacteristic(Characteristic.WifiTwo)
           .on('set', this.setWifi.bind(this, 1))
           .on('get', this.getWifi.bind(this, 1));
           
-      if((!Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5) || (Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5[0]) && this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
+      if((!Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5) || 
+      (Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5[0]) && 
+      this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
       
         this.mainService.getCharacteristic(Characteristic.WifiFive)
           .on('set', this.setWifi.bind(this, 2))
@@ -150,7 +153,8 @@ class DeviceAccessory {
       
       }
           
-      if((!Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest) || (Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest[0])){
+      if((!Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest) || 
+      (Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest[0])){
       
         let type = this.device.services['urn:dslforum-org:service:WLANConfiguration:3'] ? 3 : 2;
       
@@ -160,21 +164,30 @@ class DeviceAccessory {
       
       }
           
-      if((!Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps) || (Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps[0]))
+      if((!Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps) || 
+      (Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps[0]))
         this.mainService.getCharacteristic(Characteristic.WifiWPS)
           .on('set', this.setWPS.bind(this))
           .on('get', this.getWPS.bind(this));
           
-      if((!Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led) || (Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led[0]))
+      if((!Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led) || 
+      (Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led[0]))
         this.mainService.getCharacteristic(Characteristic.DeviceLED)
           .on('set', this.setDeviceLED.bind(this))
           .on('get', this.getDeviceLED.bind(this));
           
-      if(this.accessory.context.type !== 'repeater' && this.accessory.context.options.reconnect)          
-        this.mainService.getCharacteristic(Characteristic.Reconnect)
-          .on('set', this.setReconnect.bind(this))
-          .on('get', callback => callback(null, false))
-          .updateValue(false);
+      if(this.accessory.context.type !== 'repeater'){          
+       
+        this.mainService.getCharacteristic(Characteristic.IPAdd)
+          .on('get', this.getIP.bind(this));
+       
+        if(this.accessory.context.options.reconnect)
+          this.mainService.getCharacteristic(Characteristic.Reconnect)
+            .on('set', this.setReconnect.bind(this))
+            .on('get', callback => callback(null, false))
+            .updateValue(false);
+      
+      }
           
       if(this.accessory.context.master){
       
@@ -190,12 +203,14 @@ class DeviceAccessory {
             
         }
       
-        if((!Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock) || (Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock[0]))
+        if((!Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock) || 
+        (Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock[0]))
           this.mainService.getCharacteristic(Characteristic.DeviceLock)
             .on('set', this.setDeviceLock.bind(this))
             .on('get', this.getDeviceLock.bind(this));
             
-        if((!Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw) || (Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw[0]))
+        if((!Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw) || 
+        (Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw[0]))
           this.mainService.getCharacteristic(Characteristic.AnsweringMachine)
             .on('set', this.setAW.bind(this))
             .on('get', this.getAW.bind(this));
@@ -211,7 +226,8 @@ class DeviceAccessory {
             .on('get', callback => callback(null, false))
             .updateValue(false);
             
-        if((!Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection) || (Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection[0]))
+        if((!Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection) || 
+        (Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection[0]))
           this.mainService.getCharacteristic(Characteristic.Deflection)
             .on('set', this.setDeflection.bind(this))
             .on('get', this.getDeflection.bind(this));
@@ -524,6 +540,38 @@ class DeviceAccessory {
 
   }
   
+  async getIP(callback){
+  
+    let state, status;
+  
+    try {
+    
+      if(this.accessory.context.type === 'dsl'){
+      
+        status = this.device.services['urn:dslforum-org:service:WANPPPConnection:1']; 
+      
+      } else {
+      
+        status = this.device.services['urn:dslforum-org:service:WANIPConnection:1']; 
+      
+      }
+
+      let info = await status.actions.GetInfo();      
+      state = info.NewExternalIPAddress;
+      
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of wifi!');
+      console.log(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+
+  }
+  
   async setReconnect(state, callback){
 
     let status;
@@ -542,25 +590,7 @@ class DeviceAccessory {
       
       if(state){
       
-        this.logger.info(this.accessory.displayName + ': Reconnecting...');
-        
-        setTimeout(async () => {
-          
-          try {
-          
-            let info = await status.actions.GetInfo();      
-            let ip = info.NewExternalIPAddress;
-      
-            this.logger.info(this.accessory.displayName + ': Connected with ' + ip);
-          
-          } catch(err){
-          
-            throw err;
-          
-          }
-        
-        }, 11000);
-        
+        this.logger.info(this.accessory.displayName + ': Reconnecting...');      
         await status.actions.ForceTermination();
       
       }

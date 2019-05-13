@@ -24,25 +24,36 @@ class DeviceHandler {
   
     try{
 
-      if(this.accessory.context.type !== 'repeater' && this.accessory.context.options.reconnect){
-        
-        if (!this.mainService.testCharacteristic(Characteristic.Reconnect)){
-         
-          this.logger.initinfo(this.accessory.displayName + ': Adding Reconnect Characteristic');
-          this.mainService.addCharacteristic(Characteristic.Reconnect);
-        
-        }
+      if(this.accessory.context.type !== 'repeater'){
       
-      } else {
-        
-        if(this.mainService.testCharacteristic(Characteristic.Reconnect)){
+        if (!this.mainService.testCharacteristic(Characteristic.IPAdd)){
          
-          this.logger.info(this.accessory.displayName + ': Removing Reconnect Characteristic');
-          this.mainService.removeCharacteristic(this.mainService.getCharacteristic(Characteristic.Reconnect));
-  
+          this.logger.initinfo(this.accessory.displayName + ': Adding IP Characteristic');
+          this.mainService.addCharacteristic(Characteristic.IPAdd);
+          
         }
-     
-      } 
+        
+        if(this.accessory.context.options.reconnect){  
+          
+          if (!this.mainService.testCharacteristic(Characteristic.Reconnect)){
+           
+            this.logger.initinfo(this.accessory.displayName + ': Adding Reconnect Characteristic');
+            this.mainService.addCharacteristic(Characteristic.Reconnect);
+          
+          }
+        
+        } else {
+          
+          if(this.mainService.testCharacteristic(Characteristic.Reconnect)){
+           
+            this.logger.info(this.accessory.displayName + ': Removing Reconnect Characteristic');
+            this.mainService.removeCharacteristic(this.mainService.getCharacteristic(Characteristic.Reconnect));
+    
+          }
+       
+        } 
+      
+      }
   
       if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0])){
         
