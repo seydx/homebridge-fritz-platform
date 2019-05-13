@@ -516,7 +516,7 @@ class CallmonitorAccessory {
     
     } else {
 	
-      setTimeout(this.refreshHistory.bind(this), 3000)
+      setTimeout(this.refreshHistory.bind(this), 1 * 60 * 1000)
 	    
     }
   
