@@ -30,7 +30,7 @@ If you do not have a connected device, you can also do it via the phone book. Ac
   "ip": "192.168.178.1",
   "port": 1012,
   "country": "DE",
-  "incomingTo":"12345678",
+  "incomingTo":["12345", "131234"],
   "outgoingFrom":["12345", "67890", "131234"]
 }
 ```
