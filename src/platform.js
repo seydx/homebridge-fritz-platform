@@ -225,7 +225,9 @@ FritzPlatform.prototype = {
     } catch(err) {
 
       this.logger.error('An error occured while checking config!');
-      debug(err);
+      //debug(err);
+      
+      console.log(err)
 
     }
 
