@@ -24,7 +24,7 @@ class DeviceHandler {
   
     try{
   
-      if(this.accessory.context.options.wifi2){
+      if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0])){
         
         if (!this.mainService.testCharacteristic(Characteristic.WifiTwo)){
          
@@ -44,7 +44,7 @@ class DeviceHandler {
      
       } 
   
-      if(this.accessory.context.options.wifi5){
+      if((!Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5) || (Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5[0])){
       
         if(this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
         
@@ -72,7 +72,7 @@ class DeviceHandler {
      
       } 
   
-      if(this.accessory.context.options.wifiGuest){
+      if((!Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest) || (Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest[0])){
         
         if (!this.mainService.testCharacteristic(Characteristic.WifiGuest)){
           
@@ -92,7 +92,7 @@ class DeviceHandler {
      
       }
       
-      if(this.accessory.context.options.wps){
+      if((!Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps) || (Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps[0])){
      
         if (!this.mainService.testCharacteristic(Characteristic.WifiWPS)){
         
@@ -112,7 +112,7 @@ class DeviceHandler {
      
       }
   
-      if(this.accessory.context.options.led){
+      if((!Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led) || (Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led[0])){
         
         if (!this.mainService.testCharacteristic(Characteristic.DeviceLED)){
           
@@ -134,7 +134,7 @@ class DeviceHandler {
       
       if(this.accessory.context.master){
   
-        if(this.accessory.context.options.lock){
+        if((!Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock) || (Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock[0])){
          
           if (!this.mainService.testCharacteristic(Characteristic.DeviceLock)){
           
@@ -214,7 +214,7 @@ class DeviceHandler {
         
         }
     
-        if(this.accessory.context.options.aw){
+        if((!Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw) || (Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw[0])){
         
           if (!this.mainService.testCharacteristic(Characteristic.AnsweringMachine)){
          
@@ -235,7 +235,7 @@ class DeviceHandler {
        
         }
     
-        if(this.accessory.context.options.deflection){
+        if((!Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection) || (Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection[0])){
          
           if (!this.mainService.testCharacteristic(Characteristic.Deflection)){
           

@@ -137,12 +137,12 @@ class DeviceAccessory {
         this.mainService.getCharacteristic(Characteristic.On)
           .on('set', this.setState.bind(this));
       
-      if(this.accessory.context.options.wifi2)
+      if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0]))
         this.mainService.getCharacteristic(Characteristic.WifiTwo)
           .on('set', this.setWifi.bind(this, 1))
           .on('get', this.getWifi.bind(this, 1));
           
-      if(this.accessory.context.options.wifi5 && this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
+      if((!Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5) || (Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5[0]) && this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
       
         this.mainService.getCharacteristic(Characteristic.WifiFive)
           .on('set', this.setWifi.bind(this, 2))
@@ -150,7 +150,7 @@ class DeviceAccessory {
       
       }
           
-      if(this.accessory.context.options.wifiGuest){
+      if((!Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest) || (Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest[0])){
       
         let type = this.device.services['urn:dslforum-org:service:WLANConfiguration:3'] ? 3 : 2;
       
@@ -160,12 +160,12 @@ class DeviceAccessory {
       
       }
           
-      if(this.accessory.context.options.wps)
+      if((!Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps) || (Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps[0]))
         this.mainService.getCharacteristic(Characteristic.WifiWPS)
           .on('set', this.setWPS.bind(this))
           .on('get', this.getWPS.bind(this));
           
-      if(this.accessory.context.options.led)
+      if((!Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led) || (Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led[0]))
         this.mainService.getCharacteristic(Characteristic.DeviceLED)
           .on('set', this.setDeviceLED.bind(this))
           .on('get', this.getDeviceLED.bind(this));
@@ -184,12 +184,12 @@ class DeviceAccessory {
             
         }
       
-        if(this.accessory.context.options.lock)
+        if((!Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock) || (Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock[0]))
           this.mainService.getCharacteristic(Characteristic.DeviceLock)
             .on('set', this.setDeviceLock.bind(this))
             .on('get', this.getDeviceLock.bind(this));
             
-        if(this.accessory.context.options.aw)
+        if((!Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw) || (Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw[0]))
           this.mainService.getCharacteristic(Characteristic.AnsweringMachine)
             .on('set', this.setAW.bind(this))
             .on('get', this.getAW.bind(this));
@@ -205,7 +205,7 @@ class DeviceAccessory {
             .on('get', callback => callback(null, false))
             .updateValue(false);
             
-        if(this.accessory.context.options.deflection)
+        if((!Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection) || (Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection[0]))
           this.mainService.getCharacteristic(Characteristic.Deflection)
             .on('set', this.setDeflection.bind(this))
             .on('get', this.getDeflection.bind(this));

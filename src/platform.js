@@ -19,6 +19,7 @@ const DeviceAccessory = require('./accessories/device.js');
 const WolAccessory = require('./accessories/wol.js');
 const CallmonitorAccessory = require('./accessories/callmonitor.js');
 const SmarthomeAccessory = require('./accessories/smarthome.js');
+const ExtrasAccessory = require('./accessories/extras.js');
 
 const pluginName = 'homebridge-fritz-platform';
 const platformName = 'FritzPlatform';
@@ -98,6 +99,9 @@ FritzPlatform.prototype = {
       this.deviceArray = await this.Config.getDevices();
       
       this.masterDevice = await this.Config.getMasterDevice();
+      
+      debug('Initializing extra accessories...');
+      this.extraAccessories = await this.Config.getExtraAccessories();
       
       debug('Initializing extras...');
       this.extras = await this.Config.getExtras();
@@ -221,8 +225,7 @@ FritzPlatform.prototype = {
     } catch(err) {
 
       this.logger.error('An error occured while checking config!');
-      //debug(err);
-      console.log(err);
+      debug(err);
 
     }
 
@@ -301,7 +304,10 @@ FritzPlatform.prototype = {
         this.accessories.map( accessory => this.removeAccessory(accessory));
     
       } else {
-         
+      
+        if(this.extraAccessories.length)
+          this.deviceArray = this.deviceArray.concat(this.extraAccessories);
+        
         for(const dev of this.deviceArray)
           this._devices.set(dev.name, dev);
 
@@ -419,6 +425,17 @@ FritzPlatform.prototype = {
 
         break;
         
+      case 'extras':
+      
+        if(add)
+          accessory.addService(Service.Switch, object.name);
+          
+        console.log(accessory);
+        
+        new ExtrasAccessory(this, accessory, this.sid);
+      
+        break;
+        
       default:
         //
 
@@ -519,6 +536,15 @@ FritzPlatform.prototype = {
             devType: object ? object.devType : accessory.context.devType,
             ain: object ? object.ain : accessory.context.ain 
           };
+  
+        break; 
+        
+      case 'extras':
+  
+        accessory.context = {
+          ...accessory.context,
+          device: (object && object.device) ? object.device : accessory.context.device
+        };
   
         break; 
     

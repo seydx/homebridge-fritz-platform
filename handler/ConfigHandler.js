@@ -183,11 +183,11 @@ class DeviceHandler {
           let options = this.config.devices[dev.name].options;
         
           this.config.devices[dev.name].options = {
-            wifi2: options ? options.wifi2 : false,
-            wifi5: options ? options.wifi5 : false,
-            wifiGuest: options ? options.wifiGuest : false,
-            wps: options ? options.wps : false,
-            led: options ? options.led : false
+            wifi2: options ? options.wifi2 : [false,false],
+            wifi5: options ? options.wifi5 : [false,false],
+            wifiGuest: options ? options.wifiGuest : [false,false],
+            wps: options ? options.wps : [false,false],
+            led: options ? options.led : [false,false]
           };
           
           if(this.config.devices[dev.name].mesh !== undefined)
@@ -203,15 +203,15 @@ class DeviceHandler {
           let options = this.config.devices[dev.name].options;
         
           this.config.devices[dev.name].options = {
-            wifi2: options ? options.wifi2 : false,
-            wifi5: options ? options.wifi5 : false,
-            wifiGuest: options ? options.wifiGuest : false,
+            wifi2: options ? options.wifi2 : [false,false],
+            wifi5: options ? options.wifi5 : [false,false],
+            wifiGuest: options ? options.wifiGuest : [false,false],
             phoneBook: options ? options.phoneBook : false,
-            wps: options ? options.wps : false,
-            aw: options ? options.aw : false,
-            deflection: options ? options.deflection : false,
-            led: options ? options.led : false,
-            lock: options ? options.lock : false
+            wps: options ? options.wps : [false,false],
+            aw: options ? options.aw : [false,false],
+            deflection: options ? options.deflection : [false,false],
+            led: options ? options.led : [false,false],
+            lock: options ? options.lock : [false,false]
           };
         
         }
@@ -490,6 +490,47 @@ class DeviceHandler {
 
     }
     
+  }
+  
+  getExtraAccessories(){
+  
+    this.extraAccessories = [];
+    
+    let ext = [];
+  
+    for(let dev of this.foundDevices){
+        
+      dev = { 
+        name: dev.name, 
+        serial: dev.serial, 
+        ...this.config.devices[dev.name]
+      };
+          
+      if(dev.active && dev.type && dev.username && dev.password && dev.options)
+        for(const opt of Object.keys(dev.options))
+          ext.push({
+            name: dev.name + ' ' + opt.charAt(0).toUpperCase() + opt.slice(1), 
+            active: (Array.isArray(dev.options[opt]) ? dev.options[opt][1] : false), 
+            serial: '1234567890', 
+            type: 'extras', 
+            device: {
+              host: dev.host, 
+              port: dev.port, 
+              username: dev.username, 
+              password: dev.password, 
+              timeout: this.config.timeout, 
+              type: dev.type
+            }
+          });
+            
+    }
+    
+    for(const extDev of ext)
+      if(extDev.active)
+        this.extraAccessories.push(extDev);
+    
+    return this.extraAccessories;
+  
   }
   
   async initTelegram(){
