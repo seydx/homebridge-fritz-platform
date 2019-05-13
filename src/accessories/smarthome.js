@@ -280,7 +280,7 @@ class SmarthomeAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while polling state');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
     
     } finally {
     
@@ -307,7 +307,7 @@ class SmarthomeAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while setting new switch state');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
     
     } finally {
     
@@ -440,7 +440,7 @@ class SmarthomeAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while setting new thermostat state');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
     
     } finally {
     
@@ -483,7 +483,7 @@ class SmarthomeAccessory {
       } catch (err){
 
         this.logger.error(this.accessory.displayName + ': An error occured while setting new temp!'); 
-        this.debug(JSON.stringify(err,null,4));
+        console.log(err);
 
       } finally {
     

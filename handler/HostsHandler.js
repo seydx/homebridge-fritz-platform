@@ -87,7 +87,7 @@ class HostsHandler {
     } catch(err){
 
       this.logger.error('Host List (no mesh): An error occured while fetching devices!');
-      this.debug(JSON.stringify(err, null, 4));
+      console.log(err);
 
     } finally {
 

@@ -225,9 +225,7 @@ FritzPlatform.prototype = {
     } catch(err) {
 
       this.logger.error('An error occured while checking config!');
-      //debug(err);
-      
-      console.log(err)
+      console.log(err);
 
     }
 
@@ -323,7 +321,7 @@ FritzPlatform.prototype = {
     } catch(err) {
     
       this.logger.error('An error occured while fetching devices!');
-      debug(err);
+      console.log(err);
     
     }
     

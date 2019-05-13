@@ -77,7 +77,7 @@ class DeviceAccessory {
     
       this.logger.error(this.accessory.displayName + ': An error occured while initializing API!');
       this.logger.error(this.accessory.displayName + ': Please check your credentials and try again with restarting homebridge!');
-      this.debug(JSON.stringify(err, null, 4));
+      console.log(err)
     
     }
   
@@ -110,7 +110,7 @@ class DeviceAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
-      this.debug(JSON.stringify(err, null, 4));
+      console.log(err)
     
     }
   
@@ -227,7 +227,7 @@ class DeviceAccessory {
     } catch(err) {
     
       this.logger.info(this.accessory.displayName + ': An error occured while initializing accessory services and characteristics!');
-      this.debug(JSON.stringify(err, null, 4));
+      console.log(err)
     
     }
 
@@ -268,7 +268,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of device!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -331,7 +331,7 @@ class DeviceAccessory {
           } catch(err){
           
             this.logger.info(this.accessory.displayName + ': An error occured during finishing restart process!');
-            this.debug(JSON.stringify(err, null, 4)); 
+            console.log(err) 
           
           }
           
@@ -347,7 +347,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new device state!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -501,7 +501,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while fetching phonebook!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
 
@@ -531,7 +531,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new wifi state!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -556,7 +556,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of wifi!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -584,7 +584,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new wps state!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -609,7 +609,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of wps!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -653,7 +653,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for device led!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -693,7 +693,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of device led!');
-      //this.debug(JSON.stringify(err,null,4));
+      //console.log(err);
       
       console.log(err);
       
@@ -722,7 +722,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for device lock!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -750,7 +750,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of device lock!');
-      //this.debug(JSON.stringify(err,null,4));
+      //console.log(err);
 
       console.log(err);
 
@@ -775,7 +775,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for answering mashine!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -800,7 +800,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of answering mashine!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -834,7 +834,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for deflection');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -870,7 +870,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of deflection!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -903,7 +903,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for wake up!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -964,7 +964,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for alarm!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -1073,7 +1073,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state for ring lock!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -1114,7 +1114,7 @@ class DeviceAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting state of ring lock!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
 
     } finally {
     
@@ -1154,7 +1154,7 @@ class DeviceAccessory {
     speed.on('error', err => {
     
       this.logger.error(this.accessory.displayName + ': An error occured while getting state bandwidth!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(err);
       
     }); 
       
