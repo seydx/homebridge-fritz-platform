@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "4.0.0-dev.11",
+  "version": "4.0.0-dev.12",
   "description": "homebridge-fritz-platform",
   "main": "index.js",
   "devDependencies": {},
