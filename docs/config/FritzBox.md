@@ -88,6 +88,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | deflection | Parameter for enable/disable deflection switch or expose as extra switch accessory (Default: [false,false]) |
 | led | Parameter for enable/disable LED switch or expose as extra switch accessory (Default: [false,false]) |
 | lock | Parameter for enable/disable device lock switch or expose as extra switch accessory (Default: [false,false]) |
+| reconnect | Parameter for enable/disable reconnect switch (Default: false) |
 
 
 
