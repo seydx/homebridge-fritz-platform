@@ -87,6 +87,7 @@ class CallmonitorAccessory {
     this.historyService.log = this.log;
 
     this.getContactState();
+    this.refreshHistory();
 
   }
 
@@ -493,6 +494,28 @@ class CallmonitorAccessory {
     
     }
     
+  }
+  
+  refreshHistory(){
+    
+    let state;
+    
+    if(Array.isArray(this.historyService.history) && this.historyService.history.length > 1){
+
+      state = this.historyService.history[this.historyService.history.length-1].status || 0;
+
+      this.debug(this.accessory.displayName + ': Adding new entry to avoid gaps - Entry: ' + state)
+      
+      this.historyService.addEntry({time: moment().unix(), status: state});
+      
+      setTimeout(this.refreshHistory.bind(this), 1 * 60 * 1000)
+    
+    } else {
+	
+      setTimeout(this.refreshHistory.bind(this), 3000)
+	    
+    }
+  
   }
   
   async loadData(data){
