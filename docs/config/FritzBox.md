@@ -9,26 +9,50 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 ```
 "devices": {
   "FRITZ!Box 7590": {
-    "active": true,
+    "active": false,
     "host": "192.168.178.1",
     "port": 49000,
-    "username": "MyUsername",
-    "password": "mypw123",
+    "username": "Username123",
+    "password": "pw3456",
     "type": "dsl",
     "master": true,
     "mesh": true,
     "readOnly": false,
-    "beta": false,
     "options": {
-      "wifi2": false,
-      "wifi5": false,
-      "wifiGuest": false,
-      "phoneBook": false,
-      "wps": false,
-      "aw": false,
-      "deflection": false,
-      "led": false,
-      "lock": false
+      "wifi2": [
+        true,
+        false
+      ],
+      "wifi5": [
+        true,
+        false
+      ],
+      "wifiGuest": [
+        true,
+        false
+      ],
+      "phoneBook": true,
+      "reconnect": true,
+      "wps": [
+        true,
+        false
+      ],
+      "aw": [
+        true,
+        false
+      ],
+      "deflection": [
+        true,
+        false
+      ],
+      "led": [
+        true,
+        false
+      ],
+      "lock": [
+        true,
+        false
+      ]
     }
   }
 }
@@ -41,7 +65,7 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
 | name | Unique name for the accessory, eg FritzBox | x |
-| active | Activate/Deactivate |  |
+| active | Activate/Deactivate Accessory |  |
 | master | True if it is your main device/router, false if it is a repeater or extended router | x |
 | host       | Host, IP or Remote addresse of the device                    | x |
 | port       | Port of the device (Default: 49000, or port setted in the settings for remote login) |  |
@@ -50,23 +74,35 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | password | Password for logging in to the above device | x |
 | readOnly | If true, the device switches will not trigger anymore if on/off (Default: false) | |
 | mesh | If you are using the MESH function (7590) set it to true, false otherwise (Default: false) |
-| beta | If you are using beta firmware, set it to true, false otherwise (Default: false) |
 
-## Options
+## Options - MASTER DEVICE
 
 | Attributes | Usage |
 |------------|-------|
-| wifi2 | Parameter for enable/disable wifi 2.4ghz switch (Default: false) |
-| wifi5 | Parameter for enable/disable wifi 5ghz switch (Default: false) |
-| wifiGuest | Parameter for enable/disable guest wifi switch (Default: false) |
-| wps | Parameter for enable/disable wps switch (Default: false) |
+| wifi2 | Parameter for enable/disable wifi 2.4ghz switch or expose as extra switch accessory (Default: [false,false]) |
+| wifi5 | Parameter for enable/disable wifi 5ghz switch or expose as extra switch accessory (Default: [false,false]) |
+| wifiGuest | Parameter for enable/disable guest wifi switch or expose as extra switch accessory (Default: [false,false]) |
+| wps | Parameter for enable/disable wps switch or expose as extra switch accessory (Default: [false,false]) |
 | phoneBook | Parameter for enable/disable phonebook togle, it is used to store the phonebook in persist folder (Default: false) |
-| aw | Parameter for enable/disable answering machine switch (Default: false) |
-| deflection | Parameter for enable/disable deflection switch (Default: false) |
-| led | Parameter for enable/disable LED switch (Default: false) |
-| lock | Parameter for enable/disable device lock switch (Default: false) |
+| aw | Parameter for enable/disable answering machine switch or expose as extra switch accessory (Default: [false,false]) |
+| deflection | Parameter for enable/disable deflection switch or expose as extra switch accessory (Default: [false,false]) |
+| led | Parameter for enable/disable LED switch or expose as extra switch accessory (Default: [false,false]) |
+| lock | Parameter for enable/disable device lock switch or expose as extra switch accessory (Default: [false,false]) |
 
 
+
+## Options - OTHER DEVICES
+
+| Attributes | Usage |
+|------------|-------|
+| wifi2 | Parameter for enable/disable wifi 2.4ghz switch or expose as extra switch accessory (Default: [false,false]) |
+| wifi5 | Parameter for enable/disable wifi 5ghz switch or expose as extra switch accessory (Default: [false,false]) |
+| wifiGuest | Parameter for enable/disable guest wifi switch or expose as extra switch accessory (Default: [false,false]) |
+| wps | Parameter for enable/disable wps switch or expose as extra switch accessory (Default: [false,false]) |
+| led | Parameter for enable/disable LED switch or expose as extra switch accessory (Default: [false,false]) |
+
+
+_Hint: The **first** false/true in an array, ie. "wifi2":[false,false], activates/deactivates a switch characteristic for the main service. The **second** false/true in an array, ie. "wifi2":[false,false], activates/deactivates a switch accessory_
 
 ## Remote Settings
 
