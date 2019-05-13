@@ -183,12 +183,15 @@ class DeviceHandler {
           let options = this.config.devices[dev.name].options;
         
           this.config.devices[dev.name].options = {
-            wifi2: options ? options.wifi2 : [false,false],
-            wifi5: options ? options.wifi5 : [false,false],
-            wifiGuest: options ? options.wifiGuest : [false,false],
-            wps: options ? options.wps : [false,false],
-            led: options ? options.led : [false,false]
+            wifi2: options && options.wifi2 ? options.wifi2 : [false,false],
+            wifi5: options && options.wifi5 ? options.wifi5 : [false,false],
+            wifiGuest: options && options.wifiGuest ? options.wifiGuest : [false,false],
+            wps: options && options.wps ? options.wps : [false,false],
+            led: options && options.led ? options.led : [false,false]
           };
+          
+          if(this.config.devices[dev.name].type !== 'repeater')
+            this.config.devices[dev.name].options.reconnect = this.config.devices[dev.name].options.reconnect || false;
           
           if(this.config.devices[dev.name].mesh !== undefined)
             delete this.config.devices[dev.name].mesh;
@@ -203,15 +206,16 @@ class DeviceHandler {
           let options = this.config.devices[dev.name].options;
         
           this.config.devices[dev.name].options = {
-            wifi2: options ? options.wifi2 : [false,false],
-            wifi5: options ? options.wifi5 : [false,false],
-            wifiGuest: options ? options.wifiGuest : [false,false],
-            phoneBook: options ? options.phoneBook : false,
-            wps: options ? options.wps : [false,false],
-            aw: options ? options.aw : [false,false],
-            deflection: options ? options.deflection : [false,false],
-            led: options ? options.led : [false,false],
-            lock: options ? options.lock : [false,false]
+            reconnect: options && options.reconnect ? options.reconnect : false,
+            wifi2: options && options.wifi2 ? options.wifi2 : [false,false],
+            wifi5: options && options.wifi5 ? options.wifi5 : [false,false],
+            wifiGuest: options && options.wifiGuest ? options.wifiGuest : [false,false],
+            phoneBook: options && options.phoneBook ? options.phoneBook : false,
+            wps: options && options.wps ? options.wps : [false,false],
+            aw: options && options.aw ? options.aw : [false,false],
+            deflection: options && options.deflection ? options.deflection : [false,false],
+            led: options && options.led ? options.led : [false,false],
+            lock: options && options.lock ? options.lock : [false,false]
           };
         
         }

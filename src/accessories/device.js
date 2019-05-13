@@ -77,7 +77,7 @@ class DeviceAccessory {
     
       this.logger.error(this.accessory.displayName + ': An error occured while initializing API!');
       this.logger.error(this.accessory.displayName + ': Please check your credentials and try again with restarting homebridge!');
-      console.log(err)
+      console.log(err);
     
     }
   
@@ -110,7 +110,7 @@ class DeviceAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
-      console.log(err)
+      console.log(err);
     
     }
   
@@ -170,6 +170,12 @@ class DeviceAccessory {
           .on('set', this.setDeviceLED.bind(this))
           .on('get', this.getDeviceLED.bind(this));
           
+      if(this.accessory.context.type !== 'repeater' && this.accessory.context.options.reconnect)          
+        this.mainService.getCharacteristic(Characteristic.Reconnect)
+          .on('set', this.setReconnect.bind(this))
+          .on('get', callback => callback(null, false))
+          .updateValue(false);
+          
       if(this.accessory.context.master){
       
         if(this.accessory.context.options.phoneBook){
@@ -227,7 +233,7 @@ class DeviceAccessory {
     } catch(err) {
     
       this.logger.info(this.accessory.displayName + ': An error occured while initializing accessory services and characteristics!');
-      console.log(err)
+      console.log(err);
     
     }
 
@@ -331,7 +337,7 @@ class DeviceAccessory {
           } catch(err){
           
             this.logger.info(this.accessory.displayName + ': An error occured during finishing restart process!');
-            console.log(err) 
+            console.log(err); 
           
           }
           
@@ -516,6 +522,71 @@ class DeviceAccessory {
     
     callback();
 
+  }
+  
+  async setReconnect(state, callback){
+
+    let status;
+  
+    try {
+    
+      if(this.accessory.context.type === 'dsl'){
+      
+        status = this.device.services['urn:dslforum-org:service:WANPPPConnection:1']; 
+      
+      } else {
+      
+        status = this.device.services['urn:dslforum-org:service:WANIPConnection:1']; 
+      
+      }
+      
+      if(state){
+      
+        this.logger.info(this.accessory.displayName + ': Reconnecting...');
+        
+        setTimeout(async () => {
+          
+          try {
+          
+            let info = await status.actions.GetInfo();      
+            let ip = info.NewExternalIPAddress;
+      
+            this.logger.info(this.accessory.displayName + ': Connected with ' + ip);
+          
+          } catch(err){
+          
+            throw err;
+          
+          }
+        
+        }, 11000);
+        
+        await status.actions.ForceTermination();
+      
+      }
+      
+    } catch(err) {
+
+      if(!(err.data && err.data.includes('DisconnectInProgress'))){
+      
+        this.logger.error(this.accessory.displayName + ': An error occured while reconnecting device!');
+        console.log(err);
+
+      }
+
+    } finally {
+      
+      setTimeout(() => {
+      
+        this.mainService.getCharacteristic(Characteristic.Reconnect)
+          .updateValue(false);
+      
+      }, 500);
+      
+      callback();
+   
+    }
+  
   }
   
   async setWifi(type,state,callback){

@@ -348,7 +348,26 @@ class CallmonitorAccessory {
                 text = 'Calling: ' + called;
                 this.callerName = false;
                 this.callerNr = called;
+                
                 this.mainService.getCharacteristic(Characteristic.Called).updateValue(called);
+               
+                let phonebook = await this.loadData('phonebook');
+                
+                if(phonebook){
+                  
+                  for(const entry of phonebook.phonebook){
+                
+                    if(called === entry.number){
+                        
+                      text = 'Calling ' + entry.name + ' ( '+ entry.number + ' )';
+                      this.callerName = entry.name;
+                      this.callerNr = entry.number;
+                  
+                    }
+                
+                  }
+                    
+                }
             
                 this.logger.info(text);
         

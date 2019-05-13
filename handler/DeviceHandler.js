@@ -23,6 +23,26 @@ class DeviceHandler {
   async inspectCharacteristics(){
   
     try{
+
+      if(this.accessory.context.type !== 'repeater' && this.accessory.context.options.reconnect){
+        
+        if (!this.mainService.testCharacteristic(Characteristic.Reconnect)){
+         
+          this.logger.initinfo(this.accessory.displayName + ': Adding Reconnect Characteristic');
+          this.mainService.addCharacteristic(Characteristic.Reconnect);
+        
+        }
+      
+      } else {
+        
+        if(this.mainService.testCharacteristic(Characteristic.Reconnect)){
+         
+          this.logger.info(this.accessory.displayName + ': Removing Reconnect Characteristic');
+          this.mainService.removeCharacteristic(this.mainService.getCharacteristic(Characteristic.Reconnect));
+  
+        }
+     
+      } 
   
       if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0])){
         

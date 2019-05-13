@@ -103,6 +103,20 @@ module.exports = {
     };
     inherits(Characteristic.Host, Characteristic);
     Characteristic.Host.UUID = '7c6b8e01-0549-41bb-86c7-5deeacb5799e';
+
+    /// /////////////////////////////////////////////////////////////////////////
+    // Reconnect Characteristic
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.Reconnect = function() {
+      Characteristic.call(this, 'Reconnect', '45941658-a0f0-4a65-b211-bb645e138e09');
+      this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Reconnect, Characteristic);
+    Characteristic.Reconnect.UUID = '45941658-a0f0-4a65-b211-bb645e138e09';
     
     /// /////////////////////////////////////////////////////////////////////////
     // WifiTwo Characteristic
