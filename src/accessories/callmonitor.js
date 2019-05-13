@@ -8,6 +8,8 @@ const store = require('json-fs-store');
 
 var Service, Characteristic, FakeGatoHistoryService;
 
+const timeout = ms => new Promise(res => setTimeout(res, ms));
+
 class CallmonitorAccessory {
   constructor (platform, accessory) {
 
@@ -45,7 +47,7 @@ class CallmonitorAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
 
     if (!this.mainService.testCharacteristic(Characteristic.Adresse))
       this.mainService.addCharacteristic(Characteristic.Adresse);
@@ -87,6 +89,8 @@ class CallmonitorAccessory {
     this.historyService.log = this.log;
 
     this.getContactState();
+    
+    await timeout(2000);
     this.refreshHistory();
 
   }
@@ -504,11 +508,11 @@ class CallmonitorAccessory {
 
       state = this.historyService.history[this.historyService.history.length-1].status || 0;
 
-      this.debug(this.accessory.displayName + ': Adding new entry to avoid gaps - Entry: ' + state)
+      this.debug(this.accessory.displayName + ': Adding new entry to avoid gaps - Entry: ' + state);
       
       this.historyService.addEntry({time: moment().unix(), status: state});
       
-      setTimeout(this.refreshHistory.bind(this), 1 * 60 * 1000)
+      setTimeout(this.refreshHistory.bind(this), 5 * 60 * 1000)
     
     } else {
 	
