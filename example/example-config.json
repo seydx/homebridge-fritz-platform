@@ -19,17 +19,41 @@
           "master": true,
           "mesh": true,
           "readOnly": false,
-          "beta": false,
           "options": {
-            "wifi2": false,
-            "wifi5": false,
-            "wifiGuest": false,
-            "phoneBook": false,
-            "wps": false,
-            "aw": false,
-            "deflection": false,
-            "led": false,
-            "lock": false
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "phoneBook": true,
+            "reconnect": true,
+            "wps": [
+              true,
+              false
+            ],
+            "aw": [
+              true,
+              false
+            ],
+            "deflection": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ],
+            "lock": [
+              true,
+              false
+            ]
           }
         },
         "FRITZ!Box 7430 BU": {
@@ -39,16 +63,28 @@
           "username": "Username123",
           "password": "pw3456",
           "type": "dsl",
-          "master": false,
-          "mesh": false,
           "readOnly": false,
-          "beta": false,
           "options": {
-            "wifi2": false,
-            "wifi5": false,
-            "wifiGuest": false,
-            "wps": false,
-            "led": false
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "wps": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ]
           }
         },
         "FRITZ!WLAN Repeater 310": {
@@ -58,16 +94,28 @@
           "username": "Test123",
           "password": "pw3456",
           "type": "repeater",
-          "master": false,
-          "mesh": false,
           "readOnly": false,
-          "beta": false,
           "options": {
-            "wifi2": false,
-            "wifi5": false,
-            "wifiGuest": false,
-            "wps": false,
-            "led": false
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "wps": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ]
           }
         }
       },
@@ -97,7 +145,10 @@
         "ip": "192.168.178.1",
         "port": 1012,
         "country": "DE",
-        "incomingTo": "015245879",
+        "incomingTo": [
+          "8845668",
+          "5497854"
+        ],
         "outgoingFrom": [
           "8845668",
           "5497854"
