@@ -198,7 +198,7 @@ class HostsHandler {
       hostArray = hostArray.concat(hostListXML.List.Item);
       this.hosts = hostArray;
         
-      setTimeout(this.generateHostList.bind(this, endpoint), this.platform.config.polling * 1000);
+      setTimeout(this.generateHostsListURL.bind(this), this.platform.config.polling * 1000);
     
     } catch(error){
     
@@ -210,7 +210,7 @@ class HostsHandler {
           data: error.response.data
         };
       
-      this.logger.error('Host List: An error occured while genersting host list!');
+      this.logger.error('Host List: An error occured while generating host list!');
       this.debug(JSON.stringify(error,null,4));
       
       setTimeout(this.generateHostsListURL.bind(this), 15000);
