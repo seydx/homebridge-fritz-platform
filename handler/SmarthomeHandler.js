@@ -23,7 +23,7 @@ class SmarthomeHandler {
   
     try {
         
-      let sid = await this.sid.getSID();
+      let sid = await this.sid.getSID(null, this.device);
     
       let cmd = 'getdevicelistinfos';
       let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?switchcmd=' + cmd + '&sid=' + sid;
