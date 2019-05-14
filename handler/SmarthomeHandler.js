@@ -19,11 +19,11 @@ class SmarthomeHandler {
     
   }
   
-  async generateSmarthomeList(){
+  async generateSmarthomeList(refresh){
   
     try {
         
-      let sid = await this.sid.getSID(null, this.device);
+      let sid = await this.sid.getSID(refresh, this.device);
     
       let cmd = 'getdevicelistinfos';
       let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?switchcmd=' + cmd + '&sid=' + sid;
@@ -85,7 +85,7 @@ class SmarthomeHandler {
       setTimeout(this.generateSmarthomeList.bind(this), this.platform.config.polling * 1000);
     
     } catch(error){
-    
+      
       if(error.response)
         error = {
           status: error.response.status,
@@ -93,11 +93,19 @@ class SmarthomeHandler {
           config: error.config,
           data: error.response.data
         };
+    
+      if(error.status === 403){
+        
+        this.generateSmarthomeList(true)
       
-      this.logger.error('Smarthome List: An error occured while generating smarthome list!');
-      console.log(error);
+      } else {
+        
+        this.logger.error('Smarthome List: An error occured while generating smarthome list!');
+        console.log(error);
+        
+        setTimeout(this.generateSmarthomeList.bind(this), 15000);
       
-      setTimeout(this.generateSmarthomeList.bind(this), 15000);
+      }
     
     }
   
