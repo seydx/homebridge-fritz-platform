@@ -84,10 +84,10 @@ class HostsHandler {
           
       this.hosts = UserList;
 
-    } catch(err){
+    } catch(error){
 
       this.logger.error('Host List (no mesh): An error occured while fetching devices!');
-      console.log(err);
+      console.log(error);
 
     } finally {
 
@@ -108,9 +108,9 @@ class HostsHandler {
     
       return device;
     
-    } catch(err){
+    } catch(error){
     
-      throw err;
+      throw error;
     
     }
 
@@ -127,9 +127,9 @@ class HostsHandler {
       
       return list;
     
-    } catch(err){
+    } catch(error){
     
-      throw err;
+      throw error;
     
     }
   
@@ -176,10 +176,10 @@ class HostsHandler {
       
       this.generateHostList(hostsListURL['NewX_AVM-DE_HostListPath']);
     
-    } catch(err){
+    } catch(error){
     
       this.logger.error('Host List: An error occured while getting hosts list endpoint!');
-      this.debug(JSON.stringify(err,null,4));
+      console.log(error);
     
     }
   
@@ -197,8 +197,6 @@ class HostsHandler {
         
       hostArray = hostArray.concat(hostListXML.List.Item);
       this.hosts = hostArray;
-        
-      setTimeout(this.generateHostsListURL.bind(this), this.platform.config.polling * 1000);
     
     } catch(error){
     
@@ -211,10 +209,12 @@ class HostsHandler {
         };
       
       this.logger.error('Host List: An error occured while generating host list!');
-      this.debug(JSON.stringify(error,null,4));
-      
-      setTimeout(this.generateHostsListURL.bind(this), 15000);
+      console.log(error);
     
+    } finally {
+
+      setTimeout(this.generateHostsListURL.bind(this), this.platform.config.polling * 1000);
+
     }
   
   }

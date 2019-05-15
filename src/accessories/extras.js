@@ -8,7 +8,7 @@ const compareVersions = require('compare-versions');
 var Service, Characteristic;
 
 class ExtrasAccessory {
-  constructor (platform, accessory, sid) {
+  constructor (platform, accessory) {
 
     // HB
     Service = platform.api.hap.Service;
@@ -20,9 +20,8 @@ class ExtrasAccessory {
     this.debug = platform.debug;
     this.api = platform.api;
     this.config = platform.config;
-    this.accessories = platform.accessories;
-    
-    this.sid = sid;
+    this.accessories = platform.accessories;    
+    this.sid = platform.sid;
     
     this.accessory = accessory;
     this.mainService = this.accessory.getService(Service.Switch);

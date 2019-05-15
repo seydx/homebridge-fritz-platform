@@ -72,6 +72,23 @@ class CallmonitorAccessory {
     
     if (!this.mainService.testCharacteristic(Characteristic.ClosedDuration))
       this.mainService.addCharacteristic(Characteristic.ClosedDuration);
+
+    if (!this.mainService.testCharacteristic(Characteristic.ResetTotal))
+      this.mainService.addCharacteristic(Characteristic.ResetTotal);
+    
+    this.mainService.getCharacteristic(Characteristic.ResetTotal)
+      .on('set', (value,callback) => {
+  
+        this.logger.info(this.accessory.displayName + ': Resetting FakeGato..');
+  
+        this.accessory.context.timesOpened = 0;
+  
+        this.mainService.getCharacteristic(Characteristic.TimesOpened)
+          .updateValue(this.accessory.context.timesOpened);
+      
+        callback();
+  
+      });
     
     if(this.accessory.displayName == 'Callmonitor Incoming'){
       
@@ -156,13 +173,15 @@ class CallmonitorAccessory {
                 called: data[4]
               };
               
-              let lastState = 1;
+              this.inbound = true;
+              this.outgoing = false;
+              
               this.accessory.context.timesOpened += 1;
               let lastActivation = moment().unix() - this.historyService.getInitialTime();
               let closeDuration = moment().unix() - this.historyService.getInitialTime();
                   
               this.mainService.getCharacteristic(Characteristic.ContactSensorState)
-                .updateValue(lastState);
+                .updateValue(1);
                   
               this.mainService.getCharacteristic(Characteristic.LastActivation)
                 .updateValue(lastActivation);
@@ -173,7 +192,7 @@ class CallmonitorAccessory {
               this.mainService.getCharacteristic(Characteristic.TimesOpened)
                 .updateValue(this.accessory.context.timesOpened);
               
-              this.historyService.addEntry({time: moment().unix(), status: lastState});
+              this.historyService.addEntry({time: moment().unix(), status: 1});
           
               if(this.accessory.context.incomingTo.length){
               
@@ -289,13 +308,15 @@ class CallmonitorAccessory {
                 called: data[5]
               };
               
-              let lastState = 1;
+              this.outgoing = true;
+              this.inbound = false;
+              
               this.accessory.context.timesOpened += 1;
               let lastActivation = moment().unix() - this.historyService.getInitialTime();
               let closeDuration = moment().unix() - this.historyService.getInitialTime();
               
               this.mainService.getCharacteristic(Characteristic.ContactSensorState)
-                .updateValue(lastState);
+                .updateValue(1);
                   
               this.mainService.getCharacteristic(Characteristic.LastActivation)
                 .updateValue(lastActivation);
@@ -303,7 +324,7 @@ class CallmonitorAccessory {
               this.mainService.getCharacteristic(Characteristic.ClosedDuration)
                 .updateValue(closeDuration);
               
-              this.historyService.addEntry({time: moment().unix(), status: lastState});
+              this.historyService.addEntry({time: moment().unix(), status: 1});
           
               if(this.accessory.context.outgoingFrom.length){
             
@@ -402,18 +423,39 @@ class CallmonitorAccessory {
           }
 
           if (data[1] === 'disconnect') {
-          
-            let lastState = 0;
-            let openDuration = moment().unix() - this.historyService.getInitialTime();
+
+            if(this.inbound){
+              
+              if(this.accessory.displayName === 'Callmonitor Incoming'){
+              
+                let openDuration = moment().unix() - this.historyService.getInitialTime();
+                this.mainService.getCharacteristic(Characteristic.OpenDuration)
+                  .updateValue(openDuration);
                   
-            this.mainService.getCharacteristic(Characteristic.OpenDuration)
-              .updateValue(openDuration);
-                  
-            this.mainService.getCharacteristic(Characteristic.ContactSensorState)
-              .updateValue(lastState);
+                this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+                  .updateValue(0);
              
-            this.historyService.addEntry({time: moment().unix(), status: lastState});    
-      
+                this.historyService.addEntry({time: moment().unix(), status: 0});    
+            
+              }
+            
+            } else if(this.outgoing){
+            
+              if(this.accessory.displayName === 'Callmonitor Outgoing'){
+              
+                let openDuration = moment().unix() - this.historyService.getInitialTime();
+                this.mainService.getCharacteristic(Characteristic.OpenDuration)
+                  .updateValue(openDuration);
+                  
+                this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+                  .updateValue(0);
+             
+                this.historyService.addEntry({time: moment().unix(), status: 0});    
+            
+              }
+            
+            }
+            
             if(this.call[data[2]]){
           
               this.call[data[2]].disconnect = data[0];
@@ -506,18 +548,18 @@ class CallmonitorAccessory {
     
     if(Array.isArray(this.historyService.history) && this.historyService.history.length > 1){
 
-      state = this.historyService.history[this.historyService.history.length-1].status || 0;
+      state = this.historyService.history[this.historyService.history.length-1].status||0;
 
       this.debug(this.accessory.displayName + ': Adding new entry to avoid gaps - Entry: ' + state);
       
       this.historyService.addEntry({time: moment().unix(), status: state});
       
-      setTimeout(this.refreshHistory.bind(this), 5 * 60 * 1000)
+      setTimeout(this.refreshHistory.bind(this), 5 * 60 * 1000);
     
     } else {
-	
-      setTimeout(this.refreshHistory.bind(this), 1 * 60 * 1000)
-	    
+
+      setTimeout(this.refreshHistory.bind(this), 1 * 60 * 1000);
+ 
     }
   
   }

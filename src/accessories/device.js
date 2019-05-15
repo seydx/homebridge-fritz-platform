@@ -20,7 +20,7 @@ const c = new ccodes.CODES();
 var Characteristic;
 
 class DeviceAccessory {
-  constructor (platform, accessory, device, sid) {
+  constructor (platform, accessory, device) {
 
     Characteristic = platform.api.hap.Characteristic;    
     HomeKitTypes.registerWith(platform.api.hap);
@@ -36,9 +36,8 @@ class DeviceAccessory {
     this.validMAC = platform.validMAC;
     this.validIP = platform.validIP;
     this.configPath = platform.configPath;
-    this.telegram = platform.telegram;
-    
-    this.sid = sid;
+    this.telegram = platform.telegram;    
+    this.sid = platform.sid;
     
     this.accessory = accessory;
     

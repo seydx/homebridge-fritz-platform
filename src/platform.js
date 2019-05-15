@@ -87,6 +87,8 @@ FritzPlatform.prototype = {
       let tr064 = new api.TR064();
       let foundDevices = await tr064.searchDevices();
       
+      console.log(foundDevices);
+      
       this.logger.info('Initializing config...');
       this.config = await this.Config.generateConfig(foundDevices);
       
@@ -204,7 +206,7 @@ FritzPlatform.prototype = {
           if(this.Config.getSmartHome()){
             
             debug('Initializing smarthome list');
-            this.smarthome = new Smarthome(this, masterConfig, this.device, this.sid);
+            this.smarthome = new Smarthome(this, masterConfig, this.device);
               
             await timeout(1000);
   
@@ -365,7 +367,7 @@ FritzPlatform.prototype = {
         if(add)
           accessory.addService(Service.Switch, object.name);
         
-        new DeviceAccessory(this, accessory, accessory.context.master ? this.device : false, this.sid);
+        new DeviceAccessory(this, accessory, accessory.context.master ? this.device : false);
 
         break;
         
@@ -432,7 +434,7 @@ FritzPlatform.prototype = {
           
         console.log(accessory);
         
-        new ExtrasAccessory(this, accessory, this.sid);
+        new ExtrasAccessory(this, accessory);
       
         break;
         

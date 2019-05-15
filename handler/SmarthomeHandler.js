@@ -4,16 +4,16 @@ const axios = require('axios');
 const parseString = require('xml2js').parseString;
 
 class SmarthomeHandler {
-  constructor (platform, config, device, sid) {
+  constructor (platform, config, device) {
 
     this.log = platform.log;
     this.logger = platform.logger;
     this.debug = platform.debug;
     this.platform = platform;
+    this.sid = platform.sid;
 
     this.config = config;
     this.device = device;
-    this.sid = sid;
     
     this.generateSmarthomeList();
     
@@ -96,7 +96,9 @@ class SmarthomeHandler {
     
       if(error.status === 403){
         
-        this.generateSmarthomeList(true)
+        this.debug('Smarthome List: Requesting new SID...');
+        
+        setTimeout(this.generateSmarthomeList.bind(this, true), 500);
       
       } else {
         

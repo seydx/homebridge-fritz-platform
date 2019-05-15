@@ -161,7 +161,11 @@ class DeviceHandler {
       
       this.foundDevices = foundDevices;
       
+      let devConfig = [];
+      
       for(let dev of this.foundDevices){
+        
+        devConfig.push(dev.name);
             
         this.config.devices[dev.name] = this.config.devices[dev.name]||{};
             
@@ -222,9 +226,16 @@ class DeviceHandler {
         
       }
       
+      for(const dev of Object.keys(this.config.devices))	
+        if(!devConfig.includes(dev))
+          delete this.config.devices[dev];
+      
       for(let smdevice of Object.keys(this.config.smarthome)){
 
-        if(this.config.smarthome[smdevice].ain !== '0123456789' && (this.config.smarthome[smdevice].devType === 'contact' || this.config.smarthome[smdevice].devType === 'thermostat' || this.config.smarthome[smdevice].devType === 'switch')){
+        if(this.config.smarthome[smdevice].ain !== '0123456789' && 
+        (this.config.smarthome[smdevice].devType === 'contact' || 
+        this.config.smarthome[smdevice].devType === 'thermostat' || 
+        this.config.smarthome[smdevice].devType === 'switch')){
           
           if(this.config.smarthome[smdevice].devType === 'contact'){
             
@@ -293,7 +304,10 @@ class DeviceHandler {
     
       for(let smdevice of Object.keys(this.config.smarthome)){
     
-        if(this.config.smarthome[smdevice].ain !== '0123456789' && (this.config.smarthome[smdevice].devType === 'contact' || this.config.smarthome[smdevice].devType === 'thermostat' || this.config.smarthome[smdevice].devType === 'switch')){
+        if(this.config.smarthome[smdevice].ain !== '0123456789' && 
+        (this.config.smarthome[smdevice].devType === 'contact' || 
+        this.config.smarthome[smdevice].devType === 'thermostat' || 
+        this.config.smarthome[smdevice].devType === 'switch')){
     
           let device = {           
             name: smdevice, 
@@ -417,7 +431,11 @@ class DeviceHandler {
     
       for(let dev of this.foundDevices){
 
-        if((this.config.devices[dev.name].type === 'dsl' || this.config.devices[dev.name].type === 'cable') && this.config.devices[dev.name].username && this.config.devices[dev.name].password && this.config.devices[dev.name].master)       
+        if((this.config.devices[dev.name].type === 'dsl' || 
+        this.config.devices[dev.name].type === 'cable') && 
+        this.config.devices[dev.name].username && 
+        this.config.devices[dev.name].password && 
+        this.config.devices[dev.name].master)       
           this.masterDevice.push(this.config.devices[dev.name]);
             
       }
