@@ -123,7 +123,7 @@ class SmarthomeHandler {
     
   }
   
-  async sendCommand(name, ain, cmd){
+  async sendCommand(name, ain, cmd, refresh){
   
     try {
     
@@ -131,7 +131,7 @@ class SmarthomeHandler {
       
       if(device){
         
-        let sid = await this.sid.getSID();
+        let sid = await this.sid.getSID(refresh, this.device);
     
         let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?ain=' + ain + '&switchcmd=' + cmd + '&sid=' + sid;
         
@@ -148,9 +148,18 @@ class SmarthomeHandler {
           config: error.config,
           data: error.response.data
         };
+ 
+      if(error.status === 403){
+        
+        this.debug('Smarthome List: Requesting new SID...');
+        
+        setTimeout(this.sendCommand.bind(this, name, ain, cmd, true), 500);
       
-      throw error;
+      } else {
+        
+        throw error
       
+      }
       
     }
   
