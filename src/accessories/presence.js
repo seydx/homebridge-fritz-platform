@@ -54,7 +54,7 @@ class PresenceAccessory {
 
   }
   
-  getStates(){
+  async getStates(){
   
     let hosts = this.hosts.getHostList();
     
@@ -63,13 +63,10 @@ class PresenceAccessory {
       if(this.accessory.displayName !== 'Anyone'){
       
         let status = [];
-    
-        hosts.map( host => {
-
-          if(this.accessory.context.address == host.MACAddress[0] || this.accessory.context.address == host.IPAddress[0])
+        
+        for(const host of hosts)
+          if(host.MACAddress[0] === this.accessory.context.address || host.IPAddress[0] === this.accessory.context.address)
             status.push(parseInt(host.Active[0]));
-      
-        });
         
         this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
 
