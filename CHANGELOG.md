@@ -5,8 +5,9 @@
 - Refactored code
 - Refactored API
 - Support async/await
-- Debug
-- Auto config generator
+- Add automatically all supported devices in network to config
+- Added own debug params (FritzPlatformApi,FritzPlatformTR064,FritzPlatformLUA)
+- Auto config generator/validator at start
 - Bugfixes
 
 
