@@ -44,8 +44,7 @@ function FritzPlatform (log, config, api) {
 
   // BASE
   this.log = log;
-  this.logger = new LogUtil(null, log);
-  this.debug = debug;
+  this.logger = new LogUtil(null, log);    
   this.accessories = [];
   this._accessories = new Map();
   
@@ -53,6 +52,10 @@ function FritzPlatform (log, config, api) {
   
   this.configPath = api.user.storagePath();
   this.HBpath = api.user.storagePath()+'/accessories';
+  
+  this.debugEnabled = config.debug||false; 
+  debug.enabled = this.debugEnabled;  
+  this.debug = debug;
   
   if (api) {
   
@@ -127,6 +130,7 @@ FritzPlatform.prototype = {
         polling: this.config.polling,
         timeout: this.config.timeout,
         clearCache: this.config.clearCache,
+        debug: this.config.debug
       };
       
       debug('Generating config...');
@@ -180,43 +184,39 @@ FritzPlatform.prototype = {
           password: this.masterDevice[0].password,
           type: this.masterDevice[0].type,
           mesh: this.masterDevice[0].mesh,
+          debug: this.config.debug,
           timeout: this.config.timeout * 1000
         };
         
-        let master = await this.checkMasterConfig(masterConfig);
+        this.TR064 = new api.TR064(masterConfig, this.logger);
+      
+        let TR064 = await this.TR064.initDevice();
+        this.device = await TR064.startEncryptedCommunication();
         
-        if(master){
-        
-          debug('Master device successfully confirmed');
+        debug('Master device successfully confirmed');
          
-          debug('Initializing SID handler');
-          this.sid = new SID(this);
+        debug('Initializing SID handler');
+        this.sid = new SID(this);
            
-          if(this.Config.getHosts()){
+        if(this.Config.getHosts()){
             
-            debug('Initializing host list');
-            this.hosts = new Hosts(this, masterConfig, this.device, this.config.devices, this.config);
+          debug('Initializing host list');
+          this.hosts = new Hosts(this, masterConfig, this.device, this.config.devices, this.config);
               
-            await timeout(1000);
+          await timeout(1000);
              
-          }
-            
-          if(this.Config.getSmartHome()){
-            
-            debug('Initializing smarthome list');
-            this.smarthome = new Smarthome(this, masterConfig, this.device);
-              
-            await timeout(1000);
-  
-          }
-          
-          this.masterConfig = masterConfig;
-          
-        } else {
-        
-          return this.logger.error('Can not confirm master device!');
-        
         }
+            
+        if(this.Config.getSmartHome()){
+            
+          debug('Initializing smarthome list');
+          this.smarthome = new Smarthome(this, masterConfig, this.device);
+              
+          await timeout(1000);
+  
+        }
+          
+        this.masterConfig = masterConfig;
       
       }
       
@@ -447,6 +447,7 @@ FritzPlatform.prototype = {
     
     accessory.context.polling = this.config.polling * 1000;
     accessory.context.timeout = this.config.timeout * 1000;
+    accessory.context.debug = this.config.debug||false;
 
     if(add){
       accessory.context.serial = object.serial;
@@ -640,49 +641,6 @@ FritzPlatform.prototype = {
 
       this.accessories = filteredAccessories;
 
-    }
-  
-  },
-  
-  checkMasterConfig: async function(masterConfig){
-  
-    try{
-    
-      this.TR064 = new api.TR064(masterConfig, this.logger);
-      
-      let TR064 = await this.TR064.initDevice();
-      this.device = await TR064.startEncryptedCommunication();
-    
-      return true;
-    
-      /*let info = this.device.services['urn:dslforum-org:service:WANCommonInterfaceConfig:1']; 
-      
-      if(info){
-      
-        info = await info.actions.GetCommonLinkProperties();
-        
-        debug(info)
-        
-        if(info.NewWANAccessType && info.NewWANAccessType !== 'Ethernet'){
-        
-          return true;
-        
-        } else {
-        
-          return false;
-        
-        }
-        
-      } else {
-      
-        return false;
-      
-      }*/
-    
-    } catch(err){
-    
-      throw err;
-    
     }
   
   }

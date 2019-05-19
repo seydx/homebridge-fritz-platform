@@ -556,7 +556,7 @@ class CallmonitorAccessory {
       
       this.historyService.addEntry({time: moment().unix(), status: state});
       
-      setTimeout(this.refreshHistory.bind(this), 5 * 60 * 1000);
+      setTimeout(this.refreshHistory.bind(this), 10 * 60 * 1000);
     
     } else {
 

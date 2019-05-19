@@ -28,6 +28,7 @@ class DeviceHandler {
       this.config.polling = this.config.polling||10;
       this.config.timeout = this.config.timeout||10;
       this.config.clearCache = this.config.clearCache||false;
+      this.config.debug = this.config.debug||false;
       
       this.config.devices = this.config.devices||{};
       this.config.smarthome = this.config.smarthome||{};
