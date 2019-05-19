@@ -88,9 +88,7 @@ class ExtrasAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
-      //this.debug(err);
-      
-      console.log(err)
+      this.debug(err);
     
     }
   
