@@ -5,6 +5,14 @@ If you have any problems with this plugin and you can not find a solution [here]
 **OR** you can also try do debug by yourself with following tools:
 
 
+## Config Debug
+
+Open your config.json and set debug to true
+
+```"debug":true```
+
+After this, restart homebridge and post the log in an issue
+
 ## Fritz!Platform Util
 
 - [Fritz!Platform Util](https://github.com/SeydX/fritzplatform-util)
