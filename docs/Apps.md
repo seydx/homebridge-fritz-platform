@@ -1,6 +1,6 @@
 # HomeKit Applications
 
-This plugin has been tested on **iOS 12** and **iOS 12.3 Beta** with the following HomeKit apps:
+This plugin has been tested on **iOS 12+** with the following HomeKit apps:
 
 - Apple's Home app (partial)
 - Nearly all 3rd party apps like Elgato Eve
