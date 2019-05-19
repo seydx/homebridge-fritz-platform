@@ -7,8 +7,12 @@
 **/
 
 'use strict';
-//process.env.UV_THREADPOOL_SIZE = 128;
+
+process.env.UV_THREADPOOL_SIZE = 128;
+
 module.exports = function (homebridge) {
+
   let FritzPlatform = require('./src/platform.js')(homebridge);
   homebridge.registerPlatform('homebridge-fritz-platform', 'FritzPlatform', FritzPlatform, true);
+
 };
