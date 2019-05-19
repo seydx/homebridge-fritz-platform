@@ -157,7 +157,7 @@ class SmarthomeHandler {
       
       } else {
         
-        throw error
+        throw error;
       
       }
       
