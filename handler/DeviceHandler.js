@@ -28,7 +28,7 @@ class DeviceHandler {
       
         if (!this.mainService.testCharacteristic(Characteristic.IPAdd)){
          
-          this.logger.initinfo(this.accessory.displayName + ': Adding IP Characteristic');
+          this.logger.info(this.accessory.displayName + ': Adding IP Characteristic');
           this.mainService.addCharacteristic(Characteristic.IPAdd);
           
         }
@@ -37,7 +37,7 @@ class DeviceHandler {
           
           if (!this.mainService.testCharacteristic(Characteristic.Reconnect)){
            
-            this.logger.initinfo(this.accessory.displayName + ': Adding Reconnect Characteristic');
+            this.logger.info(this.accessory.displayName + ': Adding Reconnect Characteristic');
             this.mainService.addCharacteristic(Characteristic.Reconnect);
           
           }
@@ -59,7 +59,7 @@ class DeviceHandler {
         
         if (!this.mainService.testCharacteristic(Characteristic.WifiTwo)){
          
-          this.logger.initinfo(this.accessory.displayName + ': Adding WIFI 2.4Ghz Characteristic');
+          this.logger.info(this.accessory.displayName + ': Adding WIFI 2.4Ghz Characteristic');
           this.mainService.addCharacteristic(Characteristic.WifiTwo);
         
         }
