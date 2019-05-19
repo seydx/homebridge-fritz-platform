@@ -30,6 +30,8 @@ Among other things, **homebridge-fritz-platform** allows the switching of all WL
 [![npm](https://img.shields.io/npm/dt/homebridge-fritz-platform.svg?style=flat-square)](https://www.npmjs.com/package/homebridge-fritz-platform)
 [![GitHub last commit](https://img.shields.io/github/last-commit/SeydX/homebridge-fritz-platform.svg?style=flat-square)](https://github.com/SeydX/homebridge-fritz-platform)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square&maxAge=2592000)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NP4T3KASWQLD8)
+[![Slack Status](https://img.shields.io/badge/Slack-Join-red.svg)](https://join.slack.com/t/hbfritzplatform/shared_invite/enQtNjM5OTYzNTMzNDI0LTJjOTRlZTM2ODAzYmJhYzI2MGUzYjIzOTc1ZGNhNzg3YzRiZWFmNTcyNDczM2QwNGViOWQwNGM1Y2NkZjllODE)
+
 
 **Creating and maintaining Homebridge plugins consume a lot of time and effort, if you would like to share your appreciation, feel free to "Star" or donate.**
 
