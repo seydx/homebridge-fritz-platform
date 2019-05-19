@@ -109,8 +109,7 @@ class DeviceAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
-      //this.debug(err);
-      console.log(err)
+      this.debug(err);
     
     }
   
@@ -249,8 +248,7 @@ class DeviceAccessory {
     } catch(err) {
     
       this.logger.info(this.accessory.displayName + ': An error occured while initializing accessory services and characteristics!');
-      //this.debug(err);
-      console.log(err)
+      this.debug(err);
     
     }
 
