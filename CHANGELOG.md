@@ -1,7 +1,7 @@
 # Changelog
 
 
-## 4.0.0 - ???
+## 4.0.0 - 2019-05-19
 - Refactored code
 - Refactored API
 - Support async/await
