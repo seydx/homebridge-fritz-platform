@@ -7,10 +7,13 @@ If you want to start wol capable devices with this plugin, you have to put the M
 ## Example Config
 
 ```
-"wol": {
-  "Fernseher":"AA:00:BB:11:CC:ZZ",
-  "Computer":"BB:11:ZZ:33:OO:AA"
-}
+"wol": [
+  {
+    "active": true,
+    "name": "Fernseher",
+    "address": "04:5D:4B:0C:E3:47"
+  }
+],
 ```
 
 
@@ -19,6 +22,7 @@ If you want to start wol capable devices with this plugin, you have to put the M
 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
+| active | Activate/Deactivate accessory _(Default: false)_ |  |
 | name | Unique name for the accessory, eg Fernseher or Computer etc. | x |
 | mac adress | MAC adresse from the device | x |
 

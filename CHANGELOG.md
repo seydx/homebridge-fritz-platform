@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 4.0.0 - 2019-05-19
+- Refactored code
+- Refactored API
+- Support async/await
+- Add automatically all supported devices in network to config
+- Added own debug params (FritzPlatformApi,FritzPlatformTR064,FritzPlatformLUA)
+- Auto config generator/validator at start
+- Bugfixes
+
+
 ## 3.2.4 - 2019-04-26
 - Bugfix
 

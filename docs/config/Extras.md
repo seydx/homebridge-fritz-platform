@@ -107,8 +107,7 @@ If setted up in config.json, the plugin will create three custom characteristics
 ```
 "broadband": {
   "active": true,
-  "measureTime": 5,
-  "polling": 30
+  "measureTime": 5
 }
 ```
 

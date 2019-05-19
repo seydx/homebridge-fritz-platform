@@ -1,1987 +1,1305 @@
 'use strict';
 
 const HomeKitTypes = require('../types/types.js');
-const LogUtil = require('../../lib/LogUtil.js');
-const packageFile = require('../../package.json');
-const parseString = require('xml2js').parseString;
-const request = require('request');
-const moment = require('moment');
-const cheerio = require('cheerio');
-const querystring = require('querystring');
+const api = require('../../lib/TR064.js');
 const ccodes = require('../../lib/ccodes.js');
+const Inspector = require('../../handler/DeviceHandler.js');
+const LUA = require('../../lib/LUA.js');
+
+const https = require('https');
+const axios = require('axios');
+const parseString = require('xml2js').parseString;
+const moment = require('moment');
+const compareVersions = require('compare-versions');
 const speedTest = require('speedtest-net');
 const exec = require('child_process').exec;
+const store = require('json-fs-store');
+
 const c = new ccodes.CODES();
 
-var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory;
+var Characteristic;
 
-const pluginName = 'homebridge-fritz-platform';
-const platformName = 'FritzPlatform';
+class DeviceAccessory {
+  constructor (platform, accessory, device) {
 
-class Fritz_Box {
-  constructor (platform, parameter, publish) {
-
-    // HB
-    PlatformAccessory = platform.api.platformAccessory;
-    Accessory = platform.api.hap.Accessory;
-    Service = platform.api.hap.Service;
-    Characteristic = platform.api.hap.Characteristic;
-    UUIDGen = platform.api.hap.uuid;
+    Characteristic = platform.api.hap.Characteristic;    
     HomeKitTypes.registerWith(platform.api.hap);
 
     this.platform = platform;
     this.log = platform.log;
-    this.logger = new LogUtil(null, platform.log);
+    this.logger = platform.logger;
+    this.debug = platform.debug;
     this.api = platform.api;
     this.config = platform.config;
     this.accessories = platform.accessories;
-    this.polling = platform.polling;
-    this.timeout = platform.timeout;
-    this.delay = platform.delay;
     this.telegram = platform.telegram;
-    this.sendTelegram = platform.sendTelegram;
-    this.readOnlySwitches = platform.readOnlySwitches;
-    this.errorpoll = 60000;
-    this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
-    this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-    this.storage = require('node-persist');
-    this.storage.initSync({
-      dir: platform.HBpath
-    });
-
-    if(publish){
-      this.addAccessory(parameter);
+    this.validMAC = platform.validMAC;
+    this.validIP = platform.validIP;
+    this.configPath = platform.configPath;
+    this.telegram = platform.telegram;    
+    this.sid = platform.sid;
+    
+    this.accessory = accessory;
+    
+    if(device){
+    
+      this.logger.info(this.accessory.displayName + ': Successfully logged in!');
+    
+      this.device = device;
+      this.getFirmware();
+    
     } else {
-      this.getService(parameter);
+    
+      this.initAPI();
+    
     }
 
   }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Add Accessories
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  addAccessory (parameter) {
-    const self = this;
-    let name = parameter.name;
-    let deviceType = Accessory.Categories.SWITCH;
-    let accessoryType = Service.Switch;
-
-    this.logger.initinfo('Publishing new accessory: ' + name);
-
-    let accessory = this.accessories[name];
-    const uuid = UUIDGen.generate(name);
-
-    accessory = new PlatformAccessory(name, uuid, deviceType);
-    accessory.addService(accessoryType, name);
-
-    // Setting reachable to true
-    accessory.reachable = true;
-    accessory.context = {};
-
-    accessory.context.devices = parameter.devices;
-    accessory.context.polling = self.polling;
-    accessory.context.delay = self.delay;
-    accessory.context.telegram = self.telegram;
-    accessory.context.lastState = false;
-    accessory.context.type = parameter.type;
-    accessory.context.alarm = parameter.alarm;
-    accessory.context.wakeup = parameter.wakeup;
-    accessory.context.boxType = parameter.boxType;
-    accessory.context.wifi2 = parameter.wifi2;
-    accessory.context.wifi5 = parameter.wifi5;
-    accessory.context.wifiGuest = parameter.wifiGuest;
-    accessory.context.wps = parameter.wps;
-    accessory.context.phoneBook = parameter.phoneBook;
-    accessory.context.aw = parameter.aw;
-    accessory.context.deflection = parameter.deflection;
-    accessory.context.led = parameter.led;
-    accessory.context.lock = parameter.lock;
-    accessory.context.ringlock = parameter.ringlock;
-    accessory.context.broadband = parameter.broadband;
-    accessory.context.beta = parameter.beta;
-    accessory.context.extReboot = parameter.extReboot;
-    accessory.context.mesh = parameter.mesh;
-    accessory.context.master = parameter.master;
-
-    //AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, parameter.boxType)
-      .setCharacteristic(Characteristic.SerialNumber, 'B-1234567890')
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    /// Publish
-    this.platform.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
-
-    // Cache
-    this.accessories[name] = accessory;
-
-    self.getService(accessory);
-
+  
+  async initAPI(){
+  
+    try {
+  
+      this.logger.info(this.accessory.displayName + ': Initializing API');
+    
+      this.TR064 = new api.TR064(this.accessory.context, this.logger);
+        
+      let TR064 = await this.TR064.initDevice();
+      
+      this.device = await TR064.startEncryptedCommunication();
+      
+      this.logger.info(this.accessory.displayName + ': Successfully logged in!');
+      
+      this.getFirmware();
+    
+    } catch(err) {
+    
+      this.logger.error(this.accessory.displayName + ': An error occured while initializing API!');
+      this.logger.error(this.accessory.displayName + ': Please check your credentials and try again with restarting homebridge!');
+      this.debug(err);
+    
+    }
+  
+  }
+  
+  async getFirmware(){
+  
+    try {
+    
+      let fw = this.device.services['urn:dslforum-org:service:UserInterface:1'];      
+      fw = await fw.actions['X_AVM-DE_GetInfo']();
+      
+      fw = fw['NewX_AVM-DE_CurrentFwVersion'].split('-')[0].split('.'); 
+      fw[0] = '1';
+      
+      this.fw = fw.toString().replace(/,/g,'.');
+      
+      if(compareVersions(this.fw, '1.07.08') < 0){
+        
+        this.accessory.context.oldFW = true;
+     
+      } else {
+       
+        this.accessory.context.oldFW = false;
+     
+      }
+      
+      this.getService();
+    
+    } catch(err){
+    
+      this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
+      this.debug(err);
+    
+    }
+  
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService (accessory) {
-    const self = this;
-
-    //Refresh AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, accessory.context.boxType)
-      .setCharacteristic(Characteristic.SerialNumber, 'B-1234567890')
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    accessory.on('identify', function (paired, callback) {
-      self.logger.info(accessory.displayName + ': Hi!');
-      callback();
-    });
-
-    let service = accessory.getService(Service.Switch);
-
-    service.getCharacteristic(Characteristic.On)
-      .updateValue(accessory.context.lastState)
-      .on('set', self.setState.bind(this, accessory, service));
-
-    if(accessory.context.wifi2){
-      if (!service.testCharacteristic(Characteristic.WifiTwo)){
-        self.logger.initinfo('Adding WIFI 2.4Ghz Characteristic to ' + accessory.displayName);
-        accessory.context.lastWifi2State = false;
-        service.addCharacteristic(Characteristic.WifiTwo);
+  async getService(){
+  
+    this.lua = new LUA(this.platform, this.accessory.context, this.sid);
+  
+    try {
+    
+      this.debug(this.accessory.displayName + ': Inspecting Characteristics and Services...');
+    
+      let inspector = new Inspector(this.platform, this.accessory, this.device);
+      this.mainService = await inspector.inspectCharacteristics();
+      
+      this.debug(this.accessory.displayName + ': Inspecting Characteristics and Services finished!');
+      
+      if(!this.accessory.context.readOnly || (this.accessory.context.extras && this.accessory.context.extras.extReboot))
+        this.mainService.getCharacteristic(Characteristic.On)
+          .on('set', this.setState.bind(this));
+      
+      if((!Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2) || 
+      (Array.isArray(this.accessory.context.options.wifi2) && this.accessory.context.options.wifi2[0]))
+        this.mainService.getCharacteristic(Characteristic.WifiTwo)
+          .on('set', this.setWifi.bind(this, 1))
+          .on('get', this.getWifi.bind(this, 1));
+          
+      if((!Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5) || 
+      (Array.isArray(this.accessory.context.options.wifi5) && this.accessory.context.options.wifi5[0]) && 
+      this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
+      
+        this.mainService.getCharacteristic(Characteristic.WifiFive)
+          .on('set', this.setWifi.bind(this, 2))
+          .on('get', this.getWifi.bind(this, 2));
+      
       }
-      service.getCharacteristic(Characteristic.WifiTwo)
-        .updateValue(accessory.context.lastWifi2State)
-        .on('set', self.setWifi.bind(this, accessory, service,1));
-      this.getWifi(accessory,service,1);
-    } else {
-      if(service.testCharacteristic(Characteristic.WifiTwo)){
-        self.logger.initinfo('Removing WIFI 2.4Ghz from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiTwo));
-        accessory.context.lastWifi2State = false;
+          
+      if((!Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest) || 
+      (Array.isArray(this.accessory.context.options.wifiGuest) && this.accessory.context.options.wifiGuest[0])){
+      
+        let type = this.device.services['urn:dslforum-org:service:WLANConfiguration:3'] ? 3 : 2;
+      
+        this.mainService.getCharacteristic(Characteristic.WifiGuest)
+          .on('set', this.setWifi.bind(this, type))
+          .on('get', this.getWifi.bind(this, type));
+      
       }
-    } 
+          
+      if((!Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps) || 
+      (Array.isArray(this.accessory.context.options.wps) && this.accessory.context.options.wps[0]))
+        this.mainService.getCharacteristic(Characteristic.WifiWPS)
+          .on('set', this.setWPS.bind(this))
+          .on('get', this.getWPS.bind(this));
+          
+      if((!Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led) || 
+      (Array.isArray(this.accessory.context.options.led) && this.accessory.context.options.led[0]))
+        this.mainService.getCharacteristic(Characteristic.DeviceLED)
+          .on('set', this.setDeviceLED.bind(this))
+          .on('get', this.getDeviceLED.bind(this));
+          
+      if(this.accessory.context.type !== 'repeater'){          
+       
+        this.mainService.getCharacteristic(Characteristic.IPAdd)
+          .on('get', this.getIP.bind(this));
+       
+        if(this.accessory.context.options.reconnect)
+          this.mainService.getCharacteristic(Characteristic.Reconnect)
+            .on('set', this.setReconnect.bind(this))
+            .on('get', callback => callback(null, false))
+            .updateValue(false);
+      
+      }
+          
+      if(this.accessory.context.master){
+      
+        if(this.accessory.context.options.phoneBook){
+          
+          this.mainService.getCharacteristic(Characteristic.PhoneBook)
+            .on('set', this.setPhoneBook.bind(this))
+            .on('get', callback => callback(null, false))
+            .updateValue(false);
+            
+          this.mainService.getCharacteristic(Characteristic.PhoneBook)
+            .setValue(true);
+            
+        }
+      
+        if((!Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock) || 
+        (Array.isArray(this.accessory.context.options.lock) && this.accessory.context.options.lock[0]))
+          this.mainService.getCharacteristic(Characteristic.DeviceLock)
+            .on('set', this.setDeviceLock.bind(this))
+            .on('get', this.getDeviceLock.bind(this));
+            
+        if((!Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw) || 
+        (Array.isArray(this.accessory.context.options.aw) && this.accessory.context.options.aw[0]))
+          this.mainService.getCharacteristic(Characteristic.AnsweringMachine)
+            .on('set', this.setAW.bind(this))
+            .on('get', this.getAW.bind(this));
+            
+        if(this.accessory.context.extras.ringlock)
+          this.mainService.getCharacteristic(Characteristic.RingLock)
+            .on('set', this.setRingLock.bind(this))
+            .on('get', this.getRingLock.bind(this));
+            
+        if(this.accessory.context.extras.alarm)
+          this.mainService.getCharacteristic(Characteristic.DialAlarm)
+            .on('set', this.setAlarm.bind(this))
+            .on('get', callback => callback(null, false))
+            .updateValue(false);
+            
+        if((!Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection) || 
+        (Array.isArray(this.accessory.context.options.deflection) && this.accessory.context.options.deflection[0]))
+          this.mainService.getCharacteristic(Characteristic.Deflection)
+            .on('set', this.setDeflection.bind(this))
+            .on('get', this.getDeflection.bind(this));
+            
+        if(this.accessory.context.extras.wakeup)
+          this.mainService.getCharacteristic(Characteristic.WakeUp)
+            .on('set', this.setWakeUp.bind(this))
+            .on('get', callback => callback(null, false))
+            .updateValue(false);
+            
+        if(this.accessory.context.extras.broadband)       
+          this.mainService.getCharacteristic(Characteristic.Download)
+            .on('get', this.getBroadband.bind(this));
 
-    if(accessory.context.wifi5){
-      let device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i]; 
-        }
-      } 
-      if(device.services['urn:dslforum-org:service:WLANConfiguration:3']){
-        if (!service.testCharacteristic(Characteristic.WifiFive)){
-          self.logger.initinfo('Adding WIFI 5Ghz Characteristic to ' + accessory.displayName);
-          accessory.context.lastWifi5State = false;
-          service.addCharacteristic(Characteristic.WifiFive);
-        }
-        service.getCharacteristic(Characteristic.WifiFive)
-          .updateValue(accessory.context.lastWifi5State)
-          .on('set', self.setWifi.bind(this, accessory, service,2));
-        this.getWifi(accessory,service,2);
+      }
+      
+      this.getState();
+    
+    } catch(err) {
+    
+      this.logger.info(this.accessory.displayName + ': An error occured while initializing accessory services and characteristics!');
+      this.debug(err);
+    
+    }
+
+  }
+  
+  async getState(){
+  
+    let state;
+  
+    try {
+    
+      if(this.accessory.context.type === 'dsl'){
+      
+        let status = this.device.services['urn:dslforum-org:service:WANPPPConnection:1']; 
+          
+        status = await status.actions.GetInfo();
+        
+        state = status.NewConnectionStatus === 'Connected' ? true : false;
+      
+      } else if(this.accessory.context.type === 'cable'){
+      
+        let status = this.device.services['urn:dslforum-org:service:WANIPConnection:1']; 
+          
+        status = await status.actions.GetInfo();
+        
+        state = status.NewConnectionStatus === 'Connected' ? true : false;
+      
+      } else { //repeater
+      
+        let wifi = this.device.services['urn:dslforum-org:service:WLANConfiguration:1']; 
+        
+        wifi = await wifi.actions.GetInfo();
+      
+        state = parseInt(wifi.NewEnable) ? true : false;   
+      
       }  
-    } else {
-      if(service.testCharacteristic(Characteristic.WifiFive)){
-        self.logger.initinfo('Removing WIFI 5Ghz from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiFive));
-        accessory.context.lastWifi5State = false;
-      }
-    } 
 
-    if(accessory.context.wifiGuest){
-      let device, wifitype;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i]; 
-        }
-      } 
-      device.services['urn:dslforum-org:service:WLANConfiguration:3']?wifitype=3:wifitype=2; 
-      if (!service.testCharacteristic(Characteristic.WifiGuest)){
-        self.logger.initinfo('Adding WIFI Guest Characteristic to ' + accessory.displayName);
-        accessory.context.lastWifiGuestState = false;
-        service.addCharacteristic(Characteristic.WifiGuest);
-      }
-      service.getCharacteristic(Characteristic.WifiGuest)
-        .updateValue(accessory.context.lastWifiGuestState)
-        .on('set', self.setWifi.bind(this, accessory, service, wifitype));
-      this.getWifi(accessory,service,wifitype);
-    } else {
-      if(service.testCharacteristic(Characteristic.WifiGuest)){
-        self.logger.initinfo('Removing WIFI Guest from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiGuest));
-        accessory.context.lastWifiGuestState = false;
-      }
-    } 
+    } catch(err) {
 
-    //LED with beta profile
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of device!');
+      this.debug(err);
 
-    if(accessory.context.led){
-      if (!service.testCharacteristic(Characteristic.DeviceLED)){
-        self.logger.initinfo('Adding LED Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.DeviceLED);
-        accessory.context.lastLEDState = false;
-      }
-      if(accessory.context.beta)self.logger.info('Configuring Device LED for beta firmware...');
-      service.getCharacteristic(Characteristic.DeviceLED)
-        .updateValue(accessory.context.lastLEDState)
-        .on('set', accessory.context.beta?self.setDeviceLEDbeta.bind(this, accessory, service):self.setDeviceLED.bind(this, accessory, service));
-      accessory.context.beta?this.checkDeviceLEDbeta(accessory,service):this.checkDeviceLED(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.DeviceLED)){
-        self.logger.initinfo('Removing LED from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.DeviceLED));
-      }
-    }
-
-    if(accessory.context.lock){
-      if (!service.testCharacteristic(Characteristic.DeviceLock)){
-        self.logger.initinfo('Adding Device Lock Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.DeviceLock);
-        accessory.context.lastDeviceLock = false;
-      }
-      service.getCharacteristic(Characteristic.DeviceLock)
-        .updateValue(accessory.context.lastDeviceLock)
-        .on('set', self.setDeviceLock.bind(this, accessory, service));
-      this.checkDeviceLock(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.DeviceLock)){
-        self.logger.initinfo('Removing Device Lock from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.DeviceLock));
-      }
-    }
-
-    if(accessory.context.ringlock&&accessory.context.ringlock.active&&accessory.context.ringlock.DECTphones){
-      if (!service.testCharacteristic(Characteristic.RingLock)){
-        self.logger.initinfo('Adding Ring Lock Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.RingLock);
-        accessory.context.lastRingLock = false;
-      }
-      service.getCharacteristic(Characteristic.RingLock)
-        .updateValue(accessory.context.lastRingLock)
-        .on('set', self.setRingLock.bind(this, accessory, service));
-      this.checkRingLock(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.RingLock)){
-        self.logger.initinfo('Removing Ring Lock from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.RingLock));
-      }
-    }
+    } finally {
     
-    if(accessory.context.extReboot&&accessory.context.extReboot.active&&accessory.context.extReboot.cmdOn&&accessory.context.extReboot.cmdOff){
-      if (!service.testCharacteristic(Characteristic.ExtReboot)){
-        self.logger.initinfo('Adding Extended Reboot Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.ExtReboot);
-      }
-      service.getCharacteristic(Characteristic.ExtReboot)
-        .updateValue(false)
-        .on('set', self.setExtReboot.bind(this, accessory, service));
-    } else {
-      if(service.testCharacteristic(Characteristic.ExtReboot)){
-        self.logger.initinfo('Removing Extended Reboot from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.ExtReboot));
-      }
+      setTimeout(this.getState.bind(this), this.accessory.context.polling);
+      
+      this.mainService.getCharacteristic(Characteristic.On)
+        .updateValue(state);
+   
     }
-
-    if(accessory.context.phoneBook){
-      if (!service.testCharacteristic(Characteristic.PhoneBook)){
-        self.logger.initinfo('Adding PhoneBook Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.PhoneBook);
-      }
-      service.getCharacteristic(Characteristic.PhoneBook)
-        .updateValue(false)
-        .on('set', self.setPhoneBook.bind(this, accessory, service));
-      this.refreshPhoneBook(accessory, service);
-    } else {
-      if(service.testCharacteristic(Characteristic.PhoneBook)){
-        self.logger.initinfo('Removing PhoneBook from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.PhoneBook));
-      }
-    }
-
-    if(accessory.context.alarm&&accessory.context.alarm.active&&accessory.context.alarm.telNr){
-      if (!service.testCharacteristic(Characteristic.DialAlarm)){
-        self.logger.initinfo('Adding Alarm Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.DialAlarm);
-      }
-      accessory.context.alarm.duration=accessory.context.alarm.duration?accessory.context.alarm.duration:30;
-      service.getCharacteristic(Characteristic.DialAlarm)
-        .updateValue(false)
-        .on('set', self.setAlarm.bind(this, accessory, service));
-    } else {
-      if(service.testCharacteristic(Characteristic.DialAlarm)){
-        self.logger.initinfo('Removing Alarm from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.DialAlarm));
-      }
-    } 
-
-    if(accessory.context.wps){
-      if (!service.testCharacteristic(Characteristic.WifiWPS)){
-        self.logger.initinfo('Adding WIFI WPS Characteristic to ' + accessory.displayName);
-        accessory.context.lastWifiWPSState = false;
-        service.addCharacteristic(Characteristic.WifiWPS);
-      }
-      service.getCharacteristic(Characteristic.WifiWPS)
-        .updateValue(accessory.context.lastWifiWPSState)
-        .on('set', self.setWifiWPS.bind(this, accessory, service));
-      this.checkWifiWPS(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.WifiWPS)){
-        self.logger.initinfo('Removing WIFI WPS from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.WifiWPS));
-      }
-    }
-
-    if(accessory.context.aw){
-      if (!service.testCharacteristic(Characteristic.AnsweringMachine)){
-        self.logger.initinfo('Adding Answering Machine Characteristic to ' + accessory.displayName);
-        accessory.context.lastAWState = false;
-        service.addCharacteristic(Characteristic.AnsweringMachine);
-      } 
-      service.getCharacteristic(Characteristic.AnsweringMachine)
-        .updateValue(accessory.context.lastAWState)
-        .on('set', self.setAW.bind(this, accessory, service));
-      this.checkAW(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.AnsweringMachine)){
-        self.logger.initinfo('Removing Answering Machine from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.AnsweringMachine));
-      }
-    }
-
-    if(accessory.context.deflection){
-      if (!service.testCharacteristic(Characteristic.Deflection)){
-        self.logger.initinfo('Adding Deflection Characteristic to ' + accessory.displayName);
-        service.addCharacteristic(Characteristic.Deflection);
-        accessory.context.lastDeflectionState = false;
-      }
-      service.getCharacteristic(Characteristic.Deflection)
-        .updateValue(accessory.context.lastDeflectionState)
-        .on('set', self.setDeflection.bind(this, accessory, service));
-      this.checkDeflection(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.Deflection)){
-        self.logger.initinfo('Removing Deflection from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.Deflection));
-      }
-    }
-
-    if(accessory.context.wakeup&&accessory.context.wakeup.active&&accessory.context.wakeup.internNr){
-      if (!service.testCharacteristic(Characteristic.WakeUp)){
-        self.logger.initinfo('Adding WakeUp Characteristic to ' + accessory.displayName); 
-        service.addCharacteristic(Characteristic.WakeUp);
-      } 
-      accessory.context.wakeup.duration=accessory.context.wakeup.duration?accessory.context.wakeup.duration:60;
-      service.getCharacteristic(Characteristic.WakeUp)
-        .updateValue(false)
-        .on('set', self.setWakeUp.bind(this, accessory, service));
-    } else {
-      if(service.testCharacteristic(Characteristic.WakeUp)){
-        self.logger.initinfo('Removing WakeUp from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.WakeUp));
-      }
-    }
-    
-    if(accessory.context.broadband){
-      if (!service.testCharacteristic(Characteristic.Download)){
-        self.logger.initinfo('Adding Download Characteristic to ' + accessory.displayName); 
-        service.addCharacteristic(Characteristic.Download);
-      } 
-      if (!service.testCharacteristic(Characteristic.Upload)){
-        self.logger.initinfo('Adding Upload Characteristic to ' + accessory.displayName); 
-        service.addCharacteristic(Characteristic.Upload);
-      } 
-      if (!service.testCharacteristic(Characteristic.Ping)){
-        self.logger.initinfo('Adding Ping Characteristic to ' + accessory.displayName); 
-        service.addCharacteristic(Characteristic.Ping);
-      } 
-      accessory.context.lastDL = 0;
-      accessory.context.lastUL = 0;
-      accessory.context.lastPing = 0;
-      accessory.context.broadband.measureTime=accessory.context.broadband.measureTime?accessory.context.broadband.measureTime:5;
-      accessory.context.broadband.polling=accessory.context.broadband.polling?accessory.context.broadband.polling:30;
-      service.getCharacteristic(Characteristic.Download)
-        .updateValue(accessory.context.lastDL);
-      service.getCharacteristic(Characteristic.Upload)
-        .updateValue(accessory.context.lastUL);
-      service.getCharacteristic(Characteristic.Ping)
-        .updateValue(accessory.context.lastPing);
-      self.checkBroadband(accessory,service);
-    } else {
-      if(service.testCharacteristic(Characteristic.Download)){
-        self.logger.initinfo('Removing Download from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.Download));
-      }
-      if(service.testCharacteristic(Characteristic.Upload)){
-        self.logger.initinfo('Removing Upload from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.Upload));
-      }
-      if(service.testCharacteristic(Characteristic.Ping)){
-        self.logger.initinfo('Removing Ping from ' + accessory.displayName);
-        service.removeCharacteristic(service.getCharacteristic(Characteristic.Ping));
-      }
-    }
-
-    this.getState(accessory,service);
-
+  
   }
+  
+  async setState(state,callback){
+  
+    try {
+    
+      let status = this.device.services['urn:dslforum-org:service:DeviceConfig:1'];
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Devices
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+      if(!(this.accessory.context.extras && this.accessory.context.extras.extReboot)){
+        
+        this.logger.info(this.accessory.displayName + ': Start Reboot'); 
+        
+        await status.actions.Reboot();
 
-  getState(accessory,service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let box, device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i]; 
-        }
-      }
-      if(accessory.context.boxType == 'dsl' || accessory.context.boxType == 'cable'){
-        if(accessory.context.boxType == 'dsl'){
-          box = device.services['urn:dslforum-org:service:WANPPPConnection:1'];
-        } else {
-          box = device.services['urn:dslforum-org:service:WANIPConnection:1'];
-        }
-        box.actions.GetInfo(null,{name:accessory.displayName + ' GetState', count:0},function(err, result) {
-          if(!err){
-            result.NewConnectionStatus=='Connected' ? accessory.context.lastState = true : accessory.context.lastState = false;
-            setTimeout(function(){
-              self.getState(accessory, service);
-            }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          } else {
-            if(err.ping){
-              self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-              setTimeout(function(){
-                self.getState(accessory, service);
-              }, self.errorpoll);
-            } else {
-              self.logger.errorinfo(accessory.displayName + ': An error occured while getting device state, trying again...');
-              self.logger.errorinfo(JSON.stringify(err,null,4));
-              setTimeout(function(){
-                self.getState(accessory, service);
-              }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-            }
-          }
-          service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastState);
-        });
       } else {
-        box = device.services['urn:dslforum-org:service:WLANConfiguration:1'];
-        box.actions.GetInfo(null,{name:accessory.displayName + ' WIFI1', count:0},function(err, result) {
-          if(!err){
-            if(result.NewStatus == 'Up' && result.NewEnable == '1'){
-              accessory.context.lastState = true;
-              service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastState);
-              setTimeout(function(){
-                self.getState(accessory, service);
-              }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-            } else {
-              if(device.services['urn:dslforum-org:service:WLANConfiguration:3']){
-                box = device.services['urn:dslforum-org:service:WLANConfiguration:2'];
-                box.actions.GetInfo(null,{name:accessory.displayName + ' WIFI2', count:0},function(errNew, resultNew){
-                  if(!errNew){
-                    if(resultNew.NewStatus == 'Up' && resultNew.NewEnable == '1'){
-                      accessory.context.lastState = true;
-                    } else {
-                      accessory.context.lastState = false;
-                    }
-                    setTimeout(function(){
-                      self.getState(accessory, service);
-                    }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-                  } else {
-                    if(err.ping){
-                      self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-                      setTimeout(function(){
-                        self.getState(accessory, service);
-                      }, self.errorpoll);
-                    } else {
-                      self.logger.errorinfo(accessory.displayName + ': An error occured while getting device state!');
-                      self.logger.errorinfo(JSON.stringify(err,null,4));
-                      setTimeout(function(){
-                        self.getState(accessory, service);
-                      }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-                    }
-                  }
-                  service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastState);
-                });
-              } else {
-                accessory.context.lastState = false;
-                service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastState);
-                setTimeout(function(){
-                  self.getState(accessory, service);
-                }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
+      
+        await this.initReboot(this.accessory.context.extras.extReboot.cmdOn);
+        
+        this.logger.info(this.accessory.displayName + ': Start successfully initialized.');
+        this.logger.info(this.accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
+          
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('extReboot', 'start')){
+                  
+            this.telegram.sendTelegram('extReboot', 'start');
+                    
+          }
+                
+        }
+          
+        setTimeout( async () => {
+          
+          try {
+          
+            await this.initReboot(this.accessory.context.extras.extReboot.cmdOff);
+              
+            this.logger.info(this.accessory.displayName + ': All homebridge instances were restarted!');
+            
+            if(this.telegram){
+                    
+              if(this.telegram.checkTelegram('extReboot', 'finish')){
+                      
+                this.telegram.sendTelegram('extReboot', 'finish');
+                        
               }
+                    
             }
-          } else {
-            if(err.ping){
-              self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-              setTimeout(function(){
-                self.getState(accessory, service);
-              }, self.errorpoll);
-            } else {
-              self.logger.errorinfo(accessory.displayName + ': An error occured while getting device state!');
-              self.logger.errorinfo(JSON.stringify(err,null,4));
-              setTimeout(function(){
-                self.getState(accessory, service);
-              }, accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-            }
+          
+          } catch(err){
+          
+            this.logger.info(this.accessory.displayName + ': An error occured during finishing restart process!');
+            this.debug(err); 
+          
           }
-        });
+          
+        }, 5 * 60 * 1000);
+        
+        this.logger.info(this.accessory.displayName + ': Homebridge instances will be restarted automatically in 5 minutes!');
+        this.logger.info(this.accessory.displayName + ': Rebooting...'); 
+            
+        await status.actions.Reboot();
+      
       }
-    } else {
-      setTimeout(function(){self.getState(accessory,service);},5000);
-    }
-  }
+        
+    } catch(err) {
 
-  setState(accessory,service,state,callback){
-    const self = this;
-    if(!self.readOnlySwitches){
-      let box, device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i]; 
-        }
-      }
-      if(!state){
-        accessory.context.lastState = false;
-        box = device.services['urn:dslforum-org:service:DeviceConfig:1'];
-        box.actions.Reboot(null,{name:accessory.displayName + ' SetState', count:0},function() {
-          self.logger.info(accessory.displayName + ': Rebooting...'); 
-        });
-        accessory.context.lastState = false;
-        callback(null, state);
-      } else {
-        callback(null, state);
-      }
-    } else {
-      setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(state?false:true);},500);
-      callback(null, state?false:true);
-    }  
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new device state!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+
   }
   
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Extended Reboot
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+  initReboot(file){
   
-  setExtReboot(accessory,service,state,callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let reboot = device.services['urn:dslforum-org:service:DeviceConfig:1'];
-    if(state){
-      if(accessory.context.extReboot.cmdOn&&accessory.context.extReboot.cmdOff){
-        self.logger.info(accessory.displayName + ': Initialising reboot...');
-        exec(accessory.context.extReboot.cmdOn, function (error, stdout, stderr) {
-          if(!error){
-            if(stdout == 1){
-              self.logger.info(accessory.displayName + ': All homebridge instances were stopped! Preparing for reboot...');
-              reboot.actions.Reboot(null,{name:accessory.displayName + ' SetExtReboot',count:0},function() {
-                //Telegram Start
-                if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot&&self.telegram.extReboot.start){
-                  self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.extReboot.start); 
-                  self.logger.info(self.telegram.extReboot.start);
-                } else {
-                  self.logger.info('Network reboot started!');
+    return new Promise((resolve, reject) => {
+      
+      exec(file, (error, stdout, stderr) => {
+        
+        if(error && error.code > 0) return reject('Error with CMD: ' + error.cmd);
+        if(stderr) return reject(stderr);
+
+        resolve(true);
+     
+      });
+    
+    });
+  
+  }
+  
+  async setPhoneBook(state,callback){
+  
+    if(!state)
+      return callback();
+  
+    let telBook = {
+      id:'phonebook',
+      phonebook: []
+    };
+  
+    let country = ( this.config.callmonitor && this.config.callmonitor.country ) ? this.config.callmonitor.country : false;
+  
+    try {
+
+      let phonebook = this.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
+      
+      let books = await phonebook.actions.GetPhonebookList();
+      books = books.NewPhonebookList.split(',');
+      
+      if(!Array.isArray(books))
+        books = [books];
+      
+      this.logger.info(this.accessory.displayName + ':Found ' + books.length + ' book(s). Fetching entries...');
+      
+      for(const id of books){
+      
+        let bookUrl = await phonebook.actions.GetPhonebook([{name:'NewPhonebookID',value:id}]);
+    
+        let opt = {
+          url: bookUrl.NewPhonebookURL,
+          method: 'GET',
+          httpsAgent: new https.Agent({
+            rejectUnauthorized: false
+          })
+        };
+        
+        let body = await axios(opt);
+        let data = await this.xml2json(body.data);
+        
+        let contacts = data.phonebooks.phonebook[0].contact;
+        
+        if(contacts){
+                
+          for(const contact of contacts){
+        
+            let numbers = contact.telephony ? contact.telephony[0].number : false;
+          
+            if(numbers){
+                  
+              if(numbers.length){
+                   
+                for(const number of numbers){
+            
+                  let telnr = number._;
+              
+                  telnr = telnr.replace(/\s/g, '');
+                  
+                  if(country){      
+                  
+                    let nr = '+' + c.getCode(country);
+                    let nr2 = '00' + c.getCode(country);
+                  
+                    if(telnr.includes(nr) || telnr.includes(nr2)){
+                  
+                      telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
+               
+                    } else {
+                  
+                      telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
+                
+                    }
+                
+                  } else {
+                
+                    telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
+                
+                  }
+                
+                  telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
+
                 }
-                self.logger.info(accessory.displayName + ': Homebridge instances will be restarted automatically in 5 minutes!');
-                self.logger.info(accessory.displayName + ': Rebooting...'); 
-                exec(accessory.context.extReboot.cmdOff, function (error, stdout, stderr) {
-                  if(!error){
-                    self.logger.info(accessory.displayName + ': All homebridge instances were restarted!');
-                  } else {
-                    self.logger.errorinfo(accessory.displayName + ': An error occured by executing the CMD OFF script! Please restart manually all your homebridge instances!');
-                    self.logger.errorinfo(stderr);
-                  }
-                });
-                //Telegram Finish
-                setTimeout(function(){
-                  if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.extReboot&&self.telegram.extReboot.finish){
-                    self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.extReboot.finish); 
-                    self.logger.info(self.telegram.extReboot.finish);
-                  } else {
-                    self.logger.info('Network reboot completed!');
-                  }
-                },5*60*1000);
-              });
-            } else {
-              self.logger.warninfo('Can not continue with rebooting! Please add \'echo 1\' at the end of your ON script!');
+            
+              } else {
+              
+                let nr = '+' + c.getCode(country);
+                let nr2 = '00' + c.getCode(country);
+                let telnr = numbers._;
+            
+                telnr = telnr.replace(/\s/g, '');
+                    
+                if(telnr.includes(nr) || telnr.includes(nr2)){
+                
+                  telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
+              
+                } else {
+                
+                  telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
+              
+                }
+              
+                telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
+            
+              }
+          
             }
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured by executing the CMD ON script!');
-            self.logger.errorinfo(stderr);
+           
           }
-        });
+        
+        } else {
+    
+          this.debug(this.accessory.displayName + ': Phonebook [' + id + '] does not contain any contacts. Skipping..');  
+    
+        }
+                
+        this.debug(this.accessory.displayName + ': Phone book [' + id + '] done.');
+      
       }
-    }
-    setTimeout(function(){service.getCharacteristic(Characteristic.ExtReboot).updateValue(false);},500);
-    callback(null, false);
-  }
+      
+      this.debug(this.accessory.displayName + ': Storing result...');
+      
+      await this.storeData(telBook);
+      
+      this.debug(this.accessory.displayName + ': ' + telBook.phonebook.length + ' contacts stored in cache (' + this.configPath + '/phonebook.json)');
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Broadband
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  
-  checkBroadband(accessory,service){
-    const self = this;
-    
-    for(const i in self.accessories){
-      self.accessories[i].context.stopPolling = true;
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while fetching phonebook!');
+      this.debug(err);
+
+    } finally {
+
+      setTimeout(() => {
+
+        this.mainService.getCharacteristic(Characteristic.PhoneBook)
+          .updateValue(false);
+
+      }, 500);
+
     }
     
-    self.logger.info('Stop polling because of bandwith measurement...');
+    callback();
+
+  }
+  
+  async getIP(callback){
+  
+    let state, status;
+  
+    try {
     
-    let speed = speedTest({maxTime: accessory.context.broadband.measureTime*1000});
-    self.logger.debug('Starting bandwith measurement...');
+      if(this.accessory.context.type === 'dsl'){
+      
+        status = this.device.services['urn:dslforum-org:service:WANPPPConnection:1']; 
+      
+      } else {
+      
+        status = this.device.services['urn:dslforum-org:service:WANIPConnection:1']; 
+      
+      }
+
+      let info = await status.actions.GetInfo();      
+      state = info.NewExternalIPAddress;
+      
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of wifi!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+
+  }
+  
+  async setReconnect(state, callback){
+
+    let status;
+  
+    try {
+    
+      if(this.accessory.context.type === 'dsl'){
+      
+        status = this.device.services['urn:dslforum-org:service:WANPPPConnection:1']; 
+      
+      } else {
+      
+        status = this.device.services['urn:dslforum-org:service:WANIPConnection:1']; 
+      
+      }
+      
+      if(state){
+      
+        this.logger.info(this.accessory.displayName + ': Reconnecting...');      
+        await status.actions.ForceTermination();
+      
+      }
+      
+    } catch(err) {
+
+      if(!(err.data && err.data.includes('DisconnectInProgress'))){
+      
+        this.logger.error(this.accessory.displayName + ': An error occured while reconnecting device!');
+        this.debug(err);
+
+      }
+
+    } finally {
+      
+      setTimeout(() => {
+      
+        this.mainService.getCharacteristic(Characteristic.Reconnect)
+          .updateValue(false);
+      
+      }, 500);
+      
+      callback();
+   
+    }
+  
+  }
+  
+  async setWifi(type,state,callback){
+  
+    try {
+
+      this.logger.info(this.accessory.displayName + ': WIFI ' + type + (state ? 'On' : 'Off'));
+
+      let wifi = this.device.services['urn:dslforum-org:service:WLANConfiguration:' + type.toString()]; 
+        
+      await wifi.actions.SetEnable([{name:'NewEnable', value: state ? '1' : '0'}]);
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new wifi state!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+
+  }
+  
+  async getWifi(type,callback){
+  
+    let state;
+  
+    try {
+
+      let wifi = this.device.services['urn:dslforum-org:service:WLANConfiguration:' + type.toString()]; 
+        
+      wifi = await wifi.actions.GetInfo();
+      
+      state = parseInt(wifi.NewEnable) ? true : false;     
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of wifi!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+
+  }
+  
+  async setWPS(state, callback){
+  
+    let status = state ? 'pbc' : 'stop';
+  
+    try {
+
+      this.logger.info(this.accessory.displayName + ': ' + (state ? 'WPS on for 2 minutes' : 'WPS Off'));
+
+      let wps = this.device.services['urn:dslforum-org:service:WLANConfiguration:1']; 
+              
+      await wps.actions['X_AVM-DE_SetWPSConfig']([{name:'NewX_AVM-DE_WPSMode', value:status},{name:'NewX_AVM-DE_WPSClientPIN',value:''}]);
+      
+      if(state)
+        setTimeout(() => { this.mainService.getCharacteristic(Characteristic.WifiWPS).setValue(false); }, 2 * 59 * 1000);
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new wps state!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getWPS(callback){
+  
+    let state;
+  
+    try {
+
+      let wps = this.device.services['urn:dslforum-org:service:WLANConfiguration:1'];         
+      
+      wps = await wps.actions['X_AVM-DE_GetWPSInfo']();
+      
+      state = wps['NewX_AVM-DE_WPSStatus'] === 'active' ? true : false;
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of wps!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  async setDeviceLED(state, callback){
+  
+    try {
+    
+      this.logger.info(this.accessory.displayName + ': Device LED ' + (state ? 'On' : 'Off'));
+      
+      if(!this.accessory.context.oldFW){
+        
+        await this.lua.requestLUA({
+          xhr: '1',
+          led_brightness: '2',
+          environment_light: 'on',
+          led_display: state ? '0' : '2',
+          apply: '',
+          sid: false,
+          page: 'led',
+        }, '/data.lua', this.device);
+        
+      } else {
+      
+        await this.lua.requestLUA({
+          xhr: '1',
+          sid: false,
+          no_sidrenew: '',
+          led_display: state ? '0' : '2',
+          apply: '',
+          oldpage: '/system/led_display.lua'
+        }, '/system/led_display.lua', this.device);
+      
+      }
+      
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for device led!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getDeviceLED(callback){
+    
+    let data, state;
+  
+    try {
+    
+      if(!this.accessory.context.oldFW){
+      
+        data = await this.lua.requestLUA({
+          xhr: '1',
+          xhrId: 'all',
+          sid: false,
+          page: 'led'
+        }, '/data.lua', this.device);
+        
+        state = parseInt(data.data.led_display) ? false : true;
+        
+      } else {
+      
+        data = await this.lua.requestLUA({
+          sid: false
+        }, '/system/led_display.lua', this.device, 'led_display');
+        
+        state = !parseInt(data) ? true : false;
+        
+      }
+        
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of device led!');
+      //this.debug(err);
+      
+      this.debug(err);
+      
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  async setDeviceLock(state, callback){
+  
+    try {
+    
+      this.logger.info(this.accessory.displayName + ': Device Lock ' + (state ? 'On' : 'Off'));
+  
+      await this.lua.requestLUA({
+        xhr: '1',
+        keylock_enabled: state ? '1' : '0',
+        apply: '',
+        sid: false,
+        page: 'keyLo',
+      }, '/data.lua', this.device);
+     
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for device lock!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getDeviceLock(callback){
+    
+    let data, state;
+  
+    try {
+    
+      data = await this.lua.requestLUA({
+        xhr: '1',
+        xhrId: 'all',
+        sid: false,
+        page: 'keyLo'
+      }, '/data.lua', this.device);  
+ 
+      state = data.data.keylock_checked || false;
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of device lock!');
+      //this.debug(err);
+
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  async setAW(state, callback){
+  
+    try {
+  
+      this.logger.info(this.accessory.displayName + ': AW ' + (state ? 'On' : 'Off'));
+
+      let aw = this.device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1']; 
+        
+      await aw.actions.SetEnable([{name:'NewIndex', value:'0'},{name:'NewEnable', value:state?'1':'0'}]);
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for answering mashine!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getAW(callback){
+    
+    let state;
+  
+    try {
+    
+      let aw = this.device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1'];         
+      
+      aw = await aw.actions.GetInfo([{name:'NewIndex',value:'0'}]);
+      
+      state = parseInt(aw.NewEnable) ? true : false;
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of answering mashine!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  async setDeflection(state, callback){
+  
+    try {
+  
+      this.logger.info(this.accessory.displayName + ': Deflection ' + (state ? 'On' : 'Off'));
+
+      let deflection = this.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1']; 
+
+      let amountDeflection = await deflection.actions.GetNumberOfDeflections();
+      amountDeflection = parseInt(amountDeflection.NewNumberOfDeflections);
+      
+      if(amountDeflection){
+  
+        await deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0'}, {name:'NewEnable',value:state ? '1' : '0'}]);
+      
+      } else {
+  
+        this.logger.warn(this.accessory.displayName + ': Can not change deflection! No deflections setted up in FRITZ! settings');
+  
+      }
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for deflection');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getDeflection(callback){
+    
+    let state;
+  
+    try {
+    
+      let deflection = this.device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1']; 
+
+      let amountDeflection = await deflection.actions.GetNumberOfDeflections();
+      amountDeflection = parseInt(amountDeflection.NewNumberOfDeflections);
+      
+      if(amountDeflection){
+  
+        let getDeflection = await deflection.actions.GetDeflection([{name:'NewDeflectionId',value:'0'}]);
+  
+        state = parseInt(getDeflection.NewEnable) ? true : false;
+      
+      } else {
+  
+        state = false;
+  
+      }
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of deflection!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  async setWakeUp(state, callback){
+  
+    try {
+  
+      let wakeup = this.device.services['urn:dslforum-org:service:X_VoIP:1']; 
+      
+      if(state){
+      
+        this.logger.info(this.accessory.displayName + ': Wake Up - Dial (' + this.accessory.context.extras.wakeup.internNr + ')');
+      
+        await wakeup.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber', value: this.accessory.context.extras.wakeup.internNr}]);
+
+      } else {
+      
+        this.logger.info(this.accessory.displayName + ': Wake Up - Hangup (' + this.accessory.context.extras.wakeup.internNr + ')');
+      
+        await wakeup.actions['X_AVM-DE_DialHangup']();
+      
+      }
+      
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for wake up!');
+      this.debug(err);
+
+    } finally {
+    
+      setTimeout(() => {
+        
+        if(this.mainService.getCharacteristic(Characteristic.WakeUp).value)
+          this.mainService.getCharacteristic(Characteristic.WakeUp)
+            .setValue(false);
+      
+      },this.accessory.context.extras.wakeup.duration * 1000);
+      
+      callback(); 
+   
+    }
+  
+  }
+  
+  async setAlarm(state, callback){
+  
+    try {
+
+      let alarm = this.device.services['urn:dslforum-org:service:X_VoIP:1']; 
+      
+      if(state){
+      
+        this.logger.info(this.accessory.displayName + ': Alarm - Dial (' + this.accessory.context.extras.alarm.telNr + ')');
+        
+        await alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber', value: this.accessory.context.extras.alarm.telNr}]);
+        
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('alarm', 'activated')){
+                  
+            this.telegram.sendTelegram('alarm', 'activated');
+                    
+          }
+                
+        }
+     
+      } else {
+      
+        this.logger.info(this.accessory.displayName + ': Alarm - Hangup (' + this.accessory.context.extras.alarm.telNr + ')');
+      
+        await alarm.actions['X_AVM-DE_DialHangup']();
+        
+        if(this.telegram){
+                
+          if(this.telegram.checkTelegram('alarm', 'deactivated')){
+                  
+            this.telegram.sendTelegram('alarm', 'deactivated');
+                    
+          }
+                
+        }
+      
+      }
+      
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for alarm!');
+      this.debug(err);
+
+    } finally {
+    
+      setTimeout(() => {
+        
+        if(this.mainService.getCharacteristic(Characteristic.DialAlarm).value)
+          this.mainService.getCharacteristic(Characteristic.DialAlarm)
+            .setValue(false);
+     
+      },this.accessory.context.extras.alarm.duration * 1000);
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async setRingLock(state, callback){
+  
+    let phonesFormData = [];
+    let dayForm;
+  
+    try {
+    
+      this.logger.info(this.accessory.displayName + ': Ring Lock ' + (state ? 'On' : 'Off'));
+      
+      let today = new Date();
+      let now = moment();
+      let hour = now.hour();
+      let minute = now.minute();
+      let endhour = now.add(12,'h');
+      let endminute = '00';
+
+      if(today.getDay() === 6 || today.getDay() === 0){
+        
+        dayForm = 'weekend';
+     
+      } else {
+        
+        dayForm = 'weekday';
+     
+      }
+   
+      if(this.accessory.context.extras.ringlock.start && this.accessory.context.extras.ringlock.end){
+      
+        let s = this.accessory.context.extras.ringlock.start.split(':');
+        let e = this.accessory.context.extras.ringlock.end.split(':');
+        
+        hour = s[0];
+        minute = s[1];
+        endhour = e[0];
+        endminute = e[1];
+     
+      } else {
+        
+        if(hour < 10 && hour >= 0)
+          hour = '0' + hour;
+
+        if(minute < 10 && minute >= 0)
+          minute = '0' + minute;
+        
+        if(endhour < 10 && endhour >= 0)
+          endhour = '0' + endhour;
+        
+      }
+      
+      for(let count = 1; count <= this.accessory.context.extras.ringlock.DECTphones ; count++){
+        
+        if(state){
+        
+          phonesFormData.push({
+            idx: count.toString(),
+            xhr: '1',
+            nightsetting: '1',
+            lockmode: '1',
+            lockday: dayForm,
+            starthh: hour.toString(),
+            startmm: minute.toString(),
+            endhh: endhour.toString(),
+            endmm: endminute.toString(),
+            event: 'on',
+            popup_url:'',
+            apply: '',
+            sid: false,
+            page:'edit_dect_ring_block'
+          });
+          
+        } else {
+        
+          phonesFormData.push({
+            idx: count.toString(),
+            xhr: '1',
+            popup_url:'',
+            apply: '',
+            sid: false,
+            page:'edit_dect_ring_block'
+          });
+        
+        }
+        
+      }
+      
+      for(const formdata of phonesFormData)
+        await this.lua.requestLUA(formdata, '/data.lua', this.device, 'nightsetting');  
+     
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new state for ring lock!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(); 
+   
+    }
+  
+  }
+  
+  async getRingLock(callback){
+    
+    let data, state;
+    let phonesFormData = [];
+    let actives = [];
+  
+    try {
+    
+      for(let count = 1; count <= this.accessory.context.extras.ringlock.DECTphones ; count++)
+        phonesFormData.push({
+          xhr: '1',
+          idx: count.toString(),
+          sid: false,
+          no_sidrenew: '',
+          popup_url: '',
+          oldpage: '/fon_devices/edit_dect_ring_block.lua'
+        });
+        
+      for(const formdata of phonesFormData){
+      
+        data = await this.lua.requestLUA(formdata, '/data.lua', this.device, 'nightsetting');  
+ 
+        actives.push(parseInt(data));
+      
+      }
+      
+      state = actives.includes(1) ? true : false;
+
+    } catch(err) {
+
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state of ring lock!');
+      this.debug(err);
+
+    } finally {
+    
+      callback(null, state); 
+   
+    }
+  
+  }
+  
+  getBroadband(callback){
+  
+    let speed = speedTest({maxTime: this.accessory.context.extras.broadband.measureTime * 1000});
+    
+    this.debug(this.accessory.displayName + ': Starting bandwith measurement');
+    
     speed.on('data', data => {
     
-      for(const i in self.accessories){
-        self.accessories[i].context.stopPolling = false;
-      }
+      let dl = (Math.round(data.speeds.download)).toString() + ' mb/s';
+      let ul = (Math.round(data.speeds.upload)).toString() + ' mb/s';
+      let pi = (Math.round(data.server.ping)).toString() + ' ms';
     
-      let dl = (Math.round(data.speeds.download)).toString()+' mb/s';
-      let ul = (Math.round(data.speeds.upload)).toString()+' mb/s';
-      let pi = (Math.round(data.server.ping)).toString()+' ms';
-    
-      self.logger.info('Download: ' + dl);
-      self.logger.info('Upload: ' + ul);
-      self.logger.info('Ping: ' + pi);
-    
-      accessory.context.lastDL = dl;
-      accessory.context.lastUL = ul;
-      accessory.context.lastPing = pi;
-      service.getCharacteristic(Characteristic.Download).updateValue(accessory.context.lastDL);
+      this.debug('Download: ' + dl);
+      this.debug('Upload: ' + ul);
+      this.debug('Ping: ' + pi);
       
-      service.getCharacteristic(Characteristic.Upload).updateValue(accessory.context.lastUL);
-      service.getCharacteristic(Characteristic.Ping).updateValue(accessory.context.lastPing);
+      this.mainService.getCharacteristic(Characteristic.Download)
+        .updateValue(dl);      
       
-      setTimeout(function(){
-        self.checkBroadband(accessory,service);
-      }, accessory.context.broadband.polling*60*1000);
+      this.mainService.getCharacteristic(Characteristic.Upload)
+        .updateValue(ul);
+      
+      this.mainService.getCharacteristic(Characteristic.Ping)
+        .updateValue(pi);
+        
     });
     
     speed.on('error', err => {
     
-      for(const i in self.accessories){
-        self.accessories[i].context.stopPolling = false;
-      }
+      this.logger.error(this.accessory.displayName + ': An error occured while getting state bandwidth!');
+      this.debug(err);
+      
+    }); 
+      
+    this.mainService.getCharacteristic(Characteristic.Upload)
+      .updateValue('Loading...');
+      
+    this.mainService.getCharacteristic(Characteristic.Ping)
+      .updateValue('Loading...');
     
-      self.logger.errorinfo(accessory.displayName + ': An error occured while measuring bandwith');
-      self.logger.errorinfo(err);
-      setTimeout(function(){
-        self.checkBroadband(accessory,service);
-      }, accessory.context.broadband.polling*60*1000);
-    });
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // WIFI
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  getWifi(accessory,service,type){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }
-      let wlan = device.services['urn:dslforum-org:service:WLANConfiguration:'+type]; 
-      wlan.actions.GetInfo(null,{name:accessory.displayName + ' GetWIFI'+type, count:0},function(err, result) {
-        if(!err){
-          if(result.NewEnable == '1'){
-            switch(type){
-              case 1:
-                accessory.context.lastWifiTwoState = true;
-                service.getCharacteristic(Characteristic.WifiTwo).updateValue(accessory.context.lastWifiTwoState);
-                break;
-              case 2:
-                if(device.services['urn:dslforum-org:service:WLANConfiguration:3']){
-                  accessory.context.lastWifiFiveState = true;
-                  service.getCharacteristic(Characteristic.WifiFive).updateValue(accessory.context.lastWifiFiveState);
-                } else {
-                  accessory.context.lastWifiGuestState = true;
-                  service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);
-                }
-                break;
-              case 3:
-                accessory.context.lastWifiGuestState = true;
-                service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);
-                break;
-              default:
-                self.logger.errorinfo('Cant recognize wifi type');
-            }
-          } else {
-            switch(type){
-              case 1:
-                accessory.context.lastWifiTwoState = false;
-                service.getCharacteristic(Characteristic.WifiTwo).updateValue(accessory.context.lastWifiTwoState);
-                break;
-              case 2:
-                if(device.services['urn:dslforum-org:service:WLANConfiguration:3']){
-                  accessory.context.lastWifiFiveState = false;
-                  service.getCharacteristic(Characteristic.WifiFive).updateValue(accessory.context.lastWifiFiveState);
-                } else {
-                  accessory.context.lastWifiGuestState = false;
-                  service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);
-                }
-                break;
-              case 3:
-                accessory.context.lastWifiGuestState = false;
-                service.getCharacteristic(Characteristic.WifiGuest).updateValue(accessory.context.lastWifiGuestState);
-                break;
-              default:
-                self.logger.errorinfo('Cant recognize wifi type');
-            }
-          }
-          setTimeout(function(){
-            self.getWifi(accessory,service,type); 
-          },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-            setTimeout(function(){
-              self.getWifi(accessory, service,type);
-            }, self.errorpoll);
-          } else {
-            let name;
-            if(type==1){
-              name = 'WIFI 2.4 GHz';
-            } else if(type == 2){
-              name = device.services['urn:dslforum-org:service:WLANConfiguration:3']?'WIFI 5 GHz':'WIFI Guest';
-            } else {
-              name = 'WIFI Guest';
-            }
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting ' + name + ' state!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-            setTimeout(function(){
-              self.getWifi(accessory,service,type); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        }
-      });
-    } else {
-      setTimeout(function(){self.getWifi(accessory,service,type);},5000);
-    }
-  }
- 
-  setWifi(accessory,service,type,state,callback){
-    const self = this;
-    let status;
-    state ? status = '1' : status = '0';
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let wlan = device.services['urn:dslforum-org:service:WLANConfiguration:'+type];
-    wlan.actions.SetEnable([{name:'NewEnable', value:status}],{name:accessory.displayName + ' SetWIFI'+type, count:0},function(err) {
-      if(!err){
-        switch(type){
-          case 1:
-            accessory.context.lastWifiTwoState = state;
-            state ? self.logger.info(accessory.displayName + ': Turning on WIFI 2.4 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 2.4 Ghz');
-            state = true;
-            break;
-          case 2:
-            if(device.services['urn:dslforum-org:service:WLANConfiguration:3']){
-              accessory.context.lastWifiFiveState = state;
-              state ? self.logger.info(accessory.displayName + ': Turning on WIFI 5 Ghz') : self.logger.info(accessory.displayName + ': Turning off WIFI 5 Ghz');
-            } else {
-              accessory.context.lastWifiGuestState = state;
-              state ? self.logger.info(accessory.displayName + ': Turning on WIFI Guest') : self.logger.info(accessory.displayName + ': Turning off WIFI Guest');
-            }
-            state = true;
-            break;
-          case 3:
-            accessory.context.lastWifiGuestState = state;
-            state ? self.logger.info(accessory.displayName + ': Turning on WIFI Guest') : self.logger.info(accessory.displayName + ': Turning off WIFI Guest');
-            state = true;
-            break;
-          default:
-            self.logger.info('Cant recognize wifi type');
-        }
-        callback(null, state);
-      } else {
-        let name;
-        if(type==1){
-          name = 'WIFI 2.4 GHz';
-        } else if(type == 2){
-          name = device.services['urn:dslforum-org:service:WLANConfiguration:3']?'WIFI 5 GHz':'WIFI Guest';
-        } else {
-          name = 'WIFI Guest';
-        }
-        if(err.ping){
-          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          callback(null, state?false:true);
-        } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured while setting ' + name + ' state!');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
-          callback(null, state?false:true);
-        }
-      }
-    });
-  }
-
-  checkWifiWPS(accessory, service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }
-      let wlan = device.services['urn:dslforum-org:service:WLANConfiguration:1'];
-      wlan.actions['X_AVM-DE_GetWPSInfo'](null,{name:accessory.displayName + ' GetWPS', count:0},function(err, result) {
-        if(!err){
-          if(result['NewX_AVM-DE_WPSStatus'] == 'active'){
-            accessory.context.lastWifiWPSState = true;
-          } else {
-            if((moment().unix()-self.wpsTimer)>=120){
-              self.wpsTimer = false;
-              self.logger.info('2 minutes are over. Turning off WIFI WPS!');
-            }
-            accessory.context.lastWifiWPSState = false;
-          }
-          setTimeout(function(){
-            self.checkWifiWPS(accessory,service); 
-          },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-            setTimeout(function(){
-              self.checkWifiWPS(accessory, service);
-            }, self.errorpoll);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting WIFI WPS state!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-            setTimeout(function(){
-              self.checkWifiWPS(accessory,service); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        }
-        service.getCharacteristic(Characteristic.WifiWPS).updateValue(accessory.context.lastWifiWPSState);
-      });
-    } else {
-      setTimeout(function(){self.checkWifiWPS(accessory,service);},5000);
-    }
-  }
-
-  setWifiWPS(accessory, service, state, callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let wlan = device.services['urn:dslforum-org:service:WLANConfiguration:1'];
-    let status;
-    state ? status = 'pbc' : status = 'stop';
-    self.wpsTimer = moment().unix();
-    wlan.actions['X_AVM-DE_SetWPSConfig']([{name:'NewX_AVM-DE_WPSMode', value:status},{name:'NewX_AVM-DE_WPSClientPIN',value:''}],{name:accessory.displayName + ' SetWIFI1', count:0},function(err) {
-      if(!err){
-        state ? self.logger.info(accessory.displayName + ': Turning on WIFI WPS for 2 minutes!') : self.logger.info(accessory.displayName + ': Turning off WIFI WPS');
-        accessory.context.lastWifiWPSState = state;
-        callback(null, state);
-      } else {
-        if(err.ping){
-          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-        } else {
-          state ? self.logger.errorinfo(accessory.displayName + ': An error occured while turning on WIFI WPS') : self.logger.errorinfo(accessory.displayName + ': An error occured while turning off WIFI WPS');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
-        }
-        accessory.context.lastWifiWPSState = state ? false : true;
-        setTimeout(function(){service.getCharacteristic(Characteristic.WifiWPS).updateValue(accessory.context.lastWifiWPSState);},500);
-        callback(null, accessory.context.lastWifiWPSState);
-      }
-    });
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // PhoneBook
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+    callback(null, 'Loading...');
   
-  refreshPhoneBook(accessory, service){
-    const self = this;
-    this.logger.debug('Refreshing PhoneBook!');
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let book = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    !self.entryID ? self.entryID = 0 : self.entryID;
-    !self.bookIDs ? self.bookIDs = [] : self.bookIDs;
-    !self.currentID ? self.currentID = 0 : self.currentID;
-    !self.telBook ? self.telBook = [] : self.telBook;
-    self.logger.info('Refreshing phone book...');
-    book.actions.GetPhonebookList(null,{name:accessory.displayName + ' SetPhoneBook', count:0},function(err, res) {
-      if(!err){
-        self.bookIDs = res.NewPhonebookList.split(',');
-        self.logger.info('Found ' + self.bookIDs.length + ' book' + (self.bookIDs.length>1?'s!':'!') + ' Fetching entries...');
-        self.storePhoneBook(accessory,service,device,true);
-      } else {
-        if(err.ping){
-          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-        } else {
-          self.logger.errorinfo('An error occured while getting phone books!');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
-        }
-      }
+  }
+  
+  async storeData(data){
+
+    return new Promise((resolve, reject) => {
+    
+      store(this.configPath).add(data, (err) => {
+              
+        if(err) reject(err);
+              
+        resolve(true);
+            
+      });
+    
     });
-  }
 
-  setPhoneBook(accessory,service,state,callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let book = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    !self.entryID ? self.entryID = 0 : self.entryID;
-    !self.bookIDs ? self.bookIDs = [] : self.bookIDs;
-    !self.currentID ? self.currentID = 0 : self.currentID;
-    !self.telBook ? self.telBook = [] : self.telBook;
-    if(state){
-      self.logger.info('Refreshing phone book...');
-      book.actions.GetPhonebookList(null,{name:accessory.displayName + ' SetPhoneBook', count:0},function(err, res) {
-        if(!err){
-          self.bookIDs = res.NewPhonebookList.split(',');
-          self.logger.info('Found ' + self.bookIDs.length + ' book' + (self.bookIDs.length>1?'s!':'!') + ' Fetching entries...');
-          self.storePhoneBook(accessory,service,device);
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            self.logger.errorinfo('An error occured while getting phone books!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-          }
-        }
+  }
+  
+  async xml2json(xml) {
+    
+    return new Promise((resolve, reject) => {
+      
+      parseString(xml, function (err, json) {
+        
+        if (err) return reject(err);
+        
+        resolve(json);
+      
       });
-      setTimeout(function(){service.getCharacteristic(Characteristic.PhoneBook).setValue(false);},500);
-      callback(null, false);
-    } else {
-      callback(null, false);
-    }
 
-  }
-
-  storePhoneBook(accessory,service,device,refresh){
-    const self = this;
-    let country;
-    for(const l in self.accessories){
-      if(self.accessories[l].context.type=='callmonitor'){
-        country = self.accessories[l].context.config.country;
-      }
-    }
-    !country?country='DE':country;
-    let book = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    book.actions.GetPhonebook([{name:'NewPhonebookID',value:self.currentID.toString()}],{name:accessory.displayName + ' StorePhoneBook', count:0},function(err, res) {
-      if(!err&&res){
-        let opt = {
-          uri: res.NewPhonebookURL,
-          method: 'GET',
-          rejectUnauthorized: false,
-          requestCert: true,
-          agent: false
-        };
-        request(opt,function(error, response, body) {
-          if (!error && response.statusCode == 200) {
-            parseString(body,{explicitArray: false},function(err, result) {
-              if(!err){
-                let contacts = result.phonebooks.phonebook.contact;
-                for(const j in contacts){
-                  let numbers = contacts[j].telephony.number;
-                  if(numbers.length){
-                    for(const i in numbers){
-                      let nr = '+'+c.getCode(country);
-                      let nr2 = '00'+c.getCode(country);
-                      let telnr = numbers[i]._;
-                      telnr = telnr.replace(/\s/g, '');
-                      if(telnr.includes(nr)||telnr.includes(nr2)){
-                        telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                      } else {
-                        telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                      }
-                      self.telBook.push({name: contacts[j].person.realName,number:telnr});
-                    }
-                  } else {
-                    let nr = '+'+c.getCode(country);
-                    let nr2 = '00'+c.getCode(country);
-                    let telnr = numbers._;
-                    telnr = telnr.replace(/\s/g, '');
-                    if(telnr.includes(nr)||telnr.includes(nr2)){
-                      telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                    } else {
-                      telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                    }
-                    self.telBook.push({name: contacts[j].person.realName,number:telnr});
-                  }
-                }
-                self.currentID += 1;
-                self.logger.debug('Phone book [' + self.currentID + '] done. Looking for another books!');
-                setTimeout(function(){self.storePhoneBook(accessory,service,device,refresh);},500);
-              } else {
-                self.logger.errorinfo(accessory.displayName + ': An error occured while fetching phone book!');
-                self.logger.errorinfo(JSON.stringify(error,null,4));
-                self.telBook = [];
-                self.entryID = 0;
-                self.bookIDs = [];
-                self.currentID = 0;
-              }
-            });
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while fetching phone book!'); 
-            response?self.logger.errorinfo(response.body):self.logger.errorinfo(error);
-            self.telBook = [];
-            self.entryID = 0;
-            self.bookIDs = [];
-            self.currentID = 0;
-          }
-        }); 
-      } else {
-        if(err.tr064code&&err.tr064code == '713'){
-          self.logger.debug('Cant find other books. Fetching result...');
-          self.logger.info('Found ' + self.telBook.length + ' entries in phone book. Setting it to storage!');
-          self.storage.setItem('PhoneBook.js', self.telBook);
-          self.currentID = 0;
-          self.telBook = [];
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting phone book!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-            self.telBook = [];
-            self.entryID = 0;
-            self.bookIDs = [];
-            self.currentID = 0;
-          }
-        }
-        if(refresh){
-          self.logger.debug('Next poll in 24h!');
-          setTimeout(function(){
-            self.refreshPhoneBook(accessory,service);
-          }, 24*60*60*1000); //24h
-        } 
-      }
     });
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Alarm
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  setAlarm(accessory, service, state, callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let alarm = device.services['urn:dslforum-org:service:X_VoIP:1'];
-    if(state){
-      alarm.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.alarm.telNr}],{name:accessory.displayName + ' SetAlarm', count:0},function(err, result) {
-        if(!err||result){
-          let message = 'Alarm activated! Calling ' + accessory.context.alarm.telNr + ' for ' + (accessory.context.alarm.duration) + ' seconds';
-          self.logger.info(accessory.displayName + ': ' + message);
-          if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.alarm.activated){
-            let text = self.telegram.alarm.activated;
-            text = text.replace('@', accessory.context.alarm.telNr);
-            self.sendTelegram(self.telegram.token,self.telegram.chatID,text); 
-          }
-          setTimeout(function(){
-            if(service.getCharacteristic(Characteristic.DialAlarm).value)service.getCharacteristic(Characteristic.DialAlarm).setValue(false);
-          },accessory.context.alarm.duration*1000);
-          callback(null, true);
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Alarm!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-          }
-          setTimeout(function(){service.getCharacteristic(Characteristic.DialAlarm).updateValue(false);},500);
-          callback(null, false);
-        }
-      });
-    } else {
-      alarm.actions['X_AVM-DE_DialHangup'](null,{name:accessory.displayName + ' AlarmHangUp', count:0},function(err, result) {
-        if(!err||result){
-          self.logger.info(accessory.displayName + ': Stop calling. Turning off Alarm');
-          if(Object.keys(self.telegram).length&&self.telegram.active&&self.telegram.alarm.deactivated){
-            self.sendTelegram(self.telegram.token,self.telegram.chatID,self.telegram.alarm.deactivated); 
-          }
-          callback(null, false);
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Alarm!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-          }
-          setTimeout(function(){service.getCharacteristic(Characteristic.DialAlarm).updateValue(true);},500);
-          callback(null, true);
-        }
-      });
-    }
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // AnsweringMachine
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkAW(accessory, service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }
-      let aw = device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1']; 
-      aw.actions.GetInfo([{name:'NewIndex',value:'0'}],{name:accessory.displayName + ' GetAW', count:0},function(err, result) {
-        if(!err){
-          if(result.NewEnable == '1'){
-            accessory.context.lastAWState = true;
-          } else {
-            accessory.context.lastAWState = false;
-          }
-          setTimeout(function(){
-            self.checkAW(accessory,service); 
-          },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-            setTimeout(function(){
-              self.checkAW(accessory, service);
-            }, self.errorpoll);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting Answering Machine state!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-            setTimeout(function(){
-              self.checkAW(accessory,service); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        }
-        service.getCharacteristic(Characteristic.AnsweringMachine).updateValue(accessory.context.lastAWState);
-      });
-    } else {
-      setTimeout(function(){self.checkAW(accessory,service);},5000);
-    }
-  }
-
-  setAW(accessory, service, state, callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let aw = device.services['urn:dslforum-org:service:X_AVM-DE_TAM:1'];
-    let status;
-    state ? status = '1' : status = '0';
-    aw.actions.SetEnable([{name:'NewIndex', value:'0'},{name:'NewEnable', value:status}],{name:accessory.displayName + ' SetAW', count:0},function(err) {
-      if(!err){
-        state ? self.logger.info(accessory.displayName + ': Turn on Answering Machine') : self.logger.info(accessory.displayName + ': Turn off Answering Machine');
-        accessory.context.lastAWState = state;
-        callback(null, accessory.context.lastAWState);
-      } else {
-        if(err.ping){
-          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-        } else {
-
-          state ? self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Answering Machine') : self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Answering Machine');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
-        }
-        accessory.context.lastAWState = state ? false : true;
-        setTimeout(function(){service.getCharacteristic(Characteristic.AnsweringMachine).updateValue(accessory.context.lastAWState);},500);
-        callback(null, accessory.context.lastAWState);
-      }
-    });
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Deflection
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkDeflection(accessory, service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }
-      let deflection = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-      deflection.actions.GetNumberOfDeflections(null,{name:accessory.displayName + ' GetDeflection1', count:0},function(err, result) {
-        if(!err){
-          if(result.NewNumberOfDeflections != 0){
-            let deflection = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-            deflection.actions.GetDeflection([{name:'NewDeflectionId',value:'0'}],{name:accessory.displayName + ' GetDeflection2', count:0},function(err, result) {
-              if(!err){
-                if(result.NewEnable == '1'){
-                  accessory.context.lastDeflectionState = true;
-                } else {
-                  accessory.context.lastDeflectionState = false;
-                }
-                setTimeout(function(){
-                  self.checkDeflection(accessory,service); 
-                },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-              } else {
-                if(err.ping){
-                  self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-                  setTimeout(function(){
-                    self.checkDeflection(accessory, service);
-                  }, self.errorpoll);
-                } else {
-                  self.logger.errorinfo(accessory.displayName + ': An error occured while getting Deflection state!');
-                  self.logger.errorinfo(JSON.stringify(err,null,4));
-                  setTimeout(function(){
-                    self.checkDeflection(accessory,service); 
-                  },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-                }
-              }
-              service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);
-            });
-          } else {
-            self.logger.warninfo('Cant check declection state, no deflections setted up in fritz.box settings!');
-            accessory.context.lastDeflectionState = false;
-            self.ignorePosted = 1;
-            service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);
-            setTimeout(function(){
-              self.checkDeflection(accessory,service); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port + ' - Trying again in ' + (self.errorpoll/1000) + ' seconds...');
-            setTimeout(function(){
-              self.checkDeflection(accessory, service);
-            }, self.errorpoll);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting Number of Deflactions!');
-            self.logger.errorinfo(JSON.stringify(err,null,4));
-            setTimeout(function(){
-              self.checkDeflection(accessory,service); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        }
-      });
-    } else {
-      setTimeout(function(){self.checkDeflection(accessory,service);},5000);
-    }
-  }
-
-  setDeflection(accessory, service, state, callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let deflection = device.services['urn:dslforum-org:service:X_AVM-DE_OnTel:1'];
-    let status;
-    deflection.actions.GetNumberOfDeflections(null,{name:accessory.displayName + ' SetDeflection1', count:0},function(err, result) {
-      if(!err){
-        if(result.NewNumberOfDeflections != '0'){
-          state ? status = '1' : status = '0';
-          deflection.actions.SetDeflectionEnable([{name:'NewDeflectionId',value:'0'}, {name:'NewEnable',value:status}],{name:accessory.displayName + ' SetDeflection2', count:0},function(err) {
-            if(!err){
-              state ? self.logger.info(accessory.displayName + ': Turning on Deflection') : self.logger.info(accessory.displayName + ': Turning off Deflection');
-              accessory.context.lastDeflectionState = state;
-            } else {
-              if(err.ping){
-                self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-              } else {
-                state ? self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Deflection') : self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Deflection');
-                self.logger.errorinfo(JSON.stringify(err,null,4));
-              }
-              accessory.context.lastDeflectionState = state ? false : true;
-            }
-            setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);},500);
-            callback(null, accessory.context.lastDeflectionState);
-          });
-        } else {
-          state ? self.logger.warninfo('Cant turn on declection, no deflections setted up in fritz.box settings!') : self.logger.warninfo('Cant turn off declection, no deflections setted up in fritz.box settings!');
-          accessory.context.lastDeflectionState = state ? false : true;
-          setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);},500);
-          callback(null, accessory.context.lastDeflectionState);
-        }
-      } else {
-        if(err.ping){
-          self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-        } else { 
-          self.logger.errorinfo(accessory.displayName + ': An error occured while setting deflections! Trying again...');
-          self.logger.errorinfo(JSON.stringify(err,null,4));
-        }
-        accessory.context.lastDeflectionState = state ? false : true;
-        setTimeout(function(){service.getCharacteristic(Characteristic.Deflection).updateValue(accessory.context.lastDeflectionState);},500);
-        callback(null, accessory.context.lastDeflectionState);
-      }
-    });
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // WakeUp
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  setWakeUp(accessory, service, state, callback){
-    const self = this;
-    let device;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let wakeup = device.services['urn:dslforum-org:service:X_VoIP:1'];
-    if(state){
-      wakeup.actions['X_AVM-DE_DialNumber']([{name:'NewX_AVM-DE_PhoneNumber',value:accessory.context.wakeup.internNr}],{name:accessory.displayName + ' SetWakeUp', count:0},function(err, result) {
-        if(!err||result){
-          self.logger.info(accessory.displayName + ': Calling ' + accessory.context.wakeup.internNr + ' for ' + accessory.context.wakeup.duration + ' seconds');
-          setTimeout(function(){
-            if(service.getCharacteristic(Characteristic.WakeUp).value)service.getCharacteristic(Characteristic.WakeUp).setValue(false);
-          }, accessory.context.wakeup.duration*1000);
-          callback(null, true);
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            if(err.tr064==='Action Failed'&&(err.tr064code==='501'||err.tr064code===501)){
-              self.logger.warn(accessory.displayName + ': Please activate phone dialer in your FritzBox WebUI!');
-            } else {
-              self.logger.errorinfo(accessory.displayName + ': An error occured while turning on Wake Up!');
-              self.logger.errorinfo(JSON.stringify(err,null,4));
-            }
-          }
-          setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(false);},500);
-          callback(null, false);
-        }
-      });
-    } else {
-      wakeup.actions['X_AVM-DE_DialHangup'](null,{name:accessory.displayName + ' WakeUpHangUp', count:0},function(err, result) {
-        if(!err||result){
-          self.logger.info(accessory.displayName + ': Stop calling. Turning off Wake Up!');
-          callback(null, false);
-        } else {
-          if(err.ping){
-            self.logger.warn(accessory.displayName + ': Can not reach ' + device.config.host + ':' + device.config.port);
-          } else {
-            if(err.tr064==='Action Failed'&&(err.tr064code==='501'||err.tr064code===501)){
-              self.logger.warn(accessory.displayName + ': Please activate phone dialer in your FritzBox WebUI!');
-            } else {
-              self.logger.errorinfo(accessory.displayName + ': An error occured while turning off Wake Up!');
-              self.logger.errorinfo(JSON.stringify(err,null,4));
-            }
-          }
-          setTimeout(function(){service.getCharacteristic(Characteristic.WakeUp).updateValue(true);},500);
-          callback(null, true);
-        }
-      });
-    }
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // LUA - LED for beta Firmware
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkDeviceLEDbeta(accessory,service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device, thisSid;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }     
-      if(accessory.context.sids){
-        for(const l in accessory.context.sids){
-          if(accessory.displayName == l){
-            thisSid = accessory.context.sids[l];
-          }
-        }
-      }  
-      accessory.context.newSid = thisSid;
-      if(accessory.context.newSid){
-        let sid = accessory.context.newSid;
-        let formData = querystring.stringify({
-          xhr: 'all',
-          sid: sid,
-          page: 'led',
-          no_sidrenew: ''
-        });
-        self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid);
-        request.post('http://' + device.config.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
-          if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-            let data = JSON.parse(body);
-            let result = data.data.led_display;
-            accessory.context.lastLEDState = (result==0)?true:false;
-            self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> SUCCESSFULL');
-          } else {
-            self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> ERROR');
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting LED Beta state!');
-            let showError = {
-              error: error?error.errno:response.statusMessage,
-              errorCode: error?error.code:response.statusCode
-            };
-            self.logger.errorinfo(JSON.stringify(showError,null,4));
-          }
-          setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
-          setTimeout(function(){
-            self.checkDeviceLEDbeta(accessory,service); 
-          },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-        });
-      } else {
-        self.logger.debug(accessory.displayName + ': getDeviceLedBeta: Wrong SID');
-        setTimeout(function(){
-          self.checkDeviceLEDbeta(accessory,service); 
-        },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-      }
-    } else {
-      setTimeout(function(){self.checkDeviceLEDbeta(accessory,service);},5000);
-    }
-  }
-
-  setDeviceLEDbeta(accessory, service, state, callback){
-    const self = this;
-    let device, thisSid, formData;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }     
-    if(accessory.context.sids){
-      for(const l in accessory.context.sids){
-        if(accessory.displayName == l){
-          thisSid = accessory.context.sids[l];
-        }
-      }
-    }  
-    accessory.context.newSid = thisSid;
-    if(accessory.context.newSid){
-      let sid = accessory.context.newSid;
-      if(state){
-        formData = querystring.stringify({
-          xhr: '1',
-          led_brightness: '2',
-          environment_light: 'on',
-          led_display: '0',
-          apply: '',
-          sid: sid,
-          page: 'led',
-        });
-      } else {
-        formData = querystring.stringify({
-          xhr: '1',
-          led_brightness: '2',
-          environment_light: 'on',
-          led_display: '2',
-          apply: '',
-          sid: sid,
-          page: 'led',
-        });
-      }
-      self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid);
-      request.post('http://' + device.config.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
-        if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-          state ? self.logger.info(accessory.displayName + ': Turning on LEDs') : self.logger.info(accessory.displayName + ': Turning off LEDs');
-          self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> SUCCESSFULL');
-          callback(null, state);
-        } else {
-          self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> ERROR');
-          self.logger.errorinfo(accessory.displayName + ':An error occured while setting LED Beta state!');
-          let showError = {
-            error: error?error.errno:response.statusMessage,
-            errorCode: error?error.code:response.statusCode
-          };
-          self.logger.errorinfo(JSON.stringify(showError,null,4));
-          setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(state?false:true);}, 500);
-          callback(null, state?false:true);
-        }
-      });
-    } else {
-      self.logger.debug(accessory.displayName + ': setDeviceLedBeta: Wrong SID');
-      setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
-      callback(null, accessory.context.lastLEDState);
-    }
-    //});
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // LUA - LED for official Firmware
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkDeviceLED(accessory,service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device, thisSid;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }     
-      if(accessory.context.sids){
-        for(const l in accessory.context.sids){
-          if(accessory.displayName == l){
-            thisSid = accessory.context.sids[l];
-          }
-        }
-      }  
-      accessory.context.newSid = thisSid;
-      if(accessory.context.newSid){
-        let sid = accessory.context.newSid;
-        self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid);
-        request('http://' + device.config.host + '/system/led_display.lua?sid='+sid, function(error, response, body){
-          if (!error && response.statusCode == 200){
-            self.parseOutput(accessory,body,'led_display', function(err, result){
-              if(!err){
-                accessory.context.lastLEDState = (result==0)?true:false;
-                self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> PARSE SUCCESSFULL');
-              } else {
-                self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> PARSE ERROR');
-                self.logger.errorinfo(accessory.displayName + ': An error occured while getting LED state!');
-                self.logger.errorinfo(JSON.stringify(err,null,4));
-              }
-              setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
-              setTimeout(function(){
-                self.checkDeviceLED(accessory,service); 
-              },10000);
-            });
-          } else {
-            self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> ERROR');
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting LED state!');
-            let showError = {
-              error: error?error.errno:response.statusMessage,
-              errorCode: error?error.code:response.statusCode
-            };
-            self.logger.errorinfo(JSON.stringify(showError,null,4));
-            setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
-            setTimeout(function(){
-              self.checkDeviceLED(accessory,service); 
-            },15000);
-          }
-        });
-      } else {
-        self.logger.debug(accessory.displayName + ': getDeviceLED: Wrong SID');
-        setTimeout(function(){
-          self.checkDeviceLED(accessory,service); 
-        },15000);
-      }
-    } else {
-      setTimeout(function(){self.checkDeviceLED(accessory,service);},5000);
-    }
-  }
-
-  setDeviceLED(accessory, service, state, callback){
-    const self = this;
-    let device, thisSid, formData;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }     
-    if(accessory.context.sids){
-      for(const l in accessory.context.sids){
-        if(accessory.displayName == l){
-          thisSid = accessory.context.sids[l];
-        }
-      }
-    }  
-    accessory.context.newSid = thisSid;
-    if(accessory.context.newSid){
-      let sid = accessory.context.newSid;
-      if(state){
-        formData = querystring.stringify({
-          xhr: '1',
-          sid: sid,
-          no_sidrenew: '',
-          led_display: '0',
-          apply: '',
-          oldpage: '/system/led_display.lua'
-        });
-      } else {
-        formData = querystring.stringify({
-          xhr: '1',
-          sid: sid,
-          no_sidrenew: '',
-          led_display: '2',
-          apply: '',
-          oldpage: '/system/led_display.lua'
-        });
-      }
-      self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid);
-      request.post('http://' + device.config.host + '/system/led_display.lua?sid='+sid,{form:formData}, function(error, response, body){
-        if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-          self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> SET SUCCESSFULL');
-          state ? self.logger.info(accessory.displayName + ': Turning on LEDs') : self.logger.info(accessory.displayName + ': Turning off LEDs');
-          callback(null, state);
-        } else {
-          self.logger.debug(accessory.displayName + ' Request URI ' + 'http://' + device.config.host + '/data.lua?sid='+sid + ' --> SET ERROR');
-          self.logger.errorinfo(accessory.displayName + ':An error occured while setting LED state!');
-          let showError = {
-            error: error?error.errno:response.statusMessage,
-            errorCode: error?error.code:response.statusCode
-          };
-          self.logger.errorinfo(JSON.stringify(showError,null,4));
-          setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(state?false:true);}, 500);
-          callback(null, state?false:true);
-        }
-      });
-    } else {
-      self.logger.debug(accessory.displayName + ': setDeviceLED: Wrong SID');
-      setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLED).updateValue(accessory.context.lastLEDState);}, 500);
-      callback(null, accessory.context.lastLEDState);
-    }
-    //});
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // LUA - LOCK
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkDeviceLock(accessory,service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device, thisSid;
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }     
-      if(accessory.context.sids){
-        for(const l in accessory.context.sids){
-          if(accessory.displayName == l){
-            thisSid = accessory.context.sids[l];
-          }
-        }
-      }  
-      accessory.context.newSid = thisSid;
-      if(accessory.context.newSid){
-        let sid = accessory.context.newSid;
-        request('http://' + device.config.host + '/system/keylock.lua?sid='+sid, function(error, response, body){
-          if (!error && response.statusCode == 200){
-            self.parseOutput(accessory,body,'keylock_enabled', function(err, result){
-              if(!err){
-                accessory.context.lastDeviceLock = result?true:false;
-              } else {
-                self.logger.errorinfo(accessory.displayName + ': An error occured while getting Device Lock state!');
-                self.logger.errorinfo(JSON.stringify(err,null,4));
-              }
-              setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-              setTimeout(function(){
-                self.checkDeviceLock(accessory,service); 
-              },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-            });
-          } else {
-            self.logger.errorinfo(accessory.displayName + ': An error occured while getting Device Lock state!');
-            let showError = {
-              error: error?error.errno:response.statusMessage,
-              errorCode: error?error.code:response.statusCode
-            };
-            self.logger.errorinfo(JSON.stringify(showError,null,4));
-            setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-            setTimeout(function(){
-              self.checkDeviceLock(accessory,service); 
-            },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-          }
-        });
-      } else {
-        self.logger.debug(accessory.displayName + ': getRingLock: Wrong SID');
-        setTimeout(function(){
-          self.checkDeviceLock(accessory,service); 
-        },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-      }
-    } else {
-      setTimeout(function(){self.checkDeviceLock(accessory,service);},5000);
-    }
-  }
-
-  setDeviceLock(accessory, service, state, callback){
-    const self = this;
-    let device, thisSid, formData;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }     
-    if(accessory.context.sids){
-      for(const l in accessory.context.sids){
-        if(accessory.displayName == l){
-          thisSid = accessory.context.sids[l];
-        }
-      }
-    }  
-    accessory.context.newSid = thisSid;
-    if(!device.config.host.match('myfritz')){
-      if(accessory.context.newSid){
-        let sid = accessory.context.newSid;
-        if(state){
-          formData = querystring.stringify({
-            xhr: '1',
-            keylock_enabled: '1',
-            sid: sid,
-            menu_active_page: 'keyLo',
-            no_sidrenew: '',
-            apply: '',
-            page: 'keyLo',
-            oldpage: '/system/keylock.lua'
-          });
-        } else {
-          formData = querystring.stringify({
-            xhr: '1',
-            keylock_enabled: '0',
-            sid: sid,
-            menu_active_page: 'keyLo',
-            no_sidrenew: '',
-            apply: '',
-            page: 'keyLo',
-            oldpage: '/system/keylock.lua'
-          });
-        }
-        request.post('http://' + device.config.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
-          if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-            state ? self.logger.info(accessory.displayName + ': Turning on Device Lock') : self.logger.info(accessory.displayName + ': Turning off Device Lock');
-            callback(null, state);
-          } else {
-            self.logger.errorinfo(accessory.displayName + ':An error occured while setting Device Lock!');
-            let showError = {
-              error: error?error.errno:response.statusMessage,
-              errorCode: error?error.code:response.statusCode
-            };
-            self.logger.errorinfo(JSON.stringify(showError,null,4));
-            setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(state?false:true);}, 500);
-            callback(null, state?false:true);
-          }
-        });
-      } else {
-        self.logger.debug(accessory.displayName + ': setDeviceLock: Wrong SID');
-        setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(accessory.context.lastDeviceLock);}, 500);
-        callback(null, accessory.context.lastDeviceLock);
-      }
-    } else {
-      self.logger.warninfo(accessory.displayName + ': Can not set Device Lock in remote mode!');
-      setTimeout(function(){service.getCharacteristic(Characteristic.DeviceLock).updateValue(false);}, 500);
-      callback(null, accessory.context.lastDeviceLock);
-    }
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // LUA - RingLock
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  checkRingLock(accessory,service){
-    const self = this;
-    if(!accessory.context.stopPolling){
-      let device;
-      let activeArray = [];
-      for(const i in accessory.context.devices){
-        if(accessory.displayName == i){
-          device = accessory.context.devices[i];
-        }
-      }
-      if(accessory.context.newSid){
-        let sid = accessory.context.newSid;
-        for(let count=1;count<=accessory.context.ringlock.DECTphones;count++){
-          let formData = querystring.stringify({
-            xhr: '1',
-            idx: count.toString(),
-            sid: sid,
-            no_sidrenew: '',
-            popup_url: '',
-            oldpage: '/fon_devices/edit_dect_ring_block.lua'
-          });
-          request.post('http://' + device.config.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
-            if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-              self.parseOutput(accessory,body,'nightsetting', function(err, result){
-                if(!err){
-                  activeArray.push(result);
-                } else {
-                  self.logger.errorinfo(accessory.displayName + ': An error occured while getting Ring Lock for Phone ' + count);
-                  self.logger.errorinfo(JSON.stringify(err,null,4));
-                }
-                if(count==accessory.context.ringlock.DECTphones){
-                  if(activeArray.includes('1')){
-                    accessory.context.lastRingLock = true;
-                  } else {
-                    accessory.context.lastRingLock = false;
-                  }
-                  setTimeout(function(){service.getCharacteristic(Characteristic.RingLock).updateValue(accessory.context.lastRingLock);}, 500);
-                  setTimeout(function(){
-                    self.checkRingLock(accessory,service); 
-                  },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-                }
-              });
-            } else {
-              self.logger.errorinfo(accessory.displayName + ':An error occured while getting Ring Lock for Phone ' + count);
-              let showError = {
-                error: error?error.errno:response.statusMessage,
-                errorCode: error?error.code:response.statusCode
-              };
-              self.logger.errorinfo(JSON.stringify(showError,null,4));
-              if(count==accessory.context.ringlock.DECTphones){
-                setTimeout(function(){service.getCharacteristic(Characteristic.RingLock).updateValue(accessory.context.lastRingLock);}, 500);
-                setTimeout(function(){
-                  self.checkRingLock(accessory,service); 
-                },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-              }
-            }
-          });
-
-        }
-      } else {
-        self.logger.debug(accessory.displayName + ': getRingLock: Wrong SID');
-        setTimeout(function(){
-          self.checkRingLock(accessory,service); 
-        },accessory.context.polling*(Math.floor(Math.random() * (10 - 3 + 1)) + 3));
-      }
-    } else {
-      setTimeout(function(){self.checkRingLock(accessory,service);},5000);
-    }
-  }
-
-  setRingLock(accessory, service, state, callback){
-    const self = this;
-    let formData, device, dayForm;
-    for(const i in accessory.context.devices){
-      if(accessory.displayName == i){
-        device = accessory.context.devices[i];
-      }
-    }
-    let today = new Date();
-    let now = moment();
-    let hour = now.hour();
-    let minute = now.minute();
-    let endhour = now.add(12,'h');
-    let endminute = '00';
-
-    if(today.getDay()==6||today.getDay()==0){
-      dayForm = 'weekend';
-    } else {
-      dayForm = 'weekday';
-    }
-    if(accessory.context.ringlock.start&&accessory.context.ringlock.end){
-      let s = accessory.context.ringlock.start.split(':');
-      let e = accessory.context.ringlock.end.split(':');
-      hour = s[0];
-      minute = s[1];
-      endhour = e[0];
-      endminute = e[1];
-    } else {
-      if(hour<10&&hour>=0){
-        hour = '0'+hour;
-      }
-      if(minute<10&&minute>=0){
-        minute = '0'+minute;
-      }
-      if(endhour<10&&endhour>=0){
-        endhour = '0'+endhour;
-      }
-    }
-
-    if(!device.config.host.match('myfritz')){
-      for(let count=1;count<=accessory.context.ringlock.DECTphones;count++){
-        if(accessory.context.newSid){
-          let sid = accessory.context.newSid;
-          if(state){
-            formData = querystring.stringify({
-              idx: count.toString(),
-              xhr: '1',
-              nightsetting: '1',
-              lockmode: '1',
-              lockday: dayForm,
-              starthh: hour.toString(),
-              startmm: minute.toString(),
-              endhh: endhour.toString(),
-              endmm: endminute.toString(),
-              event: 'on',
-              popup_url:'',
-              apply: '',
-              sid: sid,
-              page:'edit_dect_ring_block'
-            });
-          } else {
-            formData = querystring.stringify({
-              idx: count.toString(),
-              xhr: '1',
-              popup_url:'',
-              apply: '',
-              sid: sid,
-              page:'edit_dect_ring_block'
-            });
-          }
-          request.post('http://' + device.config.host + '/data.lua?sid='+sid,{form:formData}, function(error, response, body){
-            if (!error && (response.statusCode == 200 || response.statusCode == 303)){
-              state ? self.logger.info(accessory.displayName + ': Turn on Ring Lock for Phone ' + count) : self.logger.info(accessory.displayName + ': Turn off Ring Lock for Phone ' + count); 
-              accessory.context.lastRingLock = state;
-            } else {
-              self.logger.errorinfo(accessory.displayName + ':An error occured while setting Ring Lock for Phone ' + count);
-              let showError = {
-                error: error?error.errno:response.statusMessage,
-                errorCode: error?error.code:response.statusCode
-              };
-              self.logger.errorinfo(JSON.stringify(showError,null,4));
-            }
-            if(count==accessory.context.ringlock.DECTphones){
-              setTimeout(function(){service.getCharacteristic(Characteristic.RingLock).updateValue(accessory.context.lastRingLock);}, 500);
-              callback(null, accessory.context.lastRingLock);
-            }
-          });
-        } else {
-          self.logger.debug(accessory.displayName + ': setRingLock: Wrong SID');
-          if(count==accessory.context.ringlock.DECTphones){
-            setTimeout(function(){service.getCharacteristic(Characteristic.RingLock).updateValue(accessory.context.lastRingLock);}, 500);
-            callback(null, accessory.context.lastRingLock);
-          }
-        }
-      }
-    } else {
-      self.logger.warninfo(accessory.displayName + ': Can not set Device Lock in remote mode!');
-      setTimeout(function(){service.getCharacteristic(Characteristic.RingLock).updateValue(accessory.context.lastRingLock);}, 500);
-      callback(null, accessory.context.lastRingLock);
-    }
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // LUA
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  parseOutput(accessory, data, type, callback){
-    let $ = cheerio.load(data);
-    let elements = $('input').toArray();
-    for(const i in elements){
-      if(elements[i].attribs.name==type){
-        if(elements[i].attribs.name=='led_display'){
-          if(elements[i].attribs.checked=='checked')callback(null,elements[i].attribs.value);
-        } else {
-          elements[i].attribs.checked=='checked'?callback(null,elements[i].attribs.value):callback(null,0);
-        }
-      }
-    }
+  
   }
 
 }
 
-module.exports = Fritz_Box;
+module.exports = DeviceAccessory;

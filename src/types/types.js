@@ -7,20 +7,6 @@ module.exports = {
     const Characteristic = hap.Characteristic;
     
     /// /////////////////////////////////////////////////////////////////////////
-    // ExtReboot Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.ExtReboot = function() {
-      Characteristic.call(this, 'Extended Reboot', '24e2db8d-8709-4513-bdd8-dcab13736b82');
-      this.setProps({
-        format: Characteristic.Formats.BOOL,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-    inherits(Characteristic.ExtReboot, Characteristic);
-    Characteristic.ExtReboot.UUID = '24e2db8d-8709-4513-bdd8-dcab13736b82';
-    
-    /// /////////////////////////////////////////////////////////////////////////
     // Download Characteristic
     /// ///////////////////////////////////////////////////////////////////////// 
     Characteristic.Download = function() {
@@ -61,6 +47,20 @@ module.exports = {
     };
     inherits(Characteristic.Ping, Characteristic);
     Characteristic.Ping.UUID = 'ce18aaef-1026-4538-943b-026501599dc0';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // IPAdd Characteristic
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.IPAdd = function() {
+      Characteristic.call(this, 'IP', '011ec131-8185-444a-bc7d-df2e01d67c35');
+      this.setProps({
+        format: Characteristic.Formats.STRING,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.IPAdd, Characteristic);
+    Characteristic.IPAdd.UUID = '011ec131-8185-444a-bc7d-df2e01d67c35';
     
     /// /////////////////////////////////////////////////////////////////////////
     // Caller Characteristic
@@ -117,6 +117,20 @@ module.exports = {
     };
     inherits(Characteristic.Host, Characteristic);
     Characteristic.Host.UUID = '7c6b8e01-0549-41bb-86c7-5deeacb5799e';
+
+    /// /////////////////////////////////////////////////////////////////////////
+    // Reconnect Characteristic
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.Reconnect = function() {
+      Characteristic.call(this, 'Reconnect', '45941658-a0f0-4a65-b211-bb645e138e09');
+      this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Reconnect, Characteristic);
+    Characteristic.Reconnect.UUID = '45941658-a0f0-4a65-b211-bb645e138e09';
     
     /// /////////////////////////////////////////////////////////////////////////
     // WifiTwo Characteristic
@@ -285,53 +299,6 @@ module.exports = {
     };
     inherits(Characteristic.RingLock, Characteristic);
     Characteristic.RingLock.UUID = 'cab7d43e-422c-4452-bc9a-11c89454332b';
-    
-    /// /////////////////////////////////////////////////////////////////////////
-    // CurrentHeatingCoolingState Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.CurrentHeatingCoolingState = function() {
-      Characteristic.call(this, 'Current Heating Cooling State', '0000000F-0000-1000-8000-0026BB765291');
-      this.setProps({
-        format: Characteristic.Formats.UINT8,
-        maxValue: 2,
-        minValue: 0,
-        validValues: [0,1,2],
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-
-    inherits(Characteristic.CurrentHeatingCoolingState, Characteristic);
-    Characteristic.CurrentHeatingCoolingState.UUID = '0000000F-0000-1000-8000-0026BB765291';
-
-    // The value property of CurrentHeatingCoolingState must be one of the following:
-    Characteristic.CurrentHeatingCoolingState.OFF = 0;
-    Characteristic.CurrentHeatingCoolingState.HEAT = 1;
-    Characteristic.CurrentHeatingCoolingState.COOL = 2;
-
-    /// /////////////////////////////////////////////////////////////////////////
-    // CurrentHeatingCoolingState Characteristic
-    /// /////////////////////////////////////////////////////////////////////////
-    Characteristic.TargetHeatingCoolingState = function() {
-      Characteristic.call(this, 'Target Heating Cooling State', '00000033-0000-1000-8000-0026BB765291');
-      this.setProps({
-        format: Characteristic.Formats.UINT8,
-        maxValue: 2,
-        minValue: 0,
-        validValues: [0,1,2],
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-
-    inherits(Characteristic.TargetHeatingCoolingState, Characteristic);
-
-    Characteristic.TargetHeatingCoolingState.UUID = '00000033-0000-1000-8000-0026BB765291';
-
-    // The value property of TargetHeatingCoolingState must be one of the following:
-    Characteristic.TargetHeatingCoolingState.OFF = 0;
-    Characteristic.TargetHeatingCoolingState.HEAT = 1;
-    Characteristic.TargetHeatingCoolingState.COOL = 2;
 
   }
 };

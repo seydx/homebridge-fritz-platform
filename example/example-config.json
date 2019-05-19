@@ -9,133 +9,228 @@
     {
       "platform": "FritzPlatform",
       "devices": {
-        "FritzBox": {
-          "host": "fritz.box",
+        "FRITZ!Box 7590": {
+          "active": false,
+          "host": "192.168.178.1",
           "port": 49000,
-          "username": "USERNAME",
-          "password": "PASSWORD",
+          "username": "Username123",
+          "password": "pw3456",
           "type": "dsl",
-          "wifi2": true,
-          "wifi5": true,
-          "wifiGuest": true,
-          "phoneBook": true,
-          "wps": true,
-          "aw": true,
-          "deflection": true,
-          "led": true,
-          "lock": true,
-          "beta": true,
-          "mesh": false,
-          "master": true
+          "master": true,
+          "mesh": true,
+          "readOnly": false,
+          "options": {
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "phoneBook": true,
+            "reconnect": true,
+            "wps": [
+              true,
+              false
+            ],
+            "aw": [
+              true,
+              false
+            ],
+            "deflection": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ],
+            "lock": [
+              true,
+              false
+            ]
+          }
         },
-        "FritzBox Living Room": {
-          "host": "192.168.1.1",
+        "FRITZ!Box 7430 BU": {
+          "active": false,
+          "host": "192.168.178.82",
           "port": 49000,
-          "username": "USERNAME",
-          "password": "PASSWORD",
-          "type": "cable",
-          "wifi2": true,
-          "wifi5": false,
-          "wifiGuest": false,
-          "led": true,
-          "beta": false
+          "username": "Username123",
+          "password": "pw3456",
+          "type": "dsl",
+          "readOnly": false,
+          "options": {
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "wps": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ]
+          }
         },
-        "FritzRepeater Sleep room": {
-          "host": "fritz.repeater",
+        "FRITZ!WLAN Repeater 310": {
+          "active": false,
+          "host": "192.168.178.66",
           "port": 49000,
-          "username": "USERNAME",
-          "password": "PASSWORD",
+          "username": "Test123",
+          "password": "pw3456",
           "type": "repeater",
-          "wifi2": true,
-          "wifi5": false,
-          "wifiGuest": false,
-          "led": true,
-          "beta": false
+          "readOnly": false,
+          "options": {
+            "wifi2": [
+              true,
+              false
+            ],
+            "wifi5": [
+              true,
+              false
+            ],
+            "wifiGuest": [
+              true,
+              false
+            ],
+            "wps": [
+              true,
+              false
+            ],
+            "led": [
+              true,
+              false
+            ]
+          }
         }
       },
       "smarthome": {
-        "DECT 200": {
+        "HAN-FUN Sensor": {
+          "active": true,
           "ain": "01234567890",
-          "type": "switch",
-          "tempSensor": true,
-          "unit": "celsius"
-        },
-        "Window contact": {
-          "ain": "01234567890",
-          "type": "contact"
+          "devType": "contact"
         },
         "DECT 301": {
+          "active": true,
           "ain": "01234567890",
-          "type": "thermo",
-          "unit": "celsius",
           "heatValue": 5,
           "coolValue": 5,
-          "windowSensor": true
+          "windowSensor": true,
+          "devType": "thermostat"
+        },
+        "DECT 200": {
+          "active": true,
+          "ain": "01234567890",
+          "tempSensor": true,
+          "devType": "switch"
         }
       },
       "callmonitor": {
         "active": true,
-        "ip": "192.168.1.1",
+        "ip": "192.168.178.1",
         "port": 1012,
         "country": "DE",
-        "incomingTo": "12345678",
-        "outgoingFrom": ["12345678", "21323445", "12345212"]
+        "incomingTo": [
+          "8845668",
+          "5497854"
+        ],
+        "outgoingFrom": [
+          "8845668",
+          "5497854"
+        ]
       },
       "presence": {
-        "USER 1": "40:98:AD:1E:E5:E0",
-        "USER 2": "E0:33:8E:CE:9D:BD"
+        "user": [
+          {
+            "active": true,
+            "name": "SeydX",
+            "address": "192.168.178.59"
+          },
+          {
+            "active": true,
+            "name": "Test",
+            "address": "192.168.178.91"
+          }
+        ],
+        "anyone": true,
+        "offDelay": 90,
+        "onDelay": 15
       },
-      "wol": {
-        "Device 1": "04:5D:4B:0C:E3:47",
-        "Device 2": "14:4D:2B:AC:13:57"
-      },
+      "wol": [
+        {
+          "active": true,
+          "name": "Fernseher",
+          "address": "04:5D:4B:0C:E3:47"
+        }
+      ],
       "alarm": {
-        "active": true,
-        "telNr": "0123456789",
+        "active": false,
+        "telNr": "012514587",
         "duration": 30
       },
       "wakeup": {
-        "active": true,
+        "active": false,
         "internNr": "**620",
-        "duration": 60
+        "duration": 30
       },
       "ringlock": {
-        "active": true,
+        "active": false,
         "DECTphones": 1,
-        "start": "15:00",
-        "end": "21:00"
+        "start": "11:00",
+        "end": "22:00"
       },
       "broadband": {
-        "active": true,
+        "active": false,
         "measureTime": 5,
         "polling": 30
       },
       "extReboot": {
-        "active": true,
-        "cmdOn": "sh /PATHTOSCRIPT/reboot-start.sh",
-        "cmdOff": "sh /PATHTOSCRIPT/reboot-finished.sh"
+        "active": false,
+        "cmdOn": "sh /PATH/TO/SCRIPT/on.sh",
+        "cmdOff": "sh /PATH/TO/SCRIPT/off.sh"
       },
       "telegram": {
         "active": true,
-        "token": "TOKEN",
-        "chatID": "CHATID",
+        "token": "TOKENHERE",
+        "chatID": "-CHATIDHERE",
         "presence": {
-          "in": "Willkommen zu Hause @",
-          "out": "Auf Wiedersehen @",
-          "anyoneIn": "Jemand ist zu Hause!",
-          "anyoneOut": "Niemand zu Hause!"
+          "in": "Welcome at home @",
+          "out": "Bye Bye @",
+          "anyoneIn": "Someone is at home!",
+          "anyoneOut": "Nobody at home!"
         },
         "callmonitor": {
-          "incoming": "Ankommende Anruf! @",
-          "disconnected": "Anruf mit @ wurde beendet!"
+          "incoming": "Incoming call - @",
+          "disconnected": "Call with @ disconnected"
+        },
+        "alarm": {
+          "activated": "Alarm activated! Calling @!",
+          "deactivated": "Alarm deactivated!"
+        },
+        "extReboot": {
+          "start": "Network reboot started!",
+          "finish": "Network reboot completed!"
         }
       },
-      "readOnlySwitches": false,
-      "anyone": true,
-      "delay": 60,
-      "onDelay":15,
-      "polling": 5,
-      "timeout": 5
+      "polling": 10,
+      "timeout": 10,
+      "clearCache": false,
+      "debug":true
     }
   ]
 }

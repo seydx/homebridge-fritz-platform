@@ -2,161 +2,58 @@
 
 const HomeKitTypes = require('../types/types.js');
 const EveTypes = require('../types/eve.js');
-const LogUtil = require('../../lib/LogUtil.js');
-const packageFile = require('../../package.json');
-const request = require('request');
+
 const moment = require('moment');
 
-var Accessory, Service, Characteristic, UUIDGen, PlatformAccessory, FakeGatoHistoryService;
+var Service, Characteristic, FakeGatoHistoryService;
 
-const pluginName = 'homebridge-fritz-platform';
-const platformName = 'FritzPlatform';
+const timeout = ms => new Promise(res => setTimeout(res, ms));
 
-class Fritz_Box {
-  constructor (platform, parameter, type, publish) {
+class SmarthomeAccessory {
+  constructor (platform, accessory, device, smarthome) {
 
     // HB
-    PlatformAccessory = platform.api.platformAccessory;
-    Accessory = platform.api.hap.Accessory;
     Service = platform.api.hap.Service;
     Characteristic = platform.api.hap.Characteristic;
-    UUIDGen = platform.api.hap.uuid;
+    
     HomeKitTypes.registerWith(platform.api.hap);
     EveTypes.registerWith(platform.api.hap);
     FakeGatoHistoryService = require('fakegato-history')(platform.api);
 
     this.platform = platform;
     this.log = platform.log;
-    this.logger = new LogUtil(null, platform.log);
+    this.logger = platform.logger;
+    this.debug = platform.debug;
     this.api = platform.api;
     this.config = platform.config;
     this.accessories = platform.accessories;
     this.HBpath = platform.HBpath;
-
-    if(publish){
-      this.addAccessory(parameter,type);
-    } else {
-      this.getService(parameter,type); 
-    }
-
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Add Accessories
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  addAccessory (parameter, type) {
-    const self = this;
-    let name = parameter.name;
-    let deviceType, accessoryType; 
-
-    switch(type){
-      case 'switch':
-        deviceType = Accessory.Categories.OUTLET;
-        accessoryType = Service.Outlet;
-        break;
-      case 'contact':
-        deviceType = Accessory.Categories.SENSOR;
-        accessoryType = Service.ContactSensor;
-        break;
-      case 'thermo':
-        deviceType = Accessory.Categories.THERMOSTAT;
-        accessoryType = Service.Thermostat;
-        break;
-      case 'temp':
-        deviceType = Accessory.Categories.SENSOR;
-        accessoryType = Service.TemperatureSensor;
-        break;
-      case 'window':
-        deviceType = Accessory.Categories.SENSOR;
-        accessoryType = Service.ContactSensor;
-        break;
-      default:
-        self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
-        return;
-    }
-
-    this.logger.initinfo('Publishing new accessory: ' + name);
-
-    let accessory = this.accessories[name];
-    const uuid = UUIDGen.generate(name);
-
-    accessory = new PlatformAccessory(name, uuid, deviceType);
-    accessory.addService(accessoryType, name);
-    if(type=='thermo')accessory.addService(Service.BatteryService);
-
-    // Setting reachable to true
-    accessory.reachable = true;
-    accessory.context = {};
-
-    accessory.context.accType = parameter.accType;
-    accessory.context.type = parameter.type;
-    accessory.context.ain = parameter.ain;
-    accessory.context.devices = parameter.devices;
-
-    switch(type){
-      case 'switch':
-        accessory.context.lastSwitchState = false;
-        break;
-      case 'contact':
-        accessory.context.lastSensorState = 0;
-        //EVE
-        accessory.context.lastActivation = 0;
-        accessory.context.timesOpened = 0;
-        accessory.context.closeDuration = 0;
-        accessory.context.openDuration = 0;
-        break;
-      case 'thermo':
-        accessory.context.lastThermoCurrentState = 0;
-        accessory.context.lastThermoTargetState = 0;
-        accessory.context.lastThermoCurrentTemp = 0;
-        accessory.context.lastThermoTargetTemp = 0;
-        accessory.context.unit = parameter.unit;
-        accessory.context.heatValue = parameter.heatValue||5;
-        accessory.context.coolValue = parameter.coolValue||5;
-        break;
-      case 'temp':
-        accessory.context.lastTemp = 0;
-        accessory.context.unit = parameter.unit;
-        break;
-      case 'window':
-        accessory.context.lastWindowState = 0;
-        //EVE
-        accessory.context.lastWindowActivation = 0;
-        accessory.context.timesWindowOpened = 0;
-        accessory.context.closeWindowDuration = 0;
-        accessory.context.openWindowDuration = 0;
-        break;
-      default:
-        self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
-        return;
-    }
     
-    let serial;
-    if(type=='temp'){
-      serial=accessory.context.ain+'-T';
-    } else if(type=='window'){
-      serial=accessory.context.ain+'-W';
+    this.smarthome = smarthome;
+    this.device = device;
+    
+    this.accessory = accessory;
+
+    if(this.accessory.context.devType === 'switch'){
+    
+      this.getSwitchService();
+    
+    } else if(this.accessory.context.devType === 'temperature'){
+    
+      this.getTemperatureService();
+    
+    } else if(this.accessory.context.devType === 'thermostat'){
+    
+      this.settedState = 0;
+      this.ruleSetState = 0;
+    
+      this.getThermostatService();
+    
     } else {
-      serial=accessory.context.ain
+    
+      this.getContactService();
+      
     }
-
-    //AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, serial)
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    // Publish
-    this.platform.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
-
-    // Cache
-    this.accessories[name] = accessory;
-
-    self.getService(accessory, type);
 
   }
 
@@ -164,388 +61,535 @@ class Fritz_Box {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService (accessory, type) {
-    const self = this;
+  getContactService(){
+  
+    this.mainService = this.accessory.getService(Service.ContactSensor);
+  
+    if (!this.mainService.testCharacteristic(Characteristic.LastActivation))
+      this.mainService.addCharacteristic(Characteristic.LastActivation);
     
-    let serial;
-    if(type=='temp'){
-      serial=accessory.context.ain+'-T';
-    } else if(type=='window'){
-      serial=accessory.context.ain+'-W';
-    } else {
-      serial=accessory.context.ain
-    }
-
-    //Refresh AccessoryInformation
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, 'SmartHome')
-      .setCharacteristic(Characteristic.SerialNumber, serial)
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-
-    accessory.on('identify', function (paired, callback) {
-      self.logger.info(accessory.displayName + ': Hi!');
-      callback();
-    });
-
-    let service, device, battery;
-    for(const i in accessory.context.devices){
-      if(accessory.context.devices[i].config.master){
-        device = accessory.context.devices[i];
-      }
-    }
-    switch(type){
-      case 'temp':
-        service = accessory.getService(Service.TemperatureSensor);
-        service.getCharacteristic(Characteristic.CurrentTemperature)
-          .updateValue(accessory.context.lastTemp)
-          .on('change', self.refreshData.bind(this, accessory, service, type));
-        self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        break;
-      case 'window':
-        service = accessory.getService(Service.ContactSensor);
-        if (!service.testCharacteristic(Characteristic.LastActivation))service.addCharacteristic(Characteristic.LastActivation);
-        service.getCharacteristic(Characteristic.LastActivation)
-          .updateValue(accessory.context.lastWindowActivation);
-      
-        if (!service.testCharacteristic(Characteristic.TimesOpened))service.addCharacteristic(Characteristic.TimesOpened);
-        service.getCharacteristic(Characteristic.TimesOpened)
-          .updateValue(accessory.context.timesWindowOpened);
-
-        if (!service.testCharacteristic(Characteristic.OpenDuration))service.addCharacteristic(Characteristic.OpenDuration);
-        service.getCharacteristic(Characteristic.OpenDuration)
-          .updateValue(accessory.context.openWindowDuration);
-
-        if (!service.testCharacteristic(Characteristic.ClosedDuration))service.addCharacteristic(Characteristic.ClosedDuration);
-        service.getCharacteristic(Characteristic.ClosedDuration)
-          .updateValue(accessory.context.closeWindowDuration);
+    if (!this.mainService.testCharacteristic(Characteristic.TimesOpened))
+      this.mainService.addCharacteristic(Characteristic.TimesOpened);
         
-        service.getCharacteristic(Characteristic.ContactSensorState)
-          .updateValue(accessory.context.lastWindowState)
-          .on('change', self.refreshData.bind(this, accessory, service, type));
+    if (!this.mainService.testCharacteristic(Characteristic.OpenDuration))
+      this.mainService.addCharacteristic(Characteristic.OpenDuration);
         
-        self.historyService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        break;
-      case 'switch':
-        service = accessory.getService(Service.Outlet);
-        service.getCharacteristic(Characteristic.On)
-          .updateValue(accessory.context.lastSwitchState)
-          .on('set', self.setSwitchState.bind(this,accessory,service, device));
-        service.getCharacteristic(Characteristic.OutletInUse)
-          .updateValue(accessory.context.lastSwitchState);
-        break;
-      case 'contact':
-        service = accessory.getService(Service.ContactSensor);
-        if (!service.testCharacteristic(Characteristic.LastActivation))service.addCharacteristic(Characteristic.LastActivation);
-        service.getCharacteristic(Characteristic.LastActivation)
-          .updateValue(accessory.context.lastActivation);
-      
-        if (!service.testCharacteristic(Characteristic.TimesOpened))service.addCharacteristic(Characteristic.TimesOpened);
-        service.getCharacteristic(Characteristic.TimesOpened)
-          .updateValue(accessory.context.timesOpened);
-
-        if (!service.testCharacteristic(Characteristic.OpenDuration))service.addCharacteristic(Characteristic.OpenDuration);
-        service.getCharacteristic(Characteristic.OpenDuration)
-          .updateValue(accessory.context.openDuration);
-
-        if (!service.testCharacteristic(Characteristic.ClosedDuration))service.addCharacteristic(Characteristic.ClosedDuration);
-        service.getCharacteristic(Characteristic.ClosedDuration)
-          .updateValue(accessory.context.closeDuration);
+    if (!this.mainService.testCharacteristic(Characteristic.ClosedDuration))
+      this.mainService.addCharacteristic(Characteristic.ClosedDuration);
         
-        service.getCharacteristic(Characteristic.ContactSensorState)
-          .updateValue(accessory.context.lastSensorState)
-          .on('change', self.refreshData.bind(this, accessory, service, type));
-        
-        self.historyService = new FakeGatoHistoryService('door', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        break;
-      case 'thermo':
-        service = accessory.getService(Service.Thermostat);
-        battery = accessory.getService(Service.BatteryService);
-
-        service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-          .updateValue(accessory.context.lastThermoCurrentState);
-
-        service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-          .updateValue(accessory.context.lastThermoTargetState)
-          .on('set', self.setThermostatState.bind(this, accessory,service,device));
-
-        service.getCharacteristic(Characteristic.CurrentTemperature)
-          .setProps({
-            minValue: -100,
-            maxValue: 100,
-            minStep: 0.1,
-            unit: accessory.context.unit
-          })
-          .updateValue(accessory.context.lastThermoCurrentTemp)
-          .on('change', self.refreshData.bind(this, accessory, service, type));
-
-        service.getCharacteristic(Characteristic.TargetTemperature)
-          .setProps({
-            minValue: 8,
-            maxValue: 28,
-            minStep: 0.5,
-            unit: accessory.context.unit
-          })
-          .updateValue(accessory.context.lastThermoTargetTemp)
-          .on('set', self.setThermostatTemp.bind(this, accessory, service, device))
-          .on('change', self.refreshData.bind(this, accessory, service, type));
-
-        service.getCharacteristic(Characteristic.TemperatureDisplayUnits)
-        //.on('set', self.setTempUnit.bind(this, accessory, service))
-          .updateValue(accessory.context.unit); // 0 = C ; 1 = F
-
-        battery.getCharacteristic(Characteristic.ChargingState)
-          .updateValue(2); //Not chargable
-
-        battery.getCharacteristic(Characteristic.BatteryLevel)
-          .updateValue(accessory.context.batteryLevel);
-
-        battery.getCharacteristic(Characteristic.StatusLowBattery)
-          .updateValue(accessory.context.batteryStatus);
-
-       
-        self.historyService = new FakeGatoHistoryService('weather', accessory, {storage:'fs',path:self.HBpath, disableTimer: false, disableRepeatLastData:false});
-        break;
-      default:
-        self.logger.warn('Can not detect type of SmartHome accessory! ' + ' (' + type + ')');
-        return; 
-    }
-
+    this.mainService.getCharacteristic(Characteristic.ContactSensorState)
+      .on('change', this.refreshData.bind(this));
+  
+    this.historyService = new FakeGatoHistoryService('door', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+  
+    this.getStates();
+  
   }
+  
+  getSwitchService(){
+  
+    this.mainService = this.accessory.getService(Service.Outlet);
+  
+    this.mainService.getCharacteristic(Characteristic.On)
+      .on('set', this.setSwitchState.bind(this));
+      
+    this.getStates();
+  
+  }
+  
+  getTemperatureService(){
+  
+    this.mainService = this.accessory.getService(Service.TemperatureSensor);
+  
+    this.mainService.getCharacteristic(Characteristic.CurrentTemperature)
+      .on('change', this.refreshData.bind(this));
+  
+    this.historyService = new FakeGatoHistoryService('weather', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+  
+    this.getStates();
+  
+  }
+  
+  getThermostatService(){
+  
+    this.mainService = this.accessory.getService(Service.Thermostat);
+    this.batteryService = this.accessory.getService(Service.BatteryService);
+  
+    this.accessory.context.timesWindowOpened = this.accessory.context.timesWindowOpened ? this.accessory.context.timesWindowOpened : 0;
+  
+    this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+      .setProps({ maxValue: 2, validValues: [0,1,2] })
+      .on('set', this.setThermostatState.bind(this));
 
+    this.mainService.getCharacteristic(Characteristic.CurrentTemperature)
+      .setProps({
+        minValue: -100,
+        maxValue: 100,
+        minStep: 0.1,
+        unit: Characteristic.Units.CELSIUS
+      })
+      .on('change', this.refreshData.bind(this));
+
+    this.mainService.getCharacteristic(Characteristic.TargetTemperature)
+      .setProps({
+        minValue: 8,
+        maxValue: 28,
+        minStep: 0.5,
+        unit: Characteristic.Units.CELSIUS
+      })
+      .on('set', this.setThermostatTemp.bind(this));
+    //.on('change', this.refreshData.bind(this));
+
+    this.mainService.getCharacteristic(Characteristic.TemperatureDisplayUnits)
+      .on('set', callback => callback());
+      
+    this.batteryService.getCharacteristic(Characteristic.ChargingState)
+      .updateValue(2);
+
+    this.historyService = new FakeGatoHistoryService('weather', this.accessory, {storage:'fs',path:this.HBpath, disableTimer: false, disableRepeatLastData:false});
+  
+    this.getStates();
+  
+  }
+  
+  async getStates(){
+  
+    try {
+    
+      let state, tstate, temp, ttemp, battery, batterylow, getSet;
+      
+      if(this.accessory.context.devType === 'thermostat')
+        getSet = await this.getSetStatus();
+      
+      let device = await this.smarthome.getDevice(this.accessory.context.ain);
+      
+      if(device){
+      
+        switch(this.accessory.context.devType){
+        
+          case 'contact':
+            
+            if(device.present && device.options.alert.state[0] != ''){
+             
+              state = parseInt(device.options.alert.state[0]);
+              
+              this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(state);
+            
+            }
+          
+            break;
+            
+          case 'window':
+
+            if(device.present && device.options.hkr.windowopenactiv[0] != ''){
+             
+              state = parseInt(device.options.hkr.windowopenactiv[0]);
+              
+              this.mainService.getCharacteristic(Characteristic.ContactSensorState).updateValue(state);
+            
+            }
+          
+            break;
+            
+          case 'switch':
+            
+            if(device.present && device.options.switch.state[0] !== ''){
+             
+              state = parseInt(device.options.switch.state[0]);
+              
+              this.mainService.getCharacteristic(Characteristic.On).updateValue(state);
+              this.mainService.getCharacteristic(Characteristic.OutletInUse).updateValue(state);
+            
+            }
+          
+            break;
+            
+          case 'temperature':
+            
+            if(device.present && device.options.temperature.celsius[0] !== ''){
+            
+              temp = parseFloat(device.options.temperature.celsius[0])/10;
+              
+              this.mainService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temp);
+            
+            }
+          
+            break;
+            
+          case 'thermostat':
+            
+            if(device.present){
+            
+              if(device.options.hkr.tist[0] !== '' && device.options.hkr.tsoll[0] !== ''){
+              
+                temp = parseFloat(device.options.hkr.tist[0])/2;
+                ttemp = parseFloat(device.options.hkr.tsoll[0])/2;
+                
+                if((ttemp*2) === 253){
+                
+                  state = 0;
+                  tstate = 0;
+                
+                } else {
+                
+                  if(ttemp <= temp){
+                  
+                    state = 2;
+                    tstate = 2;
+                  
+                  } else {
+                  
+                    state = 1;
+                    tstate = 1;
+                  
+                  }
+                
+                }
+                
+                this.mainService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temp);
+                this.mainService.getCharacteristic(Characteristic.TargetTemperature).updateValue(ttemp);
+                this.mainService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(state);
+               
+                if(getSet)
+                  this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(tstate);
+                
+              }
+              
+              if(device.options.hkr.battery[0] !== '' && device.options.hkr.batterylow[0] !== ''){
+              
+                battery = parseInt(device.options.hkr.battery[0]);
+                batterylow = parseInt(device.options.hkr.batterylow[0]);
+                
+                this.batteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(battery);
+                this.batteryService.getCharacteristic(Characteristic.StatusLowBattery).updateValue(batterylow);
+                
+              }
+            
+            }
+          
+            break;
+        
+        }
+      
+      } else {
+      
+        this.debug(this.accessory.displayName + ': No device with AIN: ' + this.accessory.context.ain + ' found or not intialized yet!');
+     
+      }
+    
+    } catch(err){
+    
+      this.logger.error(this.accessory.displayName + ': An error occured while polling state');
+      this.debug(err);
+    
+    } finally {
+    
+      setTimeout(this.getStates.bind(this), this.accessory.context.polling);
+    
+    }
+  
+  }
+  
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // Switches
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  setSwitchState(accessory,service,device,state,callback){
-    const self = this;
-    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
-      let sid = accessory.context.newSid;
+  async setSwitchState(state,callback){
+  
+    try{
+    
+      this.logger.info(this.accessory.displayName + ' Turn ' + (state?'on':'off'));
+    
       let cmd = state?'setswitchon':'setswitchoff';
-      let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?ain='+accessory.context.ain+'&switchcmd='+cmd+'&sid='+sid;
-      let opt = {
-        uri: url,
-        method: 'GET',
-        rejectUnauthorized: false,
-        requestCert: true,
-        agent: false
-      };
-      request(opt,function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          self.logger.info(accessory.displayName+': '+(state?'On':'Off'));
-          //accessory.context.lastSwitchState = state;
-          accessory.context.newState = state;
-          service.getCharacteristic(Characteristic.On).updateValue(state);
-          service.getCharacteristic(Characteristic.OutletInUse).updateValue(state);
-          callback(null,state);
-        } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured while setting new switch state!');
-          let showError = {
-            error: error?error.errno:response.statusMessage,
-            errorCode: error?error.code:response.statusCode
-          };
-          self.logger.errorinfo(JSON.stringify(showError,null,4));
-          setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);},500);
-          setTimeout(function(){service.getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);},500);
-          callback(null, state?false:true);
-        }
-      });
-    } else {
-      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
-        self.logger.warn(accessory.displayName + ': Device not present!');
-      } else {
-        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
-      }
-      setTimeout(function(){service.getCharacteristic(Characteristic.On).updateValue(accessory.context.lastSwitchState);},500);
-      setTimeout(function(){service.getCharacteristic(Characteristic.OutletInUse).updateValue(accessory.context.lastSwitchState);},500);
-      callback(null, state?false:true);
+  
+      await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+    
+    } catch(err){
+    
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new switch state');
+      this.debug(err);
+    
+    } finally {
+    
+      callback();
+    
     }
+    
+  }
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+  // Thermostats
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+  async setThermostatState(state,callback,context){
+  
+    this.ruleSetState++;
+
+    try {
+    
+      this.settedState++;
+    
+      // from setTemp
+      
+      if((context && !isNaN(parseInt(context.newState))) || this.settedTemp){
+      
+        if(this.settedTemp){
+          callback();
+          return;
+        }
+        
+        let mode, state, temp;
+        
+        if(context.newState === 1){
+          
+          mode = 'Heat Mode *';
+          state = 1;
+          temp = context.temp;
+        
+        } else if(context.newState === 2){
+          
+          mode = 'Cool Mode *';
+          state = 2;
+          temp = context.temp;
+       
+        } else if(context.newState === 3) {
+          
+          mode = 'Auto Mode not supported *';
+          state = 0;
+          temp = false;
+       
+        } else {
+          
+          mode = 'Off Mode *';
+          state = 0;
+          temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value;
+      
+        }
+    
+        this.logger.info(this.accessory.displayName + ': ' + mode);
+        
+        setTimeout(() => {
+        
+          this.mainService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+            .updateValue(state);
+          
+          this.mainService.getCharacteristic(Characteristic.TargetTemperature)
+            .updateValue(temp);   
+        
+        }, 100);
+      
+        this.settedTemp = true;
+      
+        setTimeout(() => {
+          
+          this.settedTemp = false;
+          
+        }, 500);
+        
+        callback();
+      
+        return;
+      
+      } else {
+      
+        let cmd, temp;
+      
+        switch(state){
+       
+          case 0: //OFF
+          
+            this.logger.info(this.accessory.displayName + ': Off');
+            cmd = 'sethkrtsoll&param=253';
+        
+            break;
+       
+          case 1: //HEAT
+          
+            this.logger.info(this.accessory.displayName + ': Heat');
+            temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.heatValue;
+            cmd = 'sethkrtsoll&param=' + temp*2;
+         
+            break;
+      
+          case 2: //COOL
+        
+            this.logger.info(this.accessory.displayName + ': Cool');
+            temp = this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value + this.accessory.context.coolValue;
+            cmd = 'sethkrtsoll&param=' + temp*2;
+         
+            break;
+          
+          case 3: //AUTO
+        
+            this.logger.info(this.accessory.displayName + ': Auto not supported');
+            cmd = false;
+         
+            break;
+          
+          default:
+          //
+     
+        }
+      
+        if(cmd)
+          await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+      
+      
+      }
+    
+    } catch(err){
+    
+      this.logger.error(this.accessory.displayName + ': An error occured while setting new thermostat state');
+      this.debug(err);
+    
+    } finally {
+    
+      callback();
+    
+    }
+    
+  }
+
+  async setThermostatTemp(value,callback,context){
+  
+    await timeout(500);
+    let targetService = this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).value;
+  
+    if(!this.ruleSetState){
+  
+      try {
+
+        let tarState;
+
+        this.logger.info(this.accessory.displayName + ': Setting new temperature: ' + value);
+        
+        let cmd = 'sethkrtsoll&param='+(value*2);
+      
+        await this.smarthome.sendCommand(this.accessory.displayName, this.accessory.context.ain, cmd);
+  
+        if(value < this.mainService.getCharacteristic(Characteristic.CurrentTemperature).value){
+          
+          tarState = 2;
+       
+        } else {
+          
+          tarState = 1;
+       
+        }
+      
+        if(context !== 'rule')  
+          this.mainService.getCharacteristic(Characteristic.TargetHeatingCoolingState).setValue(tarState, undefined, {newState:tarState, temp: value});
+
+      } catch (err){
+
+        this.logger.error(this.accessory.displayName + ': An error occured while setting new temp!'); 
+        this.debug(err);
+
+      } finally {
+    
+        callback();
+      
+      }
+    
+    } else {
+    
+      this.ruleSetState = false; 
+    
+      if(targetService === 1 || targetService === 2){
+  
+        this.mainService.getCharacteristic(Characteristic.TargetTemperature).setValue(value, undefined, 'rule'); 
+  
+      }
+    
+      callback();
+    
+    }
+  
+  }
+  
+  async getSetStatus(){
+  
+    if(this.settedState){
+    
+      this.oldState = this.settedState; 
+    
+      await timeout(5000);
+    
+      if(this.settedState === this.oldState){
+    
+        this.settedState = 0;
+        return true;
+    
+      } else {
+    
+        return false;
+    
+      }
+    
+    } else {
+    
+      return true;
+    
+    }
+  
   }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   // FakeGato
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   
-  refreshData(accessory, service, type, value){
-    const self = this;   
-    switch(type){
-      case 'temp':
-        self.historyService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
-        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastTemp);
+  refreshData(value){
+
+    switch(this.accessory.context.devType){
+      
+      case 'temperature':
+      
+        this.debug(this.accessory.displayName + ': New entry: ' + value.newValue);
+        
+        this.historyService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
+        
         break;
+     
       case 'window':
-        self.historyService.addEntry({time: moment().unix(), status:value.newValue});
-        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastWindowState);
-        if(value.newValue){
-          accessory.context.timesWindowOpened += 1;
-          accessory.context.lastWindowActivation = moment().unix() - self.historyService.getInitialTime();
-          accessory.context.closeWindowDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastWindowActivation);
-          service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeWindowDuration);
-          service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesWindowOpened);
-        } else {
-          accessory.context.openWindowDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openWindowDuration);
-        }
-        break;
       case 'contact':
-        self.historyService.addEntry({time: moment().unix(), status:value.newValue});
-        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastSensorState);
+        
+        this.debug(this.accessory.displayName + ': New entry: ' + value.newValue);
+        
         if(value.newValue){
-          accessory.context.timesOpened += 1;
-          accessory.context.lastActivation = moment().unix() - self.historyService.getInitialTime();
-          accessory.context.closeDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.LastActivation).updateValue(accessory.context.lastActivation);
-          service.getCharacteristic(Characteristic.ClosedDuration).updateValue(accessory.context.closeDuration);
-          service.getCharacteristic(Characteristic.TimesOpened).updateValue(accessory.context.timesOpened);
+          
+          this.accessory.context.timesWindowOpened += 1;
+          let lastWindowActivation = moment().unix() - this.historyService.getInitialTime();
+          let closeWindowDuration = moment().unix() - this.historyService.getInitialTime();
+          this.mainService.getCharacteristic(Characteristic.LastActivation).updateValue(lastWindowActivation);
+          this.mainService.getCharacteristic(Characteristic.ClosedDuration).updateValue(closeWindowDuration);
+          this.mainService.getCharacteristic(Characteristic.TimesOpened).updateValue(this.accessory.context.timesWindowOpened);
+        
         } else {
-          accessory.context.openDuration = moment().unix() - self.historyService.getInitialTime();
-          service.getCharacteristic(Characteristic.OpenDuration).updateValue(accessory.context.openDuration);
+          
+          let openWindowDuration = moment().unix() - this.historyService.getInitialTime();
+          this.mainService.getCharacteristic(Characteristic.OpenDuration).updateValue(openWindowDuration);
+        
         }
+        
+        this.historyService.addEntry({time: moment().unix(), status:value.newValue});
+        
         break;
-      case 'thermo':
-        self.historyService.addEntry({time: moment().unix(), temp:accessory.context.lastThermoCurrentTemp, pressure:0, humidity:0});
-        self.logger.debug(accessory.displayName + ': New entry: ' + accessory.context.lastThermoCurrentTemp + ' - and - ' + accessory.context.lastThermoTargetTemp);
+      
+      case 'thermostat':
+        
+        this.debug(this.accessory.displayName + ': New entry: ' + value.newValue);
+        
+        this.historyService.addEntry({time: moment().unix(), temp:value.newValue, pressure:0, humidity:0});
+        
         break;
+     
       default:
         //err
+    
     }
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  // Thermostats
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-  setThermostatState(accessory,service,device,state,callback){
-    const self = this;
-    let cmd;
-    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
-      let sid = accessory.context.newSid;
-      switch(state){
-        case 0: //OFF
-          accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp;
-          accessory.context.lastThermoTargetState = 0;
-          accessory.context.lastThermoCurrentState = 0;
-          cmd = 'sethkrtsoll&param=253';
-          break;
-        case 1: //HEAT
-          accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp + accessory.context.heatValue;
-          accessory.context.lastThermoTargetState = 1;
-          accessory.context.lastThermoCurrentState = 1;
-          cmd = 'sethkrtsoll&param='+accessory.context.lastThermoTargetTemp*2;
-          break;
-        case 2: //COOL
-          accessory.context.lastThermoTargetTemp = accessory.context.lastThermoCurrentTemp - accessory.context.coolValue;
-          accessory.context.lastThermoTargetState = 2;
-          accessory.context.lastThermoCurrentState = 2;
-          cmd = 'sethkrtsoll&param='+accessory.context.lastThermoTargetTemp*2;
-          break;
-      }
-      let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?ain='+accessory.context.ain+'&switchcmd='+cmd+'&sid='+sid;
-      let opt = {
-        uri: url,
-        method: 'GET',
-        rejectUnauthorized: false,
-        requestCert: true,
-        agent: false
-      }; 
-      request(opt,function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          switch(state){
-            case 0: //OFF
-              self.logger.info(accessory.displayName + ': OFF');
-              break;
-            case 1: //HEAT
-              self.logger.info(accessory.displayName + ': Heating to ' + accessory.context.lastThermoTargetTemp);
-              break;
-            case 2: //COOL
-              self.logger.info(accessory.displayName + ': Cooling to ' + accessory.context.lastThermoTargetTemp);
-              break;
-          }
-          accessory.context.newState = state;
-          accessory.context.newCurrState = state;
-          accessory.context.newTarTemp = accessory.context.lastThermoTargetTemp;
-          service.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(state);
-          service.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(state); 
-          service.getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
-          callback(null, state);
-        } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured while setting new target state!');
-          let showError = {
-            error: error?error.errno:response.statusMessage,
-            errorCode: error?error.code:response.statusCode
-          };
-          self.logger.errorinfo(JSON.stringify(showError,null,4));
-          setTimeout(function(){service.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);},500);
-          callback(null, accessory.context.lastThermoTargetState);
-        }         
-      });   
-    } else {
-      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
-        self.logger.warn(accessory.displayName + ': Device not present!');
-      } else {
-        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
-      }
-      setTimeout(function(){service.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);},500);
-      callback(null, accessory.context.lastThermoTargetState);
-    }
-  }
-
-  setThermostatTemp(accessory,service,device,value,callback){
-    const self = this;
-    if(accessory.context.newSid&&accessory.context.devPresent===1||accessory.context.devPresent==='1'){
-      let sid = accessory.context.newSid;   
-      let cmd = 'sethkrtsoll&param='+(value*2);
-      let url = 'http://'+device.config.host+'/webservices/homeautoswitch.lua?ain='+accessory.context.ain+'&switchcmd='+cmd+'&sid='+sid;
-      let opt = {
-        uri: url,
-        method: 'GET',
-        rejectUnauthorized: false,
-        requestCert: true,
-        agent: false
-      };       
-      request(opt,function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          self.logger.info(accessory.displayName + ': Target temperature: ' + value);
-          accessory.context.lastThermoTargetTemp = value;
-          if(accessory.context.lastThermoTargetTemp <= accessory.context.lastThermoCurrentTemp){
-            accessory.context.lastThermoTargetState = 2;
-            accessory.context.lastThermoCurrentState = 2; 
-          } else {
-            accessory.context.lastThermoTargetState = 1;
-            accessory.context.lastThermoCurrentState = 1; 
-          } 
-          accessory.context.newState = accessory.context.lastThermoTargetState;
-          accessory.context.newCurrState = accessory.context.lastThermoCurrentTemp;
-          accessory.context.newTarTemp = value;
-          service.getCharacteristic(Characteristic.TargetHeatingCoolingState).updateValue(accessory.context.lastThermoTargetState);
-          service.getCharacteristic(Characteristic.CurrentHeatingCoolingState).updateValue(accessory.context.lastThermoCurrentState); 
-          service.getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);
-          callback(null, value);
-        } else {
-          self.logger.errorinfo(accessory.displayName + ': An error occured while setting target temp!');
-          let showError = {
-            error: error?error.errno:response.statusMessage,
-            errorCode: error?error.code:response.statusCode
-          };
-          self.logger.errorinfo(JSON.stringify(showError,null,4));
-          setTimeout(function(){service.getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);},500);
-          callback(null, accessory.context.lastThermoTargetTemp);
-        }           
-      });       
-    } else {
-      if(accessory.context.devPresent===0||accessory.context.devPresent==='0'){
-        self.logger.warn(accessory.displayName + ': Device not present!');
-      } else {
-        self.logger.warn(accessory.displayName + ': SID dont fetched yet, try again..');
-      }
-      setTimeout(function(){service.getCharacteristic(Characteristic.TargetTemperature).updateValue(accessory.context.lastThermoTargetTemp);},500);
-      callback(null, accessory.context.lastThermoTargetTemp);
-    }
+ 
   }
   
 }
 
-module.exports = Fritz_Box;
+module.exports = SmarthomeAccessory;
