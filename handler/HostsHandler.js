@@ -87,7 +87,7 @@ class HostsHandler {
     } catch(error){
 
       this.logger.error('Host List (no mesh): An error occured while fetching devices!');
-      console.log(error);
+      this.debug(error);
 
     } finally {
 
@@ -179,7 +179,7 @@ class HostsHandler {
     } catch(error){
     
       this.logger.error('Host List: An error occured while getting hosts list endpoint!');
-      console.log(error);
+      this.debug(error);
     
     }
   
@@ -209,7 +209,7 @@ class HostsHandler {
         };
       
       this.logger.error('Host List: An error occured while generating host list!');
-      console.log(error);
+      this.debug(error);
     
     } finally {
 

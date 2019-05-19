@@ -41,7 +41,7 @@ class CallmonitorHandler {
       
       } else {
          
-        this.logger.error(JSON.stringify(error,null,4));
+        this.logger.error(error);
         
       }
    

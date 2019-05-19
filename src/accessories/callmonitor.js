@@ -520,7 +520,7 @@ class CallmonitorAccessory {
           
           this.logger.error(this.accessory.displayName + ': An error occured while loading phonebook data');
         
-          this.debug(JSON.stringify(err, null, 4));
+          this.debug(err);
           
         }
     
@@ -531,6 +531,8 @@ class CallmonitorAccessory {
         this.logger.error(this.accessory.displayName + ': An error occured with callmonitor!');
         
         this.debug(error);
+        
+        setTimeout(this.getContactState.bind(this),11000);
     
       });
       

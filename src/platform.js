@@ -87,8 +87,6 @@ FritzPlatform.prototype = {
       let tr064 = new api.TR064();
       let foundDevices = await tr064.searchDevices();
       
-      console.log(foundDevices);
-      
       this.logger.info('Initializing config...');
       this.config = await this.Config.generateConfig(foundDevices);
       
@@ -227,7 +225,7 @@ FritzPlatform.prototype = {
     } catch(err) {
 
       this.logger.error('An error occured while checking config!');
-      console.log(err);
+      debug(err);
 
     }
 
@@ -323,7 +321,7 @@ FritzPlatform.prototype = {
     } catch(err) {
     
       this.logger.error('An error occured while fetching devices!');
-      console.log(err);
+      debug(err);
     
     }
     
@@ -431,8 +429,6 @@ FritzPlatform.prototype = {
       
         if(add)
           accessory.addService(Service.Switch, object.name);
-          
-        console.log(accessory);
         
         new ExtrasAccessory(this, accessory);
       
@@ -657,11 +653,15 @@ FritzPlatform.prototype = {
       let TR064 = await this.TR064.initDevice();
       this.device = await TR064.startEncryptedCommunication();
     
-      let info = this.device.services['urn:dslforum-org:service:WANCommonInterfaceConfig:1']; 
+      return true;
+    
+      /*let info = this.device.services['urn:dslforum-org:service:WANCommonInterfaceConfig:1']; 
       
       if(info){
       
         info = await info.actions.GetCommonLinkProperties();
+        
+        debug(info)
         
         if(info.NewWANAccessType && info.NewWANAccessType !== 'Ethernet'){
         
@@ -677,7 +677,7 @@ FritzPlatform.prototype = {
       
         return false;
       
-      }
+      }*/
     
     } catch(err){
     
