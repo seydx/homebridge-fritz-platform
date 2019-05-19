@@ -229,7 +229,8 @@
       },
       "polling": 10,
       "timeout": 10,
-      "clearCache": false
+      "clearCache": false,
+      "debug":true
     }
   ]
 }
