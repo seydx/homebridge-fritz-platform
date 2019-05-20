@@ -188,9 +188,9 @@ FritzPlatform.prototype = {
           timeout: this.config.timeout * 1000
         };
         
-        let api = new api.TR064(masterConfig);            
+        let tr064 = new api.TR064(masterConfig);            
         
-        let TR064 = await api.initDevice();
+        let TR064 = await tr064.initDevice();
         this.device = await TR064.startEncryptedCommunication();
         
         debug('Master device successfully confirmed');
