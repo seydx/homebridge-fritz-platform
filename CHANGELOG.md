@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 4.0.2 - 2019-05-20
+- Added option to disable auto search
+
 ## 4.0.1 - 2019-05-20
 - Bugfixes
 - Cleanup code
