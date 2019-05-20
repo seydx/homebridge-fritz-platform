@@ -49,6 +49,7 @@ function FritzPlatform (log, config, api) {
   this._accessories = new Map();
   
   this.Config = new Config(this, config);
+  this.configJson = config;
   
   this.configPath = api.user.storagePath();
   this.HBpath = api.user.storagePath()+'/accessories';
@@ -56,6 +57,8 @@ function FritzPlatform (log, config, api) {
   this.debugEnabled = config.debug||false; 
   debug.enabled = this.debugEnabled;  
   this.debug = debug;
+  
+  this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   
   if (api) {
   
@@ -85,10 +88,38 @@ FritzPlatform.prototype = {
 
     try {
     
-      this.logger.info('Looking for devices...');
+      let foundDevices = [];    
       
-      let tr064 = new api.TR064();
-      let foundDevices = await tr064.searchDevices();
+      if(!this.configJson.disableAutoConfig){
+      
+        this.logger.info('Auto Config Generator is enabled, searching for devices in network...');
+        
+        let tr064 = new api.TR064();
+        foundDevices = await tr064.searchDevices();
+      
+      } else {
+
+        this.logger.info('Auto Config Generator is disabled, looking for devices in config.json..');
+
+        if(!this.configJson.devices||(this.configJson.devices && !Object.keys(this.configJson.devices).length))
+          throw 'Auto config is disabled and NO devices setted up in config.json!';
+
+        for(const dev of Object.keys(this.configJson.devices)){
+          
+          if(this.validIP.test(this.configJson.devices[dev].host))
+            foundDevices.push({
+              name: dev,
+              address: this.configJson.devices[dev].host,
+              port: this.configJson.devices[dev].port||49000,
+              location: 'http://' + this.configJson.devices[dev].host + ':' + this.configJson.devices[dev].port + '/tr64desc.xml',
+              serial: 'FB-' + this.configJson.devices[dev].host.replace(/\./g, '')
+            });
+        }
+
+      }
+      
+      debug('Found following devices:');
+      debug(foundDevices);
       
       this.logger.info('Initializing config...');
       this.config = await this.Config.generateConfig(foundDevices);
@@ -130,7 +161,8 @@ FritzPlatform.prototype = {
         polling: this.config.polling,
         timeout: this.config.timeout,
         clearCache: this.config.clearCache,
-        debug: this.config.debug
+        debug: this.config.debug,
+        disableAutoConfig: this.config.disableAutoConfig
       };
       
       debug('Generating config...');
