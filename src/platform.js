@@ -90,19 +90,19 @@ FritzPlatform.prototype = {
     
       let foundDevices = [];    
       
-      if(!this.configJson.disableAutoConfig){
+      if(!this.configJson.disableAutoSearch){
       
-        this.logger.info('Auto Config Generator is enabled, searching for devices in network...');
+        this.logger.info('Auto Device Search is enabled, searching for devices in network...');
         
         let tr064 = new api.TR064();
         foundDevices = await tr064.searchDevices();
       
       } else {
 
-        this.logger.info('Auto Config Generator is disabled, looking for devices in config.json..');
+        this.logger.info('Auto Device Search is disabled, looking for devices in config.json..');
 
         if(!this.configJson.devices||(this.configJson.devices && !Object.keys(this.configJson.devices).length))
-          throw 'Auto config is disabled and NO devices setted up in config.json!';
+          throw 'Auto Device Search is disabled and NO devices setted up in config.json!';
 
         for(const dev of Object.keys(this.configJson.devices)){
           
@@ -162,7 +162,7 @@ FritzPlatform.prototype = {
         timeout: this.config.timeout,
         clearCache: this.config.clearCache,
         debug: this.config.debug,
-        disableAutoConfig: this.config.disableAutoConfig
+        disableAutoSearch: this.config.disableAutoSearch
       };
       
       debug('Generating config...');
