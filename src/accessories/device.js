@@ -272,6 +272,7 @@ class DeviceAccessory {
   async getState(){
   
     let state;
+    let states = [];
   
     try {
     
@@ -293,11 +294,22 @@ class DeviceAccessory {
       
       } else { //repeater
       
-        let wifi = this.device.services['urn:dslforum-org:service:WLANConfiguration:1']; 
-        
+        let wifi = this.device.services['urn:dslforum-org:service:WLANConfiguration:1'];         
         wifi = await wifi.actions.GetInfo();
-      
-        state = parseInt(wifi.NewEnable) ? true : false;   
+        
+        states.push(parseInt(wifi.NewEnable));
+        
+        if(this.device.services['urn:dslforum-org:service:WLANConfiguration:3']){
+        
+          let wifi2 = this.device.services['urn:dslforum-org:service:WLANConfiguration:2'];         
+          wifi2 = await wifi2.actions.GetInfo();
+          
+          states.push(parseInt(wifi2.NewEnable));
+        
+        }
+        
+        state = states.includes(1) ? true : false;
+          
       
       }  
 
