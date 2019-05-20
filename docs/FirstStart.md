@@ -3,9 +3,12 @@
 After enabling TR064 ([Enable TR064 API](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)) the next step will be generating the config.json
 
 
-## 1. Init
-
 After installing this plugin, you need only put following in your config.json
+
+
+## 1a. Init (enabled auto device search)
+
+This version of config.json uses "auto device search". So it will search your network for all compatible devices and put it automatically into your config.json. If you have issues with this method, please try **1b**
 
 ```
 {
@@ -18,6 +21,38 @@ After installing this plugin, you need only put following in your config.json
   "platforms": [
     {
       "platform": "FritzPlatform",
+    }
+  ]
+}
+```
+
+
+## 1b. Init (disabled auto device search)
+
+If you running issues with the first method, try with disabling auto search. This will look for devices setted up in your config.json and complete automatically the rest. You need atleast an **unique** name for the device and the ip address of the device. If you have another port than 49000 you need to put it also in config.json, otherwise you can skip port.
+
+```
+{
+  "bridge": {
+    ...
+  },
+  "accessories": [
+    ...
+  ],
+  "platforms": [
+    {
+      "platform": "FritzPlatform",
+      "disableAutoSearch": true,
+      "devices":{
+        "FritzBox Name Here": {
+          "host": "192.168.178.1",
+          "port": 49000
+        },
+        "Another FritzBox Name Here if needed": {
+          "host": "192.168.178.2",
+          "port": 49000
+        }
+      }
     }
   ]
 }
