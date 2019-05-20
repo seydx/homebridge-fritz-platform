@@ -230,7 +230,8 @@
       "polling": 10,
       "timeout": 10,
       "clearCache": false,
-      "debug":true
+      "debug":true,
+      "disableAutoSearch": false
     }
   ]
 }
