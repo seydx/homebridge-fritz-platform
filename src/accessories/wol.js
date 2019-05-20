@@ -77,7 +77,12 @@ class WolAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state!');
-      this.debug(err);
+      
+      if(err instanceof TypeError){
+        console.log(err);
+      } else {
+        this.debug(err);
+      }
 
     } finally {
     

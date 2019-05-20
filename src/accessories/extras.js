@@ -55,7 +55,11 @@ class ExtrasAccessory {
       
       this.logger.error(this.accessory.displayName + ': Please check your credentials and try again with restarting homebridge!');
       
-      this.debug(err);
+      if(err instanceof TypeError){
+        console.log(err);
+      } else {
+        this.debug(err);
+      }
     
     }
   
@@ -88,7 +92,12 @@ class ExtrasAccessory {
     } catch(err){
     
       this.logger.error(this.accessory.displayName + ': An error occured while checking firmware!');
-      this.debug(err);
+
+      if(err instanceof TypeError){
+        console.log(err);
+      } else {
+        this.debug(err);
+      }
     
     }
   
@@ -219,7 +228,12 @@ class ExtrasAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while setting new state!');
-      this.debug(err);
+
+      if(err instanceof TypeError){
+        console.log(err);
+      } else {
+        this.debug(err);
+      }
 
     } finally {
     
@@ -340,7 +354,12 @@ class ExtrasAccessory {
     } catch(err) {
 
       this.logger.error(this.accessory.displayName + ': An error occured while getting new state!');
-      this.debug(err);
+
+      if(err instanceof TypeError){
+        console.log(err);
+      } else {
+        this.debug(err);
+      }
 
     } finally {
     

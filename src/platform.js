@@ -167,16 +167,16 @@ FritzPlatform.prototype = {
       
       if(!this.masterDevice.length){
       
-        return this.logger.info('No master device defined!');
+        throw 'No master device defined!';
           
       } else if(this.masterDevice.length > 1) {
         
-        return this.logger.error('Please define only ONE master device!');
+        throw 'Please define only ONE master device!';
       
       } else {
       
         debug('Checking master device...');
-          
+        
         let masterConfig = {
           host: this.masterDevice[0].host,
           port: this.masterDevice[0].port,
@@ -188,15 +188,15 @@ FritzPlatform.prototype = {
           timeout: this.config.timeout * 1000
         };
         
-        this.TR064 = new api.TR064(masterConfig, this.logger);
-      
-        let TR064 = await this.TR064.initDevice();
+        let api = new api.TR064(masterConfig);            
+        
+        let TR064 = await api.initDevice();
         this.device = await TR064.startEncryptedCommunication();
         
         debug('Master device successfully confirmed');
          
         debug('Initializing SID handler');
-        this.sid = new SID(this);
+        this.sid = new SID();
            
         if(this.Config.getHosts()){
             

@@ -1,14 +1,9 @@
 'use strict';
 
 class SidHandler {
-  constructor (platform) {
+  constructor () {
 
-    this.log = platform.log;
-    this.logger = platform.logger;
-    this.debug = platform.debug;
-    
-    this.sid = false;
-    
+    this.sid = false;  
     this.deviceHandler = [];
     
   }

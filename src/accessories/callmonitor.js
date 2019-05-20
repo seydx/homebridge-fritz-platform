@@ -520,7 +520,11 @@ class CallmonitorAccessory {
           
           this.logger.error(this.accessory.displayName + ': An error occured while loading phonebook data');
         
-          this.debug(err);
+          if(err instanceof TypeError){
+            console.log(err);
+          } else {
+            this.debug(err);
+          }
           
         }
     

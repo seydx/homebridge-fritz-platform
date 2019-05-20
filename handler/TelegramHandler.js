@@ -5,10 +5,7 @@ const https = require('https');
 class TelegramHandler {
   constructor (platform, config) {
 
-    this.log = platform.log;
-    this.logger = platform.logger;
-    this.debug = platform.debug;
-    
+    this.debug = platform.debug;    
     this.config = config;
 
   }

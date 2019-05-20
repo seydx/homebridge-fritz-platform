@@ -5,9 +5,7 @@ const net = require('net');
 class CallmonitorHandler {
   constructor (platform, config) {
 
-    this.log = platform.log;
     this.logger = platform.logger;
-    this.debug = platform.debug;
     this.config = config;
 
     this.connect();

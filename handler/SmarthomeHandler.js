@@ -103,7 +103,12 @@ class SmarthomeHandler {
       } else {
         
         this.logger.error('Smarthome List: An error occured while generating smarthome list!');
-        this.debug(error);
+        
+        if(error instanceof TypeError){
+          console.log(error);
+        } else {
+          this.debug(error);
+        }
         
         setTimeout(this.generateSmarthomeList.bind(this), 15000);
       
@@ -135,7 +140,9 @@ class SmarthomeHandler {
     
         let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?ain=' + ain + '&switchcmd=' + cmd + '&sid=' + sid;
         
-        await axios(url);  
+        await axios(url);
+        
+        return;  
         
       }
       

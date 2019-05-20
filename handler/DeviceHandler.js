@@ -8,9 +8,7 @@ class DeviceHandler {
     Service = platform.api.hap.Service;
     Characteristic = platform.api.hap.Characteristic;
 
-    this.log = platform.log;
     this.logger = platform.logger;
-    this.debug = platform.debug;
     this.platform = platform;
 
     this.device = device;

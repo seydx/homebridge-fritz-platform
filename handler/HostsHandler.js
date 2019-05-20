@@ -8,7 +8,6 @@ const parseString = require('xml2js').parseString;
 class HostsHandler {
   constructor (platform, config, device, devices, mainConfig) {
 
-    this.log = platform.log;
     this.logger = platform.logger;
     this.debug = platform.debug;
     this.platform = platform;
@@ -87,7 +86,12 @@ class HostsHandler {
     } catch(error){
 
       this.logger.error('Host List (no mesh): An error occured while fetching devices!');
-      this.debug(error);
+      
+      if(error instanceof TypeError){
+        console.log(error);
+      } else {
+        this.debug(error);
+      }
 
     } finally {
 
@@ -179,7 +183,12 @@ class HostsHandler {
     } catch(error){
     
       this.logger.error('Host List: An error occured while getting hosts list endpoint!');
-      this.debug(error);
+      
+      if(error instanceof TypeError){
+        console.log(error);
+      } else {
+        this.debug(error);
+      }
     
     }
   
@@ -209,7 +218,12 @@ class HostsHandler {
         };
       
       this.logger.error('Host List: An error occured while generating host list!');
-      this.debug(error);
+      
+      if(error instanceof TypeError){
+        console.log(error);
+      } else {
+        this.debug(error);
+      }
     
     } finally {
 
