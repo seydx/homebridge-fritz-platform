@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.0.1 - 2019-05-20
+- Bugfixes
+- Cleanup code
+
 ## 4.0.0 - 2019-05-19
 - Refactored code
 - Refactored API
