@@ -29,6 +29,7 @@ class DeviceHandler {
       this.config.timeout = this.config.timeout||10;
       this.config.clearCache = this.config.clearCache||false;
       this.config.debug = this.config.debug||false;
+      this.config.disableAutoConfig = this.config.disableAutoConfig||false;
       
       this.config.devices = this.config.devices||{};
       this.config.smarthome = this.config.smarthome||{};
