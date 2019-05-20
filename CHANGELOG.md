@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.4 - 2019-05-20
+- Added better state detection for repeater
+
+## 4.0.3 - 2019-05-20
+- Bugfixes (SID)
 
 ## 4.0.2 - 2019-05-20
 - Added option to disable auto search
