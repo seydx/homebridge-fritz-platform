@@ -162,21 +162,26 @@ FritzPlatform.prototype = {
         timeout: this.config.timeout,
         clearCache: this.config.clearCache,
         debug: this.config.debug,
-        disableAutoSearch: this.config.disableAutoSearch
+        disableAutoSearch: this.config.disableAutoSearch,
+        disableAutoConfig: this.config.disableAutoConfig
       };
       
-      debug('Generating config...');
+      if(!this.config.disableAutoConfig){
       
-      let newConfig = await this._refreshConfig(config);      
-      debug(JSON.stringify(newConfig,null,4));
+        debug('Generating config...');
       
-      if(this.firstLaunch){
-      
-        this.logger.info('First launch completed!');
-        this.logger.info('Please open your config.json and set up your credentials for the devices and restart homebridge to complete the auto config generator!');
-      
-        return;
+        let newConfig = await this._refreshConfig(config);      
+        debug(JSON.stringify(newConfig,null,4));
      
+        if(this.firstLaunch){
+      
+          this.logger.info('First launch completed!');
+          this.logger.info('Please open your config.json and set up your credentials for the devices and restart homebridge to complete the auto config generator!');
+      
+          return;
+     
+        }
+      
       }
       
       this.logger.info('Found ' + this.deviceArray.length + ' active devices...');
