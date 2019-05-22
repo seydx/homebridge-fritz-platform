@@ -4,7 +4,8 @@ After enabling TR064 ([Enable TR064 API](https://github.com/SeydX/homebridge-fri
 
 
 After installing this plugin, you need only put following in your config.json
-This method only works if "disableAutoConfig" is disabled!
+
+**Note:** This method only works if "disableAutoConfig" is disabled!
 
 
 ## 1a. Init (enabled auto device search)
