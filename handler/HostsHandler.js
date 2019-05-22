@@ -245,10 +245,7 @@ class HostsHandler {
   
   getHostList(){
   
-    if(this.hosts)
-      return this.hosts;
-      
-    return false;
+    return this.hosts||false;
   
   }
 
