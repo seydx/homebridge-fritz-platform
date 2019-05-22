@@ -9,19 +9,19 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 ```
 "smarthome": {
   "Work room DECT 200":{
-    "type":"switch",
+    "devType":"switch",
     "ain":"1234567890",
     "tempSensor":true
   },
   "Living room DECT 301":{
-    "type":"thermo",
+    "devType":"thermostat",
     "ain":"1234567890"
     "heatValue":5,
     "coolValue":5,
     "windowSensor":true
   },
   "Kitchen Window":{
-    "type":"contact",
+    "devType":"contact",
     "ain":"1234567890"
   }
 }
@@ -34,7 +34,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
 | name | Unique name for the accessory, eg Work room DECT 200 | X |
-| type        | Must be "switch"            | X |
+| devType        | Must be "switch"            | X |
 | ain         | AIN adresse from the device | X |
 | tempSensor  | If true AND the switch provides a temperature sensor, a temperature sensor will be exposed to HomeKit (Default: false) |  |
 
@@ -45,7 +45,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | Attributes  | Usage                       | Req  |
 | ----------- | --------------------------- | :--: |
 | name | Unique name for the accessory, eg Living room DECT 301   |  X   |
-| type        | Must be "contact"           |  X   |
+| devType        | Must be "contact"           |  X   |
 | ain         | AIN adresse from the device |  X   |
 
 
@@ -55,7 +55,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | Attributes  | Usage                                                        | Req  |
 | ----------- | ------------------------------------------------------------ | :--: |
 | name | Unique name for the accessory, eg Kitchen window |  X   |
-| type        | Must be "thermo"                                             |  X   |
+| devType        | Must be "thermo"                                             |  X   |
 | ain         | AIN adresse from the device                                  |  X   |
 | heatValue   | Value for the "Heat" mode. Example: a value of 4 will heat up the room to **Current Room Temperature + 4 degrees** (Default: 5) |      |
 | coolValue   | Value for the "Cool" mode. Example: a value of 4 will cool up the room to **Current Room Temperature - 4 degrees** (Default: 5) |      |
