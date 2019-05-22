@@ -13,6 +13,7 @@ Here are some points from the example-config.json which will be explained in mor
 "clearCache": false,
 "debug":true,
 "disableAutoSearch": false
+"disableAutoConfig": false
 ```
 
 
@@ -25,4 +26,5 @@ Here are some points from the example-config.json which will be explained in mor
 | timeout   | Timeout in seconds before a request will break (Default: 5s) |      |
 | clearCache   | If true, all accessories from cache AND HomeKit will be removed |      |
 | debug   | Show more information in log (default: false) |      |
-| disableAutoSearch   | Disable auto device search in network (default: false) |      |
+| disableAutoSearch   | Disables auto device search in network (default: false) |      |
+| disableAutoConfig   | Disables auto config generator (default: false) |      |
