@@ -9,11 +9,13 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 ```
 "smarthome": {
   "Work room DECT 200":{
+    "active":true,
     "devType":"switch",
     "ain":"1234567890",
     "tempSensor":true
   },
   "Living room DECT 301":{
+    "active":true,
     "devType":"thermostat",
     "ain":"1234567890"
     "heatValue":5,
@@ -21,6 +23,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
     "windowSensor":true
   },
   "Kitchen Window":{
+    "active":true,
     "devType":"contact",
     "ain":"1234567890"
   }
@@ -34,6 +37,7 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | Attributes | Usage | Req |
 |------------|-------|:----------:|
 | name | Unique name for the accessory, eg Work room DECT 200 | X |
+| active | Activate/Deactivate Accessory (default: false) | |
 | devType        | Must be "switch"            | X |
 | ain         | AIN adresse from the device | X |
 | tempSensor  | If true AND the switch provides a temperature sensor, a temperature sensor will be exposed to HomeKit (Default: false) |  |
@@ -45,17 +49,19 @@ If you want to control your DECT plugs, thermometer or sensors, you have to set 
 | Attributes  | Usage                       | Req  |
 | ----------- | --------------------------- | :--: |
 | name | Unique name for the accessory, eg Living room DECT 301   |  X   |
+| active | Activate/Deactivate Accessory (default: false) | |
 | devType        | Must be "contact"           |  X   |
 | ain         | AIN adresse from the device |  X   |
 
 
 
-## Required parameter "thermo"
+## Required parameter "thermostat"
 
 | Attributes  | Usage                                                        | Req  |
 | ----------- | ------------------------------------------------------------ | :--: |
 | name | Unique name for the accessory, eg Kitchen window |  X   |
-| devType        | Must be "thermo"                                             |  X   |
+| active | Activate/Deactivate Accessory (default: false) | |
+| devType        | Must be "thermostat"                                             |  X   |
 | ain         | AIN adresse from the device                                  |  X   |
 | heatValue   | Value for the "Heat" mode. Example: a value of 4 will heat up the room to **Current Room Temperature + 4 degrees** (Default: 5) |      |
 | coolValue   | Value for the "Cool" mode. Example: a value of 4 will cool up the room to **Current Room Temperature - 4 degrees** (Default: 5) |      |
