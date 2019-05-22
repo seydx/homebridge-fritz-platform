@@ -24,7 +24,7 @@ If you want to start wol capable devices with this plugin, you have to put the M
 |------------|-------|:----------:|
 | active | Activate/Deactivate accessory _(Default: false)_ |  |
 | name | Unique name for the accessory, eg Fernseher or Computer etc. | x |
-| mac adress | MAC adresse from the device | x |
+| address | MAC adresse from the device | x |
 
 
 
