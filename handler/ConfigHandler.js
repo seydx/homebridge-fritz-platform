@@ -38,6 +38,7 @@ class DeviceHandler {
       this.config.presence = this.config.presence||{};
       this.config.wol = this.config.wol||[];
       this.config.alarm = this.config.alarm||{};
+      this.config.phoneBook = this.config.phoneBook||{};
       this.config.wakeup = this.config.wakeup||{};
       this.config.ringlock = this.config.ringlock||{};
       this.config.broadband = this.config.broadband||{};
@@ -99,7 +100,12 @@ class DeviceHandler {
           name: 'Test Device',
           address: '00:00:00:00:00:00'
         });
-      
+
+      this.config.phoneBook = {
+        active: this.config.phoneBook.active||false,
+        blacklist: this.config.phoneBook.blacklist||''
+      };
+
       this.config.alarm = {
         active: this.config.alarm.active||false,
         telNr: this.config.alarm.telNr||'',
@@ -217,7 +223,6 @@ class DeviceHandler {
             wifi2: options && options.wifi2 ? options.wifi2 : [false,false],
             wifi5: options && options.wifi5 ? options.wifi5 : [false,false],
             wifiGuest: options && options.wifiGuest ? options.wifiGuest : [false,false],
-            phoneBook: options && options.phoneBook ? options.phoneBook : false,
             wps: options && options.wps ? options.wps : [false,false],
             aw: options && options.aw ? options.aw : [false,false],
             deflection: options && options.deflection ? options.deflection : [false,false],
@@ -456,6 +461,16 @@ class DeviceHandler {
   async getExtras(){
   
     try {
+
+      if(this.config.phoneBook.active){
+          
+        this.extras.phoneBook = this.config.phoneBook;
+          
+      } else {
+          
+        this.extras.phoneBook = false;
+         
+      }
     
       if(this.config.alarm.active && this.config.alarm.telNr){
           

@@ -224,17 +224,40 @@ class CallmonitorAccessory {
                     }
                     
                   }
+                  
+                  this.denyCall;
+                  
+                  let blackbook = await this.loadData('blackbook');
+                  
+                  if(blackbook){
+                  
+                    this.denyCall = false;
+                  
+                    for(const entry of blackbook.phonebook){
+                
+                      if(message.caller === entry.number)
+                        this.denyCall = true;
+                
+                    }
+                    
+                  }
+                  
                   this.mainService.getCharacteristic(Characteristic.Caller).updateValue(message.caller);
                 
                   this.logger.info(text);
                 
-                  if(this.telegram){
+                  if(this.telegram && !this.denyCall){
                 
                     if(this.telegram.checkTelegram('callmonitor', 'incoming')){
                   
                       this.telegram.sendTelegram('callmonitor', 'incoming', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, message.called);
                     
                     }
+                
+                  } else {
+                
+                    if(this.denyCall)
+                      this.logger.info(this.accessory.displayName + ': Blocking Telegram notification for ' + message.caller);
                 
                   }
                 
@@ -269,17 +292,39 @@ class CallmonitorAccessory {
                 
                 }
             
+                this.denyCall;
+                  
+                let blackbook = await this.loadData('blackbook');
+                  
+                if(blackbook){
+                  
+                  this.denyCall = false;
+                  
+                  for(const entry of blackbook.phonebook){
+                
+                    if(message.caller === entry.number)
+                      this.denyCall = true;
+                
+                  }
+                    
+                }
+            
                 this.logger.info(text);
             
                 this.mainService.getCharacteristic(Characteristic.Caller).updateValue(message.caller);
             
-                if(this.telegram){
+                if(this.telegram && !this.denyCall){
                 
                   if(this.telegram.checkTelegram('callmonitor', 'incoming')){
                   
                     this.telegram.sendTelegram('callmonitor', 'incoming', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, message.called);
                     
                   }
+                
+                } else {
+                
+                  if(this.denyCall)
+                    this.logger.info(this.accessory.displayName + ': Blocking Telegram notification for ' + message.caller);
                 
                 }
             
@@ -472,7 +517,7 @@ class CallmonitorAccessory {
              
                   this.logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr));
                 
-                  if(this.telegram){
+                  if(this.telegram && !this.denyCall){
                 
                     if(this.telegram.checkTelegram('callmonitor', 'disconnected')){
                   
@@ -500,7 +545,7 @@ class CallmonitorAccessory {
             
                 this.logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr));
             
-                if(this.telegram){
+                if(this.telegram && !this.denyCall){
                 
                   if(this.telegram.checkTelegram('callmonitor', 'disconnected')){
                   

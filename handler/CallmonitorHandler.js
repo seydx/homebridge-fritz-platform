@@ -47,13 +47,13 @@ class CallmonitorHandler {
     
     this.client.on('close', () => {
       
-      this.logger.warn('Callmonitor: Connection were closed!');
+      this.logger.info('Callmonitor: Connection were closed!');
       
     });
       
     this.client.on('end', () => {
       
-      this.logger.warn('Callmonitor: Connection were ended!');
+      this.logger.info('Callmonitor: Connection were ended!');
       
     });
     

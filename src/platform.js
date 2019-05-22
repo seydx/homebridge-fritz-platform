@@ -182,6 +182,10 @@ FritzPlatform.prototype = {
      
         }
       
+      } else {
+      
+        this.logger.info('Auto config generator disabled.');
+      
       }
       
       this.logger.info('Found ' + this.deviceArray.length + ' active devices...');

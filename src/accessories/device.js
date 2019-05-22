@@ -200,7 +200,7 @@ class DeviceAccessory {
           
       if(this.accessory.context.master){
       
-        if(this.accessory.context.options.phoneBook){
+        if(this.accessory.context.extras.phoneBook){
           
           this.mainService.getCharacteristic(Characteristic.PhoneBook)
             .on('set', this.setPhoneBook.bind(this))
@@ -446,6 +446,11 @@ class DeviceAccessory {
       id:'phonebook',
       phonebook: []
     };
+    
+    let blackBook = {
+      id:'blackbook',
+      phonebook: []
+    };
   
     let country = ( this.config.callmonitor && this.config.callmonitor.country ) ? this.config.callmonitor.country : false;
   
@@ -464,7 +469,8 @@ class DeviceAccessory {
       for(const id of books){
       
         let bookUrl = await phonebook.actions.GetPhonebook([{name:'NewPhonebookID',value:id}]);
-    
+        let bookName = bookUrl.NewPhonebookName;
+
         let opt = {
           url: bookUrl.NewPhonebookURL,
           method: 'GET',
@@ -517,6 +523,9 @@ class DeviceAccessory {
                 
                   telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
 
+                  if(this.accessory.context.extras.phoneBook.blacklist === bookName)
+                    blackBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
+
                 }
             
               } else {
@@ -539,6 +548,9 @@ class DeviceAccessory {
               
                 telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
             
+                if(this.accessory.context.extras.phoneBook.blacklist === bookName)
+                  blackBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
+            
               }
           
             }
@@ -560,6 +572,14 @@ class DeviceAccessory {
       await this.storeData(telBook);
       
       this.debug(this.accessory.displayName + ': ' + telBook.phonebook.length + ' contacts stored in cache (' + this.configPath + '/phonebook.json)');
+
+      if(blackBook.phonebook.length){
+      
+        await this.storeData(blackBook);
+      
+        this.debug(this.accessory.displayName + ': ' + blackBook.phonebook.length + ' contacts stored in cache (' + this.configPath + '/blackbook.json)');
+      
+      }
 
     } catch(err) {
 

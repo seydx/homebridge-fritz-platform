@@ -183,7 +183,7 @@ class DeviceHandler {
        
         }
         
-        if(this.accessory.context.options.phoneBook){
+        if(this.accessory.context.extras.phoneBook){
           
           if (!this.mainService.testCharacteristic(Characteristic.PhoneBook)){
            
