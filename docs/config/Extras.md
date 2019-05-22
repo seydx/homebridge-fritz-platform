@@ -36,6 +36,32 @@ _Note: If you want to use this function, you need to activate phone dialer in yo
 
 
 
+# Phonebook
+
+If setted up in config.json, the plugin will create an phoneBook switch assigned to your main router for extended callmonitor functionality (nr detection etc)
+
+
+
+## Example Phonebook Configuration
+
+```
+"phoneBook": {
+  "active": true,
+  "blacklists": ["My Blacklist 1", "My Blacklist 2"]
+}
+```
+
+
+
+## Required Phonebook parameter
+
+| Attributes | Usage                                                        | Req  |
+| ---------- | ------------------------------------------------------------ | :--: |
+| active     | If true, the plugin will create a custom phonebook switch assigned to your main router (Default: false) |      |
+| blacklists      | An array of books to block from notifications       |  x   |
+
+
+
 # Wake up
 
 If setted up in config.json, the plugin will create an wake up switch assigned to your main router for creating an automation to ring to a connected phone with an intern nr gor a given time
