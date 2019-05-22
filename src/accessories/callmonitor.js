@@ -227,7 +227,7 @@ class CallmonitorAccessory {
                   
                   this.denyCall;
                   
-                  let blackbook = (this.config.phoneBook && this.config.phoneBook.blacklist) ? await this.loadData('blackbook') : false;
+                  let blackbook = (this.config.phoneBook && this.config.phoneBook.blacklists.length) ? await this.loadData('blackbook') : false;
                   
                   if(blackbook){
                   
@@ -294,7 +294,7 @@ class CallmonitorAccessory {
             
                 this.denyCall;
                   
-                let blackbook = (this.config.phoneBook && this.config.phoneBook.blacklist) ? await this.loadData('blackbook') : false;
+                let blackbook = (this.config.phoneBook && this.config.phoneBook.blacklists.length) ? await this.loadData('blackbook') : false;
                   
                 if(blackbook){
                   

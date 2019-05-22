@@ -523,7 +523,7 @@ class DeviceAccessory {
                 
                   telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
 
-                  if(this.accessory.context.extras.phoneBook.blacklist === bookName)
+                  if(this.accessory.context.extras.phoneBook.blacklists.includes(bookName))
                     blackBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
 
                 }
@@ -548,7 +548,7 @@ class DeviceAccessory {
               
                 telBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
             
-                if(this.accessory.context.extras.phoneBook.blacklist === bookName)
+                if(this.accessory.context.extras.phoneBook.blacklists.includes(bookName))
                   blackBook.phonebook.push({name: contact.person[0].realName[0],number:telnr});
             
               }

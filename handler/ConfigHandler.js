@@ -103,7 +103,7 @@ class DeviceHandler {
 
       this.config.phoneBook = {
         active: this.config.phoneBook.active||false,
-        blacklist: this.config.phoneBook.blacklist||''
+        blacklists: this.config.phoneBook.blacklists||[]
       };
 
       this.config.alarm = {
