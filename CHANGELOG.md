@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 4.0.6 - 2019-05-22
+- Refactored phoneBook
+- Added "Blacklists" to Phonebook
+
 ## 4.0.4 - 2019-05-20
 - Added better state detection for repeater
 
