@@ -68,7 +68,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
    * [Telegram Notification instructions](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Telegram.md)
 - [Debugging](https://github.com/SeydX/homebridge-fritz-platform/blob/master/DEBUG.md)
    * [Fritz!Platform Debug util](https://github.com/SeydX/fritzplatform-util)
-   * [Fritz!Platform Config Generator](https://github.com/SeydX/fritzplatform-config)
+   * [~~Fritz!Platform Config Generator~~ (deprecated)](https://github.com/SeydX/fritzplatform-config)
 
 
 
