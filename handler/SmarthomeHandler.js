@@ -174,22 +174,16 @@ class SmarthomeHandler {
   
   getSmarthomeList(){
   
-    if(this.smarthome)
-      return this.smarthome;
-      
-    return false;
+    return this.smarthome||false
   
   }
   
-  getDevice(ain){
-  
-    if(!this.smarthome) 
-      return false;
+  async getDevice(ain){
       
-    for(const device of this.smarthome){
-      if(ain === device.ain)
-        return device;
-    }
+    if(this.smarthome)    
+      for(const device of this.smarthome)
+        if(ain === device.ain)
+          return device;
     
     return false;
   
