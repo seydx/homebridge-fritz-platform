@@ -31,7 +31,6 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
         true,
         false
       ],
-      "phoneBook": true,
       "reconnect": true,
       "wps": [
         true,
@@ -83,7 +82,6 @@ This plugin uses the TR 064 interface of the router to communicate with it. Host
 | wifi5 | Parameter for enable/disable wifi 5ghz switch or expose as extra switch accessory (Default: [false,false]) |
 | wifiGuest | Parameter for enable/disable guest wifi switch or expose as extra switch accessory (Default: [false,false]) |
 | wps | Parameter for enable/disable wps switch or expose as extra switch accessory (Default: [false,false]) |
-| phoneBook | Parameter for enable/disable phonebook togle, it is used to store the phonebook in persist folder (Default: false) |
 | aw | Parameter for enable/disable answering machine switch or expose as extra switch accessory (Default: [false,false]) |
 | deflection | Parameter for enable/disable deflection switch or expose as extra switch accessory (Default: [false,false]) |
 | led | Parameter for enable/disable LED switch or expose as extra switch accessory (Default: [false,false]) |
