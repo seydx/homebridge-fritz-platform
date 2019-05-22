@@ -38,7 +38,7 @@ Presence also supports the Telegram notification service, via config.json it is 
 |------------|-------|:----------:|
 | name | Own defined name for Home | x |
 | active | On/Off for activating accessory | x |
-| adress | MAC addresse  or IP addresse from the device | x |
+| address | MAC addresse  or IP addresse from the device | x |
 | anyone     | If true, the plugin will expose an "Anyone" occupancy sensor to HomeKit (Default: false) |      |
 | offDelay      | Delay in seconds before an occupancy sensor will go to "not detected" (Default: 10s) |     |
 | onDelay      | Delay in seconds before an occupancy sensor will go to "detected" (Default: false) |     |
