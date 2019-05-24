@@ -154,8 +154,6 @@ class CallmonitorAccessory {
         
           let text, message;
         
-          this.accessory.context.timesOpened = this.accessory.context.timesOpened ? this.accessory.context.timesOpened : 0;
-        
           if(this.accessory.displayName == 'Callmonitor Incoming'){
         
             if (data[1] === 'ring') {
@@ -175,6 +173,8 @@ class CallmonitorAccessory {
               
               this.inbound = true;
               this.outgoing = false;
+              
+              this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
               
               this.accessory.context.timesOpened += 1;
               let lastActivation = moment().unix() - this.historyService.getInitialTime();
@@ -356,6 +356,8 @@ class CallmonitorAccessory {
               this.outgoing = true;
               this.inbound = false;
               
+              this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
+              
               this.accessory.context.timesOpened += 1;
               let lastActivation = moment().unix() - this.historyService.getInitialTime();
               let closeDuration = moment().unix() - this.historyService.getInitialTime();
@@ -368,6 +370,9 @@ class CallmonitorAccessory {
                  
               this.mainService.getCharacteristic(Characteristic.ClosedDuration)
                 .updateValue(closeDuration);
+                
+              this.mainService.getCharacteristic(Characteristic.TimesOpened)
+                .updateValue(this.accessory.context.timesOpened);
               
               this.historyService.addEntry({time: moment().unix(), status: 1});
           
