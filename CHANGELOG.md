@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.0.7 - 2019-05-24
+- Bugfixes (callmonitor)
+- Better debug (smarthome)
+
 ## 4.0.6 - 2019-05-22
 - Refactored phoneBook
 - Added "Blacklists" to Phonebook
