@@ -174,7 +174,7 @@ class SmarthomeHandler {
   
   getSmarthomeList(){
   
-    return this.smarthome||false
+    return this.smarthome||false;
   
   }
   
@@ -186,6 +186,12 @@ class SmarthomeHandler {
           return device;
     
     return false;
+  
+  }
+  
+  async getAllDevices(){
+  
+    return this.smarthome||false;
   
   }
 

@@ -275,6 +275,12 @@ class SmarthomeAccessory {
       
         this.debug(this.accessory.displayName + ': No device with AIN: ' + this.accessory.context.ain + ' found or not intialized yet!');
      
+        this.debug(this.accessory.displayName + ': Following devices are currently registered:');
+        
+        let devices = await this.smarthome.getAllDevices() || 'No Smarthome devices registered!';
+        
+        this.debug(devices);
+     
       }
     
     } catch(err){
