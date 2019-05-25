@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 4.0.8 - 2019-05-25
+- Bugfixes (generating SID)
+
 ## 4.0.7 - 2019-05-24
 - Bugfixes (callmonitor)
 - Better debug (smarthome)
