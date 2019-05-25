@@ -12,7 +12,10 @@ module.exports = {
     Characteristic.Download = function() {
       Characteristic.call(this, 'Download', '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9');
       this.setProps({
-        format: Characteristic.Formats.STRING,
+        format: Characteristic.Formats.FLOAT,
+        maxValue: 1000,
+        minValue: 0,
+        minStep: 0.1,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();
@@ -26,7 +29,10 @@ module.exports = {
     Characteristic.Upload = function() {
       Characteristic.call(this, 'Upload', '9b2e94f7-a665-4575-9efd-1b37474d758b');
       this.setProps({
-        format: Characteristic.Formats.STRING,
+        format: Characteristic.Formats.FLOAT,
+        maxValue: 1000,
+        minValue: 0,
+        minStep: 0.1,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();
@@ -40,7 +46,10 @@ module.exports = {
     Characteristic.Ping = function() {
       Characteristic.call(this, 'Ping', 'ce18aaef-1026-4538-943b-026501599dc0');
       this.setProps({
-        format: Characteristic.Formats.STRING,
+        format: Characteristic.Formats.FLOAT,
+        maxValue: 1000,
+        minValue: 0,
+        minStep: 0.1,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();

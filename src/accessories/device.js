@@ -1380,13 +1380,13 @@ class DeviceAccessory {
   
     let speed = speedTest({maxTime: this.accessory.context.extras.broadband.measureTime * 1000});
     
-    this.debug(this.accessory.displayName + ': Starting bandwith measurement');
+    this.debug(this.accessory.displayName + ': Starting bandwith measurement...');
     
     speed.on('data', data => {
     
-      let dl = (Math.round(data.speeds.download)).toString() + ' mb/s';
-      let ul = (Math.round(data.speeds.upload)).toString() + ' mb/s';
-      let pi = (Math.round(data.server.ping)).toString() + ' ms';
+      let dl = Math.round(data.speeds.download);
+      let ul = Math.round(data.speeds.upload);
+      let pi = Math.round(data.server.ping);
     
       this.debug('Download: ' + dl);
       this.debug('Upload: ' + ul);
@@ -1409,14 +1409,8 @@ class DeviceAccessory {
       this.debug(err);
       
     }); 
-      
-    this.mainService.getCharacteristic(Characteristic.Upload)
-      .updateValue('Loading...');
-      
-    this.mainService.getCharacteristic(Characteristic.Ping)
-      .updateValue('Loading...');
     
-    callback(null, 'Loading...');
+    callback(null, 0);
   
   }
   
