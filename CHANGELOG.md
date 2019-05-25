@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 4.0.9 - 2019-05-25
+- Refactored Broadband measurement
+
 ## 4.0.8 - 2019-05-25
 - Bugfixes (generating SID)
 
