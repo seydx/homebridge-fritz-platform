@@ -27,12 +27,11 @@ class SidHandler {
   
   }
   
-  async getSID(newSid, device){
+  async getSID(device){
   
     try {
     
-      if(newSid || !this.deviceHandler[device.deviceInfo.friendlyName])
-        this.sid = await this.generateSID(device);
+      this.sid = await this.generateSID(device);
         
       return this.sid;
     

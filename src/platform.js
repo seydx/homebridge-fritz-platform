@@ -10,7 +10,6 @@ const store = require('json-fs-store');
 //Handler
 const Hosts = require('../handler/HostsHandler.js');
 const Smarthome = require('../handler/SmarthomeHandler.js');
-const SID = require('../handler/SidHandler.js');
 const Config = require('../handler/ConfigHandler.js');
 
 //Accessories
@@ -235,9 +234,6 @@ FritzPlatform.prototype = {
         this.device = await TR064.startEncryptedCommunication();
         
         debug('Master device successfully confirmed');
-         
-        debug('Initializing SID handler');
-        this.sid = new SID();
            
         if(this.Config.getHosts()){
             

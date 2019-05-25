@@ -10,7 +10,6 @@ class SmarthomeHandler {
     this.logger = platform.logger;
     this.debug = platform.debug;
     this.platform = platform;
-    this.sid = platform.sid;
 
     this.config = config;
     this.device = device;
@@ -19,11 +18,14 @@ class SmarthomeHandler {
     
   }
   
-  async generateSmarthomeList(refresh){
+  async generateSmarthomeList(){                            
   
     try {
-        
-      let sid = await this.sid.getSID(refresh, this.device);
+    
+      let sid = this.device.services['urn:dslforum-org:service:DeviceConfig:1']; 
+      sid = await sid.actions['X_AVM-DE_CreateUrlSID']();
+      
+      sid = sid['NewX_AVM-DE_UrlSID'].split('sid=')[1];
     
       let cmd = 'getdevicelistinfos';
       let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?switchcmd=' + cmd + '&sid=' + sid;
@@ -93,26 +95,16 @@ class SmarthomeHandler {
           config: error.config,
           data: error.response.data
         };
-    
-      if(error.status === 403){
         
-        this.debug('Smarthome List: Requesting new SID...');
+      this.logger.error('Smarthome List: An error occured while generating smarthome list!');
         
-        setTimeout(this.generateSmarthomeList.bind(this, true), 500);
-      
+      if(error instanceof TypeError){
+        console.log(error);
       } else {
-        
-        this.logger.error('Smarthome List: An error occured while generating smarthome list!');
-        
-        if(error instanceof TypeError){
-          console.log(error);
-        } else {
-          this.debug(error);
-        }
-        
-        setTimeout(this.generateSmarthomeList.bind(this), 15000);
-      
+        this.debug(error);
       }
+        
+      setTimeout(this.generateSmarthomeList.bind(this), 15000);
     
     }
   
@@ -128,7 +120,7 @@ class SmarthomeHandler {
     
   }
   
-  async sendCommand(name, ain, cmd, refresh){
+  async sendCommand(name, ain, cmd){
   
     try {
     
@@ -136,7 +128,10 @@ class SmarthomeHandler {
       
       if(device){
         
-        let sid = await this.sid.getSID(refresh, this.device);
+        let sid = this.device.services['urn:dslforum-org:service:DeviceConfig:1']; 
+        sid = await sid.actions['X_AVM-DE_CreateUrlSID']();
+      
+        sid = sid['NewX_AVM-DE_UrlSID'].split('sid=')[1];
     
         let url = 'http://' + this.config.host + '/webservices/homeautoswitch.lua?ain=' + ain + '&switchcmd=' + cmd + '&sid=' + sid;
         
@@ -156,17 +151,7 @@ class SmarthomeHandler {
           data: error.response.data
         };
  
-      if(error.status === 403){
-        
-        this.debug('Smarthome List: Requesting new SID...');
-        
-        setTimeout(this.sendCommand.bind(this, name, ain, cmd, true), 500);
-      
-      } else {
-        
-        throw error;
-      
-      }
+      throw error;
       
     }
   

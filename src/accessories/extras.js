@@ -21,7 +21,6 @@ class ExtrasAccessory {
     this.api = platform.api;
     this.config = platform.config;
     this.accessories = platform.accessories;    
-    this.sid = platform.sid;
     
     this.accessory = accessory;
     this.mainService = this.accessory.getService(Service.Switch);
@@ -110,7 +109,7 @@ class ExtrasAccessory {
   getService () {
   
     if(this.accessory.displayName.includes('Led') || this.accessory.displayName.includes('Lock'))
-      this.lua = new LUA(this.platform, this.accessory.context.device, this.sid);
+      this.lua = new LUA(this.platform, this.accessory.context.device);
 
     this.mainService.getCharacteristic(Characteristic.On)
       .on('get', this.getState.bind(this))

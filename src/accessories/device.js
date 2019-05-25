@@ -37,7 +37,6 @@ class DeviceAccessory {
     this.validIP = platform.validIP;
     this.configPath = platform.configPath;
     this.telegram = platform.telegram;    
-    this.sid = platform.sid;
     
     this.accessory = accessory;
     
@@ -131,7 +130,7 @@ class DeviceAccessory {
 
   async getService(){
   
-    this.lua = new LUA(this.platform, this.accessory.context, this.sid);
+    this.lua = new LUA(this.platform, this.accessory.context);
   
     try {
     
