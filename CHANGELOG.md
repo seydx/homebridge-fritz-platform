@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 4.1.0 - 2019-06-16
+- "Ping" feature was added as an extra check (if enabled in config.json)
+- Phonebook Bugfix
+
 ## 4.0.9 - 2019-05-25
 - Refactored Broadband measurement
 
