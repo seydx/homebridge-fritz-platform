@@ -26,7 +26,8 @@ Presence also supports the Telegram notification service, via config.json it is 
   ],
   "anyone": true,
   "offDelay": 90,
-  "onDelay": 15
+  "onDelay": 15,
+  "ping": false
 }
 ```
 
@@ -42,8 +43,7 @@ Presence also supports the Telegram notification service, via config.json it is 
 | anyone     | If true, the plugin will expose an "Anyone" occupancy sensor to HomeKit (Default: false) |      |
 | offDelay      | Delay in seconds before an occupancy sensor will go to "not detected" (Default: 10s) |     |
 | onDelay      | Delay in seconds before an occupancy sensor will go to "detected" (Default: false) |     |
-
-
+| ping      | Additional check for devices in network with ping method (Default: false) |     |
 
 
 # Extended Presence
