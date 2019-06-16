@@ -205,6 +205,12 @@
         "cmdOn": "sh /PATH/TO/SCRIPT/on.sh",
         "cmdOff": "sh /PATH/TO/SCRIPT/off.sh"
       },
+      "phoneBook": {
+        "active": true,
+        "blacklists": [
+          "Blacklist"
+        ]
+      },
       "telegram": {
         "active": true,
         "token": "TOKENHERE",
