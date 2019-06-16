@@ -169,7 +169,8 @@
         ],
         "anyone": true,
         "offDelay": 90,
-        "onDelay": 15
+        "onDelay": 15,
+        "ping": false
       },
       "wol": [
         {
