@@ -92,8 +92,19 @@ class DeviceAccessory {
     
       let fw = this.device.services['urn:dslforum-org:service:UserInterface:1'];      
       fw = await fw.actions['X_AVM-DE_GetInfo']();
+
+      fw = fw['NewX_AVM-DE_CurrentFwVersion'];
       
-      fw = fw['NewX_AVM-DE_CurrentFwVersion'].split('-')[0].split('.'); 
+      if(fw.includes('-')){
+       
+        fw = fw.split('-')[0].split('.');
+      
+      } else {
+      
+        fw = fw.split('.'); 
+      
+      }
+      
       fw[0] = '1';
       
       this.fw = fw.toString().replace(/,/g,'.');

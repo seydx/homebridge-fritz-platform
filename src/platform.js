@@ -151,6 +151,7 @@ FritzPlatform.prototype = {
         callmonitor: this.config.callmonitor,
         presence: this.config.presence,
         wol: this.config.wol,
+        phoneBook: this.config.phoneBook,
         alarm: this.config.alarm,
         wakeup: this.config.wakeup,
         ringlock: this.config.ringlock,
@@ -521,7 +522,8 @@ FritzPlatform.prototype = {
               ...user,
               masterConfig: this.masterConfig,
               offDelay: this.config.presence.offDelay * 1000,
-              ondelay: this.config.presence.onDelay * 1000
+              ondelay: this.config.presence.onDelay * 1000,
+              ping: this.config.presence.ping
             };
   
         break; 

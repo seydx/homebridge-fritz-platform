@@ -84,7 +84,8 @@ class DeviceHandler {
         user: this.config.presence.user||[],
         anyone: this.config.presence.anyone||false,
         offDelay: this.config.presence.offDelay||90,
-        onDelay: this.config.presence.onDelay||15
+        onDelay: this.config.presence.onDelay||15,
+        ping: this.config.presence.ping||false
       };
       
       if(!this.config.presence.user.length)

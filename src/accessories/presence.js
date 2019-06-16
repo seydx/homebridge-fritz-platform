@@ -1,6 +1,7 @@
 'use strict';
 
 const moment = require('moment');
+const ping = require('ping');
 
 var Service, Characteristic;
 
@@ -21,6 +22,8 @@ class PresenceAccessory {
     
     this.telegram = platform.telegram;
     this.hosts = hosts;
+    
+    this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     
     this.accessory = accessory;
     this.mainService = this.accessory.getService(Service.OccupancySensor);
@@ -71,6 +74,9 @@ class PresenceAccessory {
         this.accessory.context.lastState = this.mainService.getCharacteristic(Characteristic.OccupancyDetected).value;
 
         status.includes(1) ? this.accessory.context.newState = 1 : this.accessory.context.newState = 0;
+        
+        if(this.accessory.context.newState && this.accessory.context.ping && this.validIP.test(this.accessory.context.address))
+          this.accessory.context.newState = await this.pingg(this.accessory.context.address);
       
         if(this.accessory.context.newState === 1){
        
@@ -240,7 +246,7 @@ class PresenceAccessory {
       }
       this.mainService.getCharacteristic(Characteristic.OccupancyDetected).updateValue(this.accessory.context.lastState);
    
-      setTimeout(this.getStates.bind(this), 1000);
+      setTimeout(this.getStates.bind(this), 5000);
     
     } else {
     
@@ -317,6 +323,24 @@ class PresenceAccessory {
       }
   
     }
+
+  }
+  
+  pingg(address){
+
+    return new Promise(resolve => {
+
+      ping.sys.probe(address, isAlive => {
+        
+        let state = isAlive ? 1 : 0;
+        
+        this.debug(this.accessory.displayName + ': is ' + (isAlive ? 'alive' : ' dead'));
+        
+        resolve(state);
+      
+      },{timeout: 1});
+ 
+    });
 
   }
 
