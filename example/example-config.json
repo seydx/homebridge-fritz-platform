@@ -32,7 +32,6 @@
               true,
               false
             ],
-            "phoneBook": true,
             "reconnect": true,
             "wps": [
               true,
