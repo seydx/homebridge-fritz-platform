@@ -22,7 +22,7 @@ This version of config.json uses "auto device search". So it will search your ne
   ],
   "platforms": [
     {
-      "platform": "FritzPlatform",
+      "platform": "FritzPlatform"
     }
   ]
 }
