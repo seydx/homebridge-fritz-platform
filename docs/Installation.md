@@ -1,4 +1,4 @@
-# Installation - First steps
+# Installation
 
 Before you can use this plugin, you must activate the following options in the FritzBox settings under **Home network > Network**
 
