@@ -1,0 +1,1328 @@
+{
+  "pluginAlias": "FritzPlatform",
+  "pluginType": "platform",
+  "singular": true,
+  "footerDisplay": "For documentation please see [GitHub repository](https://github.com/SeydX/homebridge-fritz-platform)",
+  "schema": {
+    "name": {
+      "title": "Name",
+      "type": "string",
+      "default": "FritzPlatform",
+      "description": "Name for the log."
+    },
+    "debug": {
+      "title": "Debug",
+      "type": "boolean",
+      "default": false,
+      "description": "Enables additional output in the log."
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "title": "Devices",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "host": {
+            "title": "Host",
+            "type": "string",
+            "placeholder": "192.168.178.1",
+            "required": true,
+            "description": "FritzBox IP Address."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "placeholder": 49000,
+            "description": "Port to the TR064 Endpoint."
+          },
+          "username": {
+            "title": "Username",
+            "type": "string",
+            "required": true,
+            "description": "Username to log in to your FritzBox."
+          },
+          "password": {
+            "title": "Password",
+            "type": "string",
+            "required": true,
+            "description": "Password to log in to your FritzBox."
+          },
+          "manufacturer": {
+            "name": "Manufacturer",
+            "type": "string",
+            "placeholder": "Fritz Box",
+            "description": "Set the manufacturer name for display in the Home app."
+          },
+          "model": {
+            "name": "Model",
+            "type": "string",
+            "placeholder": "Fritz Box",
+            "description": "Set the model for display in the Home app."
+          },
+          "serialNumber": {
+            "name": "Serial Number",
+            "type": "string",
+            "placeholder": "SerialNumber",
+            "description": "Set the serial number for display in the Home app."
+          },
+          "master": {
+            "title": "Master Device",
+            "type": "boolean",
+            "description": "Enables this device as master device. Only ONE device can be checked as master device!"
+          },
+          "readOnly": {
+            "title": "Read Only",
+            "type": "boolean",
+            "description": "If enabled, the switch will not trigger on switching on/off."
+          },
+          "connection": {
+            "title": "Connection",
+            "type": "string",
+            "description": "Type of your connection",
+            "default": "DSL",
+            "oneOf": [
+              {
+                "title": "DSL",
+                "enum": [
+                  "dsl"
+                ]
+              },
+              {
+                "title": "Cable",
+                "enum": [
+                  "cable"
+                ]
+              },
+              {
+                "title": "Repeater",
+                "enum": [
+                  "repeater"
+                ]
+              }
+            ],
+            "required": true
+          },
+          "options": {
+            "title": "Options",
+            "type": "object",
+            "properties": {
+              "wifi_2ghz": {
+                "title": "Wifi 2.4GHZ",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Wifi 2.4GHZ as Switch or Characteristic."
+              },
+              "wifi_5ghz": {
+                "title": "Wifi 5GHZ",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Wifi 5GHZ as Switch or Characteristic."
+              },
+              "wifi_guest": {
+                "title": "Wifi Guest",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Wifi Guest as Switch or Characteristic."
+              },
+              "wps": {
+                "title": "WPS",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables WPS as Switch or Characteristic. (Only for Master Device)"
+              },
+              "aw": {
+                "title": "Answering Machine",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Answering Machine as Switch or Characteristic. (Only for Master Device)"
+              },
+              "deflection": {
+                "title": "Deflection",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Deflection as Switch or Characteristic. (Only for Master Device)"
+              },
+              "led": {
+                "title": "LED",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables LED as Switch or Characteristic."
+              },
+              "lock": {
+                "title": "Device Lock",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Device Lock as Switch or Characteristic."
+              },
+              "broadband": {
+                "title": "Broadband",
+                "type": "string",
+                "default": "Deactivated",
+                "oneOf": [
+                  {
+                    "title": "Deactivated",
+                    "enum": [
+                      "deactivated"
+                    ]
+                  },
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": [
+                      "switch"
+                    ]
+                  }
+                ],
+                "required": true,
+                "description": "Enables Broadband as Switch or Characteristic. (Only for Master Device)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "presence": {
+      "type": "array",
+      "items": {
+        "title": "Presence",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "required": true,
+            "description": "The IP/MAC address of the device."
+          }
+        }
+      }
+    },
+    "wol": {
+      "type": "array",
+      "items": {
+        "title": "Wake on LAN",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "required": true,
+            "description": "The MAC address of the device.",
+            "placeholder": "AA:BB:00:11:22:B1"
+          }
+        }
+      }
+    },
+    "smarthome": {
+      "type": "array",
+      "items": {
+        "title": "Smarthome",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "ain": {
+            "title": "AIN",
+            "type": "string",
+            "required": true,
+            "placeholder": "01234567890",
+            "description": "The AIN of the device."
+          },
+          "accType": {
+            "title": "Accessory Type",
+            "type": "string",
+            "default": "Switch",
+            "oneOf": [
+              {
+                "title": "Switch",
+                "enum": [
+                  "switch"
+                ]
+              },
+              {
+                "title": "Contact",
+                "enum": [
+                  "contact"
+                ]
+              },
+              {
+                "title": "Thermostat",
+                "enum": [
+                  "thermostat"
+                ]
+              }
+            ],
+            "required": true,
+            "description": "The accessory type of the device."
+          }
+        }
+      }
+    },
+    "network": {
+      "type": "array",
+      "items": {
+        "title": "Watch Network",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in Telegram and Log."
+          },
+          "address": {
+            "title": "Address",
+            "type": "string",
+            "required": true,
+            "description": "The IP/MAC address of the device."
+          }
+        }
+      }
+    },
+    "callmonitor": {
+      "titel": "Callmonitor",
+      "type": "object",
+      "properties": {
+        "active": {
+          "title": "Active",
+          "description": "Activates Callmonitor.",
+          "type": "boolean",
+          "default": false,
+          "required": true
+        },
+        "incoming_name": {
+          "title": "Name for the Incoming Accessory",
+          "type": "string",
+          "required": true,
+          "description": "Set the callmonitor incoming name for display in the Home app."
+        },
+        "outgoing_name": {
+          "title": "Name for the Outgoing Accessory",
+          "type": "string",
+          "required": true,
+          "description": "Set the callmonitor outgoing name for display in the Home app."
+        },
+        "ip": {
+          "title": "IP Address",
+          "type": "string",
+          "placeholder": "192.168.178.1",
+          "required": true,
+          "description": "FritzBox IP Address. (Master Device)"
+        },
+        "port": {
+          "title": "Callmonitor Port",
+          "type": "integer",
+          "placeholder": "1012",
+          "description": "The port to listen on for Callmonitor.",
+          "required": true
+        },
+        "incomingTo": {
+          "type": "array",
+          "items": {
+            "title": "Incoming To - Number",
+            "type": "object",
+            "properties": {
+              "number": {
+                "title": "Number",
+                "type": "string",
+                "description": "Home Number to filter for incoming calls."
+              }
+            }
+          }
+        },
+        "outgoingFrom": {
+          "type": "array",
+          "items": {
+            "title": "Outgoing From - Number",
+            "type": "object",
+            "properties": {
+              "number": {
+                "title": "Number",
+                "type": "string",
+                "description": "Home Number to filter for outgoing calls."
+              }
+            }
+          }
+        }
+      }
+    },
+    "extras": {
+      "titel": "Extras",
+      "type": "object",
+      "properties": {
+        "alarm": {
+          "title": "Alarm",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home.",
+              "type": "boolean",
+              "default": false
+            },
+            "duration": {
+              "title": "Duration",
+              "type": "integer",
+              "placeholder": 30,
+              "default": 30,
+              "description": "Duration of the call.",
+              "required": false
+            },
+            "telNr": {
+              "title": "Telephone Number",
+              "type": "string",
+              "description": "Telephone number to call if alarm is enabled.",
+              "required": true
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "type": "string",
+              "default": "Characteristic",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": [
+                    "switch"
+                  ]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": [
+                    "characteristic"
+                  ]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
+        },
+        "wakeup": {
+          "title": "Wake Up",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home.",
+              "type": "boolean",
+              "default": false
+            },
+            "duration": {
+              "title": "Duration",
+              "type": "integer",
+              "placeholder": 30,
+              "default": 30,
+              "description": "Duration of the call.",
+              "required": false
+            },
+            "internNr": {
+              "title": "Intern Phone Number",
+              "type": "string",
+              "description": "The intern phone number to call on WakeUp. (e.g **620)",
+              "required": true
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "type": "string",
+              "default": "Characteristic",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": [
+                    "switch"
+                  ]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": [
+                    "characteristic"
+                  ]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
+        },
+        "ringlock": {
+          "title": "Ring Lock",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a RingLock switch/characteristic will be exposed to Apple Home.",
+              "type": "boolean",
+              "default": false
+            },
+            "DECTphones": {
+              "title": "DECT phones",
+              "type": "integer",
+              "placeholder": 1,
+              "description": "Amount of DECT phones.",
+              "required": true
+            },
+            "start": {
+              "title": "Start Time",
+              "type": "string",
+              "description": "The time to start ring lock. (eg 14:00)",
+              "required": false
+            },
+            "end": {
+              "title": "End Time",
+              "type": "string",
+              "description": "The time to end ring lock. (eg 22:00)",
+              "required": false
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "type": "string",
+              "default": "Characteristic",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": [
+                    "switch"
+                  ]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": [
+                    "characteristic"
+                  ]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
+        },
+        "phoneBook": {
+          "title": "Phonebook",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a PhoneBook switch/characteristic will be exposed to Apple Home.",
+              "type": "boolean",
+              "default": false
+            },
+            "duration": {
+              "title": "Duration",
+              "type": "integer",
+              "placeholder": 30,
+              "default": 30,
+              "description": "Duration of the call.",
+              "required": false
+            },
+            "blacklists": {
+              "type": "array",
+              "items": {
+                "title": "Blacklists",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "description": "Name of the blacklist from FritzBox."
+                  }
+                }
+              }
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "type": "string",
+              "default": "Characteristic",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": [
+                    "switch"
+                  ]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": [
+                    "characteristic"
+                  ]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
+        }
+      }
+    },
+    "options": {
+      "titel": "Options",
+      "type": "object",
+      "properties": {
+        "presence": {
+          "title": "Presence",
+          "type": "object",
+          "properties": {
+            "anyone": {
+              "title": "Anyone Accessory",
+              "description": "Exposes Anyone Sensor to Apple Home.",
+              "type": "boolean",
+              "default": false
+            },
+            "onDelay": {
+              "title": "Delay on detection",
+              "type": "integer",
+              "placeholder": 30,
+              "description": "Delay timer (s) before switching to detected."
+            },
+            "offDelay": {
+              "title": "Delay on NO detection",
+              "type": "integer",
+              "placeholder": 30,
+              "description": "Delay timer (s) before switching to NOT detected."
+            }
+          }
+        },
+        "reboot": {
+          "title": "Reboot",
+          "type": "object",
+          "properties": {
+            "on": {
+              "title": "On Script",
+              "type": "string",
+              "description": "Script to execute on starting reboot."
+            },
+            "off": {
+              "title": "Off Script",
+              "type": "string",
+              "description": "Script to execute after reboot finished."
+            }
+          }
+        },
+        "polling": {
+          "title": "Reboot",
+          "type": "object",
+          "properties": {
+            "timer": {
+              "title": "Polling Timer",
+              "type": "integer",
+              "placeholder": 10,
+              "description": "Timer to refresh data on background. (0 = off)",
+              "required": true
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "title": "Exclude",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "title": "Catagory Name",
+                    "type": "string",
+                    "description": "Name of the catagory to exclude from polling."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "telegram": {
+      "titel": "Options",
+      "type": "object",
+      "properties": {
+        "active": {
+          "title": "Active",
+          "description": "Activates Telegram.",
+          "type": "boolean",
+          "default": false
+        },
+        "token": {
+          "title": "Token",
+          "type": "string",
+          "description": "Telegram Bot Token.",
+          "required": true
+        },
+        "chatID": {
+          "title": "Chat ID",
+          "type": "string",
+          "description": "Telegram Chat ID.",
+          "required": true
+        },
+        "messages": {
+          "title": "Messages",
+          "type": "object",
+          "properties": {
+            "presence": {
+              "title": "Presence",
+              "type": "object",
+              "properties": {
+                "user_in": {
+                  "title": "User Detected",
+                  "type": "string",
+                  "description": "Message if user detected. (Hint: @ will be replaced with accessory name)"
+                },
+                "user_out": {
+                  "title": "User Not Detected",
+                  "type": "string",
+                  "description": "Message if user not detected anymore. (Hint: @ will be replaced with accessory name)"
+                },
+                "anyone_in": {
+                  "title": "Anyone Detected",
+                  "type": "string",
+                  "description": "Message if anyone detected."
+                },
+                "anyone_out": {
+                  "title": "Anyone Not Detected",
+                  "type": "string",
+                  "description": "Message if nobody detected."
+                }
+              }
+            },
+            "callmonitor": {
+              "title": "Callmonitor",
+              "type": "object",
+              "properties": {
+                "incoming": {
+                  "title": "Incoming Call",
+                  "type": "string",
+                  "description": "Message for incoming call. (Hint: @ will be replaced with caller name/number)"
+                },
+                "outgoing": {
+                  "title": "User Not Detected",
+                  "type": "string",
+                  "description": "Message for outgoing call. (Hint: @ will be replaced with caller name/number)"
+                },
+                "disconnected": {
+                  "title": "Anyone Detected",
+                  "type": "string",
+                  "description": "Message if call disconnected. (Hint: @ will be replaced with caller name/number)"
+                }
+              }
+            },
+            "alarm": {
+              "title": "Alarm",
+              "type": "object",
+              "properties": {
+                "activated": {
+                  "title": "Activated",
+                  "type": "string",
+                  "description": "Message if alarm activated."
+                },
+                "deactivated": {
+                  "title": "Deactivated",
+                  "type": "string",
+                  "description": "Message if alarm deactivated."
+                }
+              }
+            },
+            "reboot": {
+              "title": "Reboot",
+              "type": "object",
+              "properties": {
+                "start": {
+                  "title": "Start",
+                  "type": "string",
+                  "description": "Message if reboot started/device not reachable."
+                },
+                "finish": {
+                  "title": "Finish",
+                  "type": "string",
+                  "description": "Message if reboot finished/device reachable."
+                }
+              }
+            },
+            "network": {
+              "title": "Watch Network",
+              "type": "object",
+              "properties": {
+                "on": {
+                  "title": "Detected",
+                  "type": "string",
+                  "description": "Message if device detected on network. (Hint: @ will be replaced with device name)"
+                },
+                "off": {
+                  "title": "Not Detected",
+                  "type": "string",
+                  "description": "Message if device NOT detected on network. (Hint: @ will be replaced with device name)"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "layout": [
+    "name",
+    "debug",
+    {
+      "type": "section",
+      "title": "Devices",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "items": [
+        {
+          "key": "devices",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add Device",
+          "items": [
+            "devices[].name",
+            "devices[].host",
+            "devices[].port",
+            "devices[].username",
+            "devices[].password",
+            "devices[].master",
+            "devices[].connection",
+            "devices[].readOnly",
+            {
+              "key": "devices[]",
+              "type": "section",
+              "title": "Branding",
+              "expandable": true,
+              "expanded": false,
+              "items": [
+                "devices[].manufacturer",
+                "devices[].model",
+                "devices[].serialNumber"
+              ]
+            },
+            {
+              "key": "devices[]",
+              "type": "section",
+              "title": "Options",
+              "expandable": true,
+              "expanded": false,
+              "items": [
+                "devices[].options.wifi_2ghz",
+                "devices[].options.wifi_5ghz",
+                "devices[].options.wifi_guest",
+                "devices[].options.wps",
+                "devices[].options.aw",
+                "devices[].options.deflection",
+                "devices[].options.led",
+                "devices[].options.lock",
+                "devices[].options.broadband"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Extras",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "Alarm",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.alarm.active",
+            "extras.alarm.telNr",
+            "extras.alarm.duration",
+            "extras.alarm.accType"
+          ]
+        },
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "Wake Up",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.wakeup.active",
+            "extras.wakeup.internNr",
+            "extras.wakeup.duration",
+            "extras.wakeup.accType"
+          ]
+        },
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "Ring Lock",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.ringlock.active",
+            "extras.ringlock.DECTphones",
+            "extras.ringlock.start",
+            "extras.ringlock.end",
+            "extras.ringlock.accType"
+          ]
+        },
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "Phonebook",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.phoneBook.active",
+            {
+              "key": "extras.phoneBook.blacklists",
+              "type": "array",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "buttonText": "Add Blacklist",
+              "items": [
+                "extras.phoneBook.blacklists[].name"
+              ]
+            },
+            "extras.phoneBook.accType"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Presence",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "items": [
+        {
+          "key": "presence",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add User",
+          "items": [
+            "presence[].name",
+            "presence[].address"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Wake on LAN",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "items": [
+        {
+          "key": "wol",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add WOL Device",
+          "items": [
+            "wol[].name",
+            "wol[].address"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Smart Home",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "items": [
+        {
+          "key": "smarthome",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add Smarthome Device",
+          "items": [
+            "smarthome[].name",
+            "smarthome[].ain",
+            "smarthome[].accType"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "callmonitor",
+      "title": "Callmonitor",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "callmonitor.active",
+        "callmonitor.incoming_name",
+        "callmonitor.outgoing_name",
+        "callmonitor.ip",
+        "callmonitor.port",
+        {
+          "key": "callmonitor.incomingTo",
+          "type": "array",
+          "orderable": false,
+          "expandable": true,
+          "expanded": false,
+          "buttonText": "Add Number",
+          "items": [
+            "callmonitor.incomingTo[].number"
+          ]
+        },
+        {
+          "key": "callmonitor.outgoingFrom",
+          "type": "array",
+          "orderable": false,
+          "expandable": true,
+          "expanded": false,
+          "buttonText": "Add Number",
+          "items": [
+            "callmonitor.outgoingFrom[].number"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Watch Network",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "items": [
+        {
+          "key": "network",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add Device",
+          "items": [
+            "network[].name",
+            "network[].address"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Options",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "key": "options",
+          "type": "section",
+          "title": "Presence",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "options.presence.anyone",
+            "options.presence.onDelay",
+            "options.presence.offDelay"
+          ]
+        },
+        {
+          "key": "options",
+          "type": "section",
+          "title": "Reboot",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "options.reboot.on",
+            "options.reboot.off"
+          ]
+        },
+        {
+          "key": "options",
+          "type": "section",
+          "title": "Polling",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "options.polling.timer",
+            {
+              "key": "options.polling.exclude",
+              "type": "array",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "buttonText": "Add Catagory",
+              "items": [
+                "options.polling.exclude[].name"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Telegram",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "telegram.active",
+        "telegram.token",
+        "telegram.chatID",
+        {
+          "key": "telegram",
+          "type": "section",
+          "title": "Presence",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "telegram.messages.presence.user_in",
+            "telegram.messages.presence.user_out",
+            "telegram.messages.presence.anyone_in",
+            "telegram.messages.presence.anyone_out"
+          ]
+        },
+        {
+          "key": "telegram",
+          "type": "section",
+          "title": "Callmonitor",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "telegram.messages.callmonitor.incoming",
+            "telegram.messages.callmonitor.outgoing",
+            "telegram.messages.callmonitor.disconnected"
+          ]
+        },
+        {
+          "key": "telegram",
+          "type": "section",
+          "title": "Alarm",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "telegram.messages.alarm.activated",
+            "telegram.messages.alarm.deactivated"
+          ]
+        },
+        {
+          "key": "telegram",
+          "type": "section",
+          "title": "Reboot",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "telegram.messages.reboot.start",
+            "telegram.messages.reboot.finish"
+          ]
+        },
+        {
+          "key": "telegram",
+          "type": "section",
+          "title": "Network",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "telegram.messages.network.on",
+            "telegram.messages.network.off"
+          ]
+        }
+      ]
+    }
+  ]
+}
