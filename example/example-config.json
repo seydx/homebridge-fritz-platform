@@ -1,0 +1,204 @@
+{
+    "bridge": {
+        ...
+    },
+    "plugins": [
+        ...
+    ],
+    "accessories": [
+        ...
+    ],
+    "platforms": [
+        {
+            "name": "FritzPlatform",
+            "debug": true,
+            "devices": [
+                {
+                    "name": "FritzBox 7590",
+                    "host": "192.168.178.1",
+                    "port": 49000,
+                    "username": "Test",
+                    "password": "Test123",
+                    "manufacturer": "Fritz Box",
+                    "model": "7590",
+                    "serialNumber": "12345",
+                    "master": true,
+                    "readOnly": false,
+                    "connection": "dsl",
+                    "options": {
+                        "wifi_2ghz": "switch",
+                        "wifi_5ghz": "switch",
+                        "wifi_guest": "switch",
+                        "wps": "characteristic",
+                        "aw": "characteristic",
+                        "deflection": "deactivated",
+                        "led": "switch",
+                        "lock": "switch",
+                        "broadband": "deactivated"
+                    }
+                },
+                {
+                    "name": "FritzBox 7430 BU",
+                    "host": "192.168.178.28",
+                    "port": 49000,
+                    "username": "Test",
+                    "password": "Test123",
+                    "manufacturer": "Fritz Box",
+                    "model": "7430 BU",
+                    "serialNumber": "12345",
+                    "readOnly": false,
+                    "connection": "dsl",
+                    "options": {
+                        "wifi_2ghz": "characteristic",
+                        "wifi_guest": "switch",
+                        "led": "switch",
+                        "lock": "characteristic",
+                    }
+                }
+            ],
+            "presence": [
+                {
+                    "name": "Test",
+                    "address": "2E:1A:25:90:88:A1"
+                },
+                {
+                    "name": "Test2",
+                    "address": "06:64:F0:49:63:F8"
+                }
+            ],
+            "wol": [
+                {
+                    "name": "Computer",
+                    "address": "30:9C:23:A8:7B:23"
+                }
+            ],
+            "smarthome": [
+                {
+                    "name": "Han Fun Sensor",
+                    "ain": "01234567890",
+                    "accType": "contact"
+                },
+                {
+                    "name": "DECT 200",
+                    "ain": "01234567890",
+                    "accType": "switch"
+                },
+                {
+                    "name": "DECT 301",
+                    "ain": "01234567890",
+                    "accType": "thermostat"
+                }
+            ],
+            "network": [
+                {
+                    "name": "Camera",
+                    "address": "B0:D5:9D:B5:A7:C1"
+                }
+            ],
+            "callmonitor": {
+                "active": true,
+                "incoming_name": "Callmonitor Incoming",
+                "outgoing_name": "Callmonitor Outgoing",
+                "ip": "192.168.178.1",
+                "port": 1012,
+                "incomingTo": [
+                    {
+                        "number": "8923846"
+                    }
+                ],
+                "outgoingFrom": [
+                    {
+                        "number": "8923846"
+                    }
+                ]
+            },
+            "extras": {
+                "alarm": {
+                    "active": true,
+                    "duration": 30,
+                    "telNr": "01765487925",
+                    "accType": "switch"
+                },
+                "wakeup": {
+                    "active": true,
+                    "duration": 30,
+                    "internNr": "**620",
+                    "accType": "characteristic"
+                },
+                "ringlock": {
+                    "active": false,
+                    "DECTphones": 1,
+                    "start": "11:00",
+                    "end": "22:00",
+                    "accType": "characteristic"
+                },
+                "phoneBook": {
+                    "active": true,
+                    "duration": 30,
+                    "blacklists": [
+                        {
+                            "name": "Blacklist"
+                        }
+                    ],
+                    "accType": "characteristic"
+                }
+            },
+            "options": {
+                "presence": {
+                    "anyone": true,
+                    "onDelay": 30,
+                    "offDelay": 90
+                },
+                "reboot": {
+                    "on": "/var/lib/homebridgee/rebootOn.sh",
+                    "off": "/var/lib/homebridge/rebootOff.sh"
+                },
+                "polling": {
+                    "timer": 10,
+                    "exclude": [
+                        {
+                            "name": "FritzBox 7590"
+                        },
+                        {
+                            "name": "wifi_2ghz"
+                        },
+                        {
+                            "name": "router"
+                        }
+                    ]
+                }
+            },
+            "telegram": {
+                "active": true,
+                "token": "464245231:AAECj0KFkxl0sdfsdf8kdFpNZpRR_dH2OAT8",
+                "chatID": "-2964523542",
+                "messages": {
+                    "presence": {
+                        "user_in": "Welcome at home @",
+                        "user_out": "Bye Bye @",
+                        "anyone_in": "Someone is at home!",
+                        "anyone_out": "Nobody at home!"
+                    },
+                    "callmonitor": {
+                        "incoming": "Incoming call from @",
+                        "outgoing": "Outgoing call to @",
+                        "disconnected": "Call with @ disconnected"
+                    },
+                    "alarm": {
+                        "activated": "Alarm activated",
+                        "deactivated": "Alarm deactivated"
+                    },
+                    "reboot": {
+                        "start": "@: Offline!",
+                        "finish": "@: Online!"
+                    },
+                    "network": {
+                        "on": "@ is in network!",
+                        "off": "@ not in network!"
+                    }
+                }
+            },
+            "platform": "FritzPlatform"
+        }
+    ]
+}
