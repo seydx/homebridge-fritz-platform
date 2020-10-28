@@ -54,14 +54,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
 - [Common issues & FAQs](https://github.com/SeydX/homebridge-fritz-platform/blob/master/FAQ.md)
 - [First Start](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/FirstStart.md)
 - [Installation instruction](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)
-   * [Configuring Fritz!Box](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/FritzBox.md)
-   * [Configuring Fritz!Box Extras](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Extras.md)
-   * [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Callmonitor.md)
-   * [Configuring Presence](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Presence.md)
-   * [Configuring Wake On Lan](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/WOL.md)
-   * [Configuring SmartHome (DECT, HAN-FUN, Comet!DECT)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Smarthome.md)
-   * [Configuring Telegram](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Telegram.md)
-   * [General Config](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/General.md)
+- [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/config/Callmonitor.md)
 - <u>Examples</u>
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
    * [Multiple instances (for extended reboot)](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/MultipleInstances.md)
@@ -88,7 +81,7 @@ This Plugin uses modules from others, see [CONTRIBUTING](https://github.com/Seyd
 
 **MIT License**
 
-Copyright (c) 2019 **Seyit Bayraktar**
+Copyright (c) 2019-2020 **Seyit Bayraktar**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
