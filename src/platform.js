@@ -8,7 +8,6 @@ const { Fritzbox } = require('@seydx/fritzbox');
 const Telegram = require('./helper/telegram');
 const Callmonitor = require('./helper/callmonitor');
 const DeviceHandler = require('./helper/deviceHandler.js');
-const LUA = require('./helper/lua.js');
 
 //Accessories
 const RouterAccessory = require('./accessories/router.js');
@@ -517,8 +516,7 @@ function FritzPlatform (log, config, api) {
   }  
   
   
-  this.lua = LUA(this.masterDevice);
-  this.handler = DeviceHandler(this.api, this.devices, this.masterDevice, this.lua, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot); 
+  this.handler = DeviceHandler(this.api, this.devices, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot); 
   
   //listener to close the callmonitor
   this.api.on('shutdown', () => {

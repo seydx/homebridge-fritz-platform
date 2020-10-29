@@ -1,6 +1,7 @@
 'use strict';
 
 const Logger = require('./logger.js');
+const lua = require('./lua.js');
 
 const fs = require('fs-extra');
 const moment = require('moment');
@@ -8,7 +9,7 @@ const speedTest = require('speedtest-net');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
-module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenceOptions, polling, reboot) => {
+module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, reboot) => {
 
   async function get(accessory, service, characteristic, target, config, callback){
   
@@ -428,7 +429,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
             xhrId: 'all',
             sid: sid,
             page: 'led'
-          }, '/data.lua');
+          }, accessory.context.config.host, '/data.lua');
           
           Logger.debug(body, accessory.displayName);
            
@@ -474,7 +475,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
             sid: sid,
             page: 'keyLo',
             no_sidrenew: ''
-          }, '/data.lua');
+          }, accessory.context.config.host, '/data.lua');
           
           Logger.debug(body, accessory.displayName);
            
@@ -557,7 +558,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
                            
           for(const formdata of phonesFormData){
             
-            let body = await lua.requestLUA(formdata, '/data.lua', 'nightsetting'); 
+            let body = await lua.requestLUA(formdata, accessory.context.config.host, '/data.lua', 'nightsetting'); 
             
             Logger.debug(body, accessory.displayName); 
        
@@ -1048,7 +1049,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
             apply: '',
             sid: sid,
             page: 'led'
-          }, '/data.lua');
+          }, accessory.context.config.host, '/data.lua');
           
           Logger.info(state ? 'ON': 'OFF', accessory.displayName);
          
@@ -1090,7 +1091,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
             menu_active_page: 'keyLo',
             apply: '',
             page: 'keyLo'
-          }, '/data.lua');
+          }, accessory.context.config.host, '/data.lua');
           
           Logger.info(state ? 'ON': 'OFF', accessory.displayName);
          
@@ -1314,7 +1315,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
           }
           
           for(const formdata of phonesFormData)
-            await lua.requestLUA(formdata, '/data.lua', 'nightsetting');
+            await lua.requestLUA(formdata, accessory.context.config.host, '/data.lua', 'nightsetting');
             
           Logger.info(state ? 'ON': 'OFF', accessory.displayName);
             
