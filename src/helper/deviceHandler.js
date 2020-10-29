@@ -1665,7 +1665,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
                     characteristic: api.hap.Characteristic[subtypes[characteristic.UUID].name],
                     options: false
                   };
-                  devices.set(acc.UUID, extraCharacteristic);
+                  devices.set(acc.UUID + '-' + extraCharacteristic.subtype, extraCharacteristic);
                 }
               });
             }
@@ -1679,7 +1679,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           
           if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
           
-            const accessory = accessories.find(curAcc => curAcc.UUID === uuid);
+            const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
            
             switch (device.type) {
               
