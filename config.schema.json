@@ -138,14 +138,7 @@
               "wifi_2ghz": {
                 "title": "Wifi 2.4GHZ",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -164,14 +157,7 @@
               "wifi_5ghz": {
                 "title": "Wifi 5GHZ",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -190,14 +176,7 @@
               "wifi_guest": {
                 "title": "Wifi Guest",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -216,14 +195,7 @@
               "wps": {
                 "title": "WPS",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -242,14 +214,7 @@
               "aw": {
                 "title": "Answering Machine",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -268,14 +233,7 @@
               "deflection": {
                 "title": "Deflection",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -294,14 +252,7 @@
               "led": {
                 "title": "LED",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -320,14 +271,7 @@
               "lock": {
                 "title": "Device Lock",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
@@ -346,14 +290,7 @@
               "broadband": {
                 "title": "Broadband",
                 "type": "string",
-                "default": "deactivated",
                 "oneOf": [
-                  {
-                    "title": "Deactivated",
-                    "enum": [
-                      "deactivated"
-                    ]
-                  },
                   {
                     "title": "Characteristic",
                     "enum": [
