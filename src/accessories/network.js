@@ -2,30 +2,15 @@
 
 const Logger = require('../helper/logger.js');
 
-const { Fritzbox } = require('@ulfalfa/fritzbox');
-
 class watchNetwork {
 
-  constructor (devices, telegram, masterDevice, polling) {
+  constructor (devices, telegram, polling) {
     
     this.devices = devices;
     this.Telegram = telegram;
     this.polling = polling;
     
-    const fb_options = {
-      host: masterDevice.host,
-      port: masterDevice.port || 49000,
-      username: masterDevice.username,
-      password: masterDevice.password,
-      ssl: true
-    };
-    
     this.timer = 60;
-    
-    //const url = (fb_options.ssl ? 'https://' : 'http://') + fb_options.host + ':' + (fb_options.ssl ? 49443 : fb_options.port) + '/tr64desc.xml';
-    const url = 'https://' + fb_options.host + ':49443/tr64desc.xml'; 
-    
-    this.fritzbox = new Fritzbox({ username: fb_options.username, password: fb_options.password, url: url });
     
     this.start();
 
@@ -91,7 +76,7 @@ class watchNetwork {
         
         }
         
-        Logger.debug(data, device.name)
+        Logger.debug(data, device.name);
       
       }
     

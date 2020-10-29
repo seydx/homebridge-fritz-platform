@@ -53,22 +53,22 @@ class occupancyService {
   
   getState(service){
   
-     let state = service.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).value;
-     let states = [];
+    let state = service.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).value;
+    let states = [];
   
-     for(const accessory of this.accessories)
-       if(accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone')
-          states.push(accessory.getService(this.api.hap.Service.OccupancySensor).getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).value)
+    for(const accessory of this.accessories)
+      if(accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone')
+        states.push(accessory.getService(this.api.hap.Service.OccupancySensor).getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).value);
      
-     state = states.includes(1) ? 1 : 0;
+    state = states.includes(1) ? 1 : 0;
        
-     service
-       .getCharacteristic(this.api.hap.Characteristic.OccupancyDetected)
-       .updateValue(state);
+    service
+      .getCharacteristic(this.api.hap.Characteristic.OccupancyDetected)
+      .updateValue(state);
        
-     setTimeout(() => {
-       this.getState(service);
-     }, 5000); 
+    setTimeout(() => {
+      this.getState(service);
+    }, 5000); 
   
   }
 

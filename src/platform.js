@@ -3,6 +3,8 @@
 const Logger = require('./helper/logger.js');
 const packageFile = require('../package.json');
 
+const { Fritzbox } = require('@seydx/fritzbox');
+
 const Telegram = require('./helper/telegram');
 const Callmonitor = require('./helper/callmonitor');
 const DeviceHandler = require('./helper/deviceHandler.js');
@@ -15,7 +17,6 @@ const PresenceAccessory = require('./accessories/presence.js');
 const WolAccessory = require('./accessories/wol.js');
 const CallmonitorAccessory = require('./accessories/callmonitor.js');
 const ExtrasAccessory = require('./accessories/extras.js');
-
 const WatchNetwork = require('./accessories/network.js');
 
 const PLUGIN_NAME = 'homebridge-fritz-platform';
@@ -101,6 +102,22 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate router will be skipped.', router.name);
         } else {
+          
+          let options = {
+            host: router.host,
+            port: router.port || 49000,
+            username: router.username,
+            password: router.password,
+            tr064: router.tr064,
+            igd: router.igd,
+            ssl: router.ssl
+          };
+          
+          router.fritzbox = new Fritzbox({ username: options.username, password: options.password, url: 'http://' + options.host + ':' + options.port, tr064: options.tr064, igd: options.igd, autoSsl: options.ssl });
+        
+          if(router.master)
+            this.fritzbox = router.fritzbox;
+        
           this.devices.set(uuid, router);
           
           if(router.options){
@@ -132,6 +149,7 @@ function FritzPlatform (log, config, api) {
                 type: 'extra',
                 subtype: subtype,
                 parent: router.name,
+                fritzbox: router.fritzbox,
                 options: false
               };
               const switchUUID = UUIDGen.generate(extraSwitch.name);
@@ -211,6 +229,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate user will be skipped.', user.name);
         } else {
+          user.fritzbox = this.fritzbox;
           this.devices.set(uuid, user);
           this.presence.set(uuid, user);
         }
@@ -243,6 +262,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
         } else {
+          device.fritzbox = this.fritzbox;
           this.devices.set(uuid, device);
         }
       }
@@ -275,6 +295,7 @@ function FritzPlatform (log, config, api) {
           Logger.warn('Multiple network devices are configured with this name. Duplicate devices will be skipped.', device.name);
         } else {
           Logger.info('Configuring network device', device.name);
+          device.fritzbox = this.fritzbox;
           this.network.set(uuid, device);
         }
       }
@@ -336,6 +357,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', dev.name);
         } else {
+          dev.fritzbox = this.fritzbox;
           this.devices.set(uuid, dev);
         }
       }
@@ -505,7 +527,7 @@ function FritzPlatform (log, config, api) {
   });
   
   if(this.network.size)
-    new WatchNetwork(this.network, this.Telegram, this.masterDevice, this.polling);
+    new WatchNetwork(this.network, this.Telegram, this.polling);
   
   this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
   

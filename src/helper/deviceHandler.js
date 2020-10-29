@@ -6,40 +6,20 @@ const fs = require('fs-extra');
 const moment = require('moment');
 const speedTest = require('speedtest-net');
 
-const { Fritzbox } = require('@ulfalfa/fritzbox');
-const { requestXml } = require('@ulfalfa/fritzbox/dist/lib/request');
+const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
 module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenceOptions, polling, reboot) => {
-
-  function init(config){
-  
-    const fb_options = {
-      host: config.host || masterDevice.host,
-      port: config.port || 49000,
-      username: config.username || masterDevice.username,
-      password: config.password || masterDevice.password,
-      ssl: true
-    };
-    
-    //const url = (fb_options.ssl ? 'https://' : 'http://') + fb_options.host + ':' + (fb_options.ssl ? 49443 : fb_options.port) + '/tr64desc.xml';
-    const url = 'https://' + fb_options.host + ':49443/tr64desc.xml'; 
-    
-    let fritzbox = new Fritzbox({ username: fb_options.username, password: fb_options.password, url: url }); 
-    
-    return fritzbox;
-    
-  }
 
   async function get(accessory, service, characteristic, target, config, callback){
   
     let state = false;
-    let fritzbox = this.handler ? this.handler.init(accessory.context.config) : this.init(accessory.context.config);
+    let fritzbox = accessory.context.config.fritzbox;
   
     switch (target) {
     
       case 'presence':
         
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);                
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);                 
         
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -131,7 +111,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'router': 
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -203,7 +183,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'wol':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
         
         accessory
           .getService(service)
@@ -217,7 +197,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
      
       case 'wifi_2ghz':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -251,7 +231,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'wifi_5ghz':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -285,7 +265,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'wifi_guest':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -319,7 +299,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'wps':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -353,7 +333,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'aw':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -387,7 +367,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'deflection':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
          
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -434,7 +414,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'led':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
        
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -479,7 +459,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'lock':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
        
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -525,7 +505,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'alarm':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
        
         accessory
           .getService(service)
@@ -539,7 +519,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'wakeup':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
        
         accessory
           .getService(service)
@@ -553,7 +533,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
 
       case 'ringlock':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
        
         state = accessory.getService(service).getCharacteristic(characteristic).value;
          
@@ -616,7 +596,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
         if(typeof callback === 'function')
           callback(null, state);
         
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
         
         try {
          
@@ -667,7 +647,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
          
       case 'phoneBook':
       
-        Logger.debug('Getting state ' + (typeof callback !== 'function' ? '(Poll)' : '(Event)') + '...', accessory.displayName);
+        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName); 
        
         accessory
           .getService(service)
@@ -700,7 +680,7 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
   
   async function set(accessory, service, characteristic, target, config, state, callback) {
   
-    let fritzbox = this.handler.init(accessory.context.config);
+    let fritzbox = accessory.context.config.fritzbox;
   
     switch (target) {
     
@@ -1627,8 +1607,6 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
   
   async function poll(accessories){
   
-    let fritzbox = this.init({});
-  
     if(devices.size){
       
       let subtypes = {
@@ -1668,29 +1646,29 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
           name: 'RingLock',
           type: 'ringlock'
         }
-      }
+      };
       
       let validUUIDs = Object.keys(subtypes).map(type => type);
     
       accessories.forEach(acc => {
         if(acc.context.config.type === 'router'){
           acc.services.forEach(service => {
-             if(service.subtype === 'router'){
-               service.characteristics.forEach(characteristic => {
-                 if(validUUIDs.includes(characteristic.UUID)){
-                   let extraCharacteristic = {
-                     name: acc.displayName + ' ' + characteristic.name,
-                     type: 'extra',
-                     subtype: subtypes[characteristic.UUID].type,
-                     parent: acc.displayName,
-                     characteristic: api.hap.Characteristic[subtypes[characteristic.UUID].name],
-                     options: false
-                   };
-                   devices.set(acc.UUID, extraCharacteristic)
-                 }
-               })
-             }
-          })
+            if(service.subtype === 'router'){
+              service.characteristics.forEach(characteristic => {
+                if(validUUIDs.includes(characteristic.UUID)){
+                  let extraCharacteristic = {
+                    name: acc.displayName + ' ' + characteristic.name,
+                    type: 'extra',
+                    subtype: subtypes[characteristic.UUID].type,
+                    parent: acc.displayName,
+                    characteristic: api.hap.Characteristic[subtypes[characteristic.UUID].name],
+                    options: false
+                  };
+                  devices.set(acc.UUID, extraCharacteristic);
+                }
+              });
+            }
+          });
         }
       });
     
@@ -1792,7 +1770,6 @@ module.exports = (api, devices, masterDevice, lua, configPath, Telegram, presenc
     set: set,
     change: change,
     poll: poll,
-    init: init,
     initReboot: initReboot
   };
 

@@ -39,6 +39,7 @@
             "title": "Port",
             "type": "integer",
             "placeholder": 49000,
+            "default": 49000,
             "description": "Port to the TR064 Endpoint."
           },
           "username": {
@@ -52,6 +53,27 @@
             "type": "string",
             "required": true,
             "description": "Password to log in to your FritzBox."
+          },
+          "ssl": {
+            "title": "SSL",
+            "type": "boolean",
+            "description": "Required for extended requests.",
+            "required": true,
+            "default": true
+          },
+          "tr064": {
+            "title": "TR064",
+            "type": "boolean",
+            "description": "Enables TR064 endpoint on requests.",
+            "required": true,
+            "default": true
+          },
+          "igd": {
+            "title": "IGD",
+            "type": "boolean",
+            "description": "Enables IGD endpoint on requests. Please disable if device seems to be offline in Apple Home.",
+            "required": true,
+            "default": true
           },
           "manufacturer": {
             "name": "Manufacturer",
@@ -74,7 +96,8 @@
           "master": {
             "title": "Master Device",
             "type": "boolean",
-            "description": "Enables this device as master device. Only ONE device can be checked as master device!"
+            "description": "Enables this device as master device. Only ONE device can be checked as master device!",
+            "required": true
           },
           "readOnly": {
             "title": "Read Only",
@@ -85,7 +108,7 @@
             "title": "Connection",
             "type": "string",
             "description": "Type of your connection",
-            "default": "DSL",
+            "default": "dsl",
             "oneOf": [
               {
                 "title": "DSL",
@@ -115,7 +138,7 @@
               "wifi_2ghz": {
                 "title": "Wifi 2.4GHZ",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -136,13 +159,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Wifi 2.4GHZ as Switch or Characteristic."
               },
               "wifi_5ghz": {
                 "title": "Wifi 5GHZ",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -163,13 +185,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Wifi 5GHZ as Switch or Characteristic."
               },
               "wifi_guest": {
                 "title": "Wifi Guest",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -190,13 +211,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Wifi Guest as Switch or Characteristic."
               },
               "wps": {
                 "title": "WPS",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -217,13 +237,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables WPS as Switch or Characteristic. (Only for Master Device)"
               },
               "aw": {
                 "title": "Answering Machine",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -244,13 +263,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Answering Machine as Switch or Characteristic. (Only for Master Device)"
               },
               "deflection": {
                 "title": "Deflection",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -271,13 +289,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Deflection as Switch or Characteristic. (Only for Master Device)"
               },
               "led": {
                 "title": "LED",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -298,13 +315,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables LED as Switch or Characteristic."
               },
               "lock": {
                 "title": "Device Lock",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -325,13 +341,12 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Device Lock as Switch or Characteristic."
               },
               "broadband": {
                 "title": "Broadband",
                 "type": "string",
-                "default": "Deactivated",
+                "default": "deactivated",
                 "oneOf": [
                   {
                     "title": "Deactivated",
@@ -352,7 +367,6 @@
                     ]
                   }
                 ],
-                "required": true,
                 "description": "Enables Broadband as Switch or Characteristic. (Only for Master Device)"
               }
             }
@@ -425,7 +439,6 @@
           "accType": {
             "title": "Accessory Type",
             "type": "string",
-            "default": "Switch",
             "oneOf": [
               {
                 "title": "Switch",
@@ -506,7 +519,8 @@
         "port": {
           "title": "Callmonitor Port",
           "type": "integer",
-          "placeholder": "1012",
+          "placeholder": 1012,
+          "default": 1012,
           "description": "The port to listen on for Callmonitor.",
           "required": true
         },
@@ -552,15 +566,14 @@
               "title": "Active",
               "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "default": false
+              "default": false,
+              "required": true
             },
             "duration": {
               "title": "Duration",
               "type": "integer",
               "placeholder": 30,
-              "default": 30,
-              "description": "Duration of the call.",
-              "required": false
+              "description": "Duration of the call."
             },
             "telNr": {
               "title": "Telephone Number",
@@ -571,7 +584,7 @@
             "accType": {
               "title": "Accessory Type",
               "type": "string",
-              "default": "Characteristic",
+              "default": "characteristic",
               "oneOf": [
                 {
                   "title": "Switch",
@@ -599,15 +612,14 @@
               "title": "Active",
               "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "default": false
+              "default": false,
+              "required": true
             },
             "duration": {
               "title": "Duration",
               "type": "integer",
               "placeholder": 30,
-              "default": 30,
-              "description": "Duration of the call.",
-              "required": false
+              "description": "Duration of the call."
             },
             "internNr": {
               "title": "Intern Phone Number",
@@ -618,7 +630,7 @@
             "accType": {
               "title": "Accessory Type",
               "type": "string",
-              "default": "Characteristic",
+              "default": "characteristic",
               "oneOf": [
                 {
                   "title": "Switch",
@@ -646,7 +658,8 @@
               "title": "Active",
               "description": "If enabled, a RingLock switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "default": false
+              "default": false,
+              "required": true
             },
             "DECTphones": {
               "title": "DECT phones",
@@ -658,19 +671,17 @@
             "start": {
               "title": "Start Time",
               "type": "string",
-              "description": "The time to start ring lock. (eg 14:00)",
-              "required": false
+              "description": "The time to start ring lock. (eg 14:00)"
             },
             "end": {
               "title": "End Time",
               "type": "string",
-              "description": "The time to end ring lock. (eg 22:00)",
-              "required": false
+              "description": "The time to end ring lock. (eg 22:00)"
             },
             "accType": {
               "title": "Accessory Type",
               "type": "string",
-              "default": "Characteristic",
+              "default": "characteristic",
               "oneOf": [
                 {
                   "title": "Switch",
@@ -698,15 +709,14 @@
               "title": "Active",
               "description": "If enabled, a PhoneBook switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "default": false
+              "default": false,
+              "required": true
             },
             "duration": {
               "title": "Duration",
               "type": "integer",
               "placeholder": 30,
-              "default": 30,
-              "description": "Duration of the call.",
-              "required": false
+              "description": "Duration of the call."
             },
             "blacklists": {
               "type": "array",
@@ -725,7 +735,7 @@
             "accType": {
               "title": "Accessory Type",
               "type": "string",
-              "default": "Characteristic",
+              "default": "characteristic",
               "oneOf": [
                 {
                   "title": "Switch",
@@ -765,12 +775,14 @@
               "title": "Delay on detection",
               "type": "integer",
               "placeholder": 30,
+              "default": 30,
               "description": "Delay timer (s) before switching to detected."
             },
             "offDelay": {
               "title": "Delay on NO detection",
               "type": "integer",
-              "placeholder": 30,
+              "placeholder": 90,
+              "default": 90,
               "description": "Delay timer (s) before switching to NOT detected."
             }
           }
@@ -828,7 +840,8 @@
           "title": "Active",
           "description": "Activates Telegram.",
           "type": "boolean",
-          "default": false
+          "default": false,
+          "required": true
         },
         "token": {
           "title": "Token",
@@ -967,6 +980,9 @@
             "devices[].port",
             "devices[].username",
             "devices[].password",
+            "devices[].ssl",
+            "devices[].tr064",
+            "devices[].igd",
             "devices[].master",
             "devices[].connection",
             "devices[].readOnly",
@@ -1260,66 +1276,75 @@
         "telegram.token",
         "telegram.chatID",
         {
-          "key": "telegram",
           "type": "section",
-          "title": "Presence",
+          "title": "Messages",
+          "orderable": false,
           "expandable": true,
           "expanded": false,
-          "orderable": false,
           "items": [
-            "telegram.messages.presence.user_in",
-            "telegram.messages.presence.user_out",
-            "telegram.messages.presence.anyone_in",
-            "telegram.messages.presence.anyone_out"
-          ]
-        },
-        {
-          "key": "telegram",
-          "type": "section",
-          "title": "Callmonitor",
-          "expandable": true,
-          "expanded": false,
-          "orderable": false,
-          "items": [
-            "telegram.messages.callmonitor.incoming",
-            "telegram.messages.callmonitor.outgoing",
-            "telegram.messages.callmonitor.disconnected"
-          ]
-        },
-        {
-          "key": "telegram",
-          "type": "section",
-          "title": "Alarm",
-          "expandable": true,
-          "expanded": false,
-          "orderable": false,
-          "items": [
-            "telegram.messages.alarm.activated",
-            "telegram.messages.alarm.deactivated"
-          ]
-        },
-        {
-          "key": "telegram",
-          "type": "section",
-          "title": "Reboot",
-          "expandable": true,
-          "expanded": false,
-          "orderable": false,
-          "items": [
-            "telegram.messages.reboot.start",
-            "telegram.messages.reboot.finish"
-          ]
-        },
-        {
-          "key": "telegram",
-          "type": "section",
-          "title": "Network",
-          "expandable": true,
-          "expanded": false,
-          "orderable": false,
-          "items": [
-            "telegram.messages.network.on",
-            "telegram.messages.network.off"
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Presence",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "telegram.messages.presence.user_in",
+                "telegram.messages.presence.user_out",
+                "telegram.messages.presence.anyone_in",
+                "telegram.messages.presence.anyone_out"
+              ]
+            },
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Callmonitor",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "telegram.messages.callmonitor.incoming",
+                "telegram.messages.callmonitor.outgoing",
+                "telegram.messages.callmonitor.disconnected"
+              ]
+            },
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Alarm",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "telegram.messages.alarm.activated",
+                "telegram.messages.alarm.deactivated"
+              ]
+            },
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Reboot",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "telegram.messages.reboot.start",
+                "telegram.messages.reboot.finish"
+              ]
+            },
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Network",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": [
+                "telegram.messages.network.on",
+                "telegram.messages.network.off"
+              ]
+            }
           ]
         }
       ]
