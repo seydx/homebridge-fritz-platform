@@ -37,7 +37,7 @@ class watchNetwork {
           input = {NewMACAddress: device.address};
         }
         
-        let data = await this.fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+        let data = await device.fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
         let state = parseInt(data.NewActive);
         
         if(state) {
