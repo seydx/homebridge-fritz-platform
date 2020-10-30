@@ -19,14 +19,15 @@
                     "port": 49000,
                     "username": "Test",
                     "password": "Test123",
-                    "ssl": true,
-                    "tr064": true,
-                    "igd": true,
                     "manufacturer": "Fritz Box",
                     "model": "7590",
                     "serialNumber": "12345",
                     "master": true,
+                    "ssl": true,
+                    "tr064": true,
+                    "igd": true,
                     "readOnly": false,
+                    "hide": true,
                     "connection": "dsl",
                     "options": {
                         "wifi_2ghz": "switch",
@@ -34,10 +35,9 @@
                         "wifi_guest": "switch",
                         "wps": "characteristic",
                         "aw": "characteristic",
-                        "deflection": "deactivated",
                         "led": "switch",
                         "lock": "switch",
-                        "broadband": "deactivated"
+                        "dect": "switch"
                     }
                 },
                 {
@@ -46,14 +46,15 @@
                     "port": 49000,
                     "username": "Test",
                     "password": "Test123",
-                    "ssl": true,
-                    "tr064": true,
-                    "igd": true,
                     "manufacturer": "Fritz Box",
                     "model": "7430 BU",
                     "serialNumber": "12345",
                     "readOnly": false,
                     "connection": "dsl",
+                    "hide": false,
+                    "ssl": true,
+                    "tr064": true,
+                    "igd": true,
                     "options": {
                         "wifi_2ghz": "characteristic",
                         "wifi_guest": "switch",
@@ -62,22 +63,23 @@
                     }
                 },
                 {
-                    "name": "FritzBox Repeater",
-                    "host": "192.168.178.33",
+                    "name": "FritzRepeater",
+                    "host": "192.168.178.66",
                     "port": 49000,
                     "username": "Test",
                     "password": "Test123",
                     "ssl": true,
                     "tr064": true,
                     "igd": false,
-                    "manufacturer": "Fritz Box",
-                    "model": "7430 BU",
-                    "serialNumber": "12345",
+                    "manufacturer": "FritzBox",
+                    "model": "Repeater",
+                    "serialNumber": "123456",
                     "readOnly": false,
                     "connection": "repeater",
+                    "hide": false,
                     "options": {
-                        "led": "switch",
-                        "lock": "characteristic",
+                        "led": "characteristic",
+                        "lock": "characteristic"
                     }
                 }
             ],
@@ -117,11 +119,16 @@
             "network": [
                 {
                     "name": "Camera",
-                    "address": "B0:D5:9D:B5:A7:C1"
+                    "address": "B0:D5:9D:B5:A7:C1",
+                    "polling": 60,                    
+                    "offDelay": 20,
+                    "onDelay": 0                                        
                 }
             ],
             "callmonitor": {
                 "active": true,
+                "group": true,
+                "group_name": "Callmonitor",
                 "incoming_name": "Callmonitor Incoming",
                 "outgoing_name": "Callmonitor Outgoing",
                 "ip": "192.168.178.1",
@@ -160,12 +167,12 @@
                 "phoneBook": {
                     "active": true,
                     "duration": 30,
+                    "accType": "characteristic",
                     "blacklists": [
                         {
                             "name": "Blacklist"
                         }
-                    ],
-                    "accType": "characteristic"
+                    ]
                 }
             },
             "options": {
