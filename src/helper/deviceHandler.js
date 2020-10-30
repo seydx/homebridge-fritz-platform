@@ -134,7 +134,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
 
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -197,7 +197,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -222,7 +222,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -247,7 +247,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -272,7 +272,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -297,7 +297,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -332,7 +332,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -357,7 +357,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -395,7 +395,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -435,7 +435,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -472,7 +472,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -521,7 +521,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -568,7 +568,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
@@ -716,7 +716,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
            
           } catch(err) {
           
-            handleError(accessory, false, target, err);
+            handleError(accessory, false, target, err, {set: true});
              
             setTimeout(() => {
              
@@ -744,7 +744,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
        
         } finally {
         
@@ -772,7 +772,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -798,7 +798,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -824,7 +824,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -852,7 +852,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -916,7 +916,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -942,7 +942,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -974,7 +974,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
              
             } catch(err) {
             
-              handleError(accessory, false, target, err);
+              handleError(accessory, false, target, err, {set: true});
                
               setTimeout(() => {
                
@@ -1004,7 +1004,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1057,7 +1057,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1094,7 +1094,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1158,7 +1158,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1193,7 +1193,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1303,7 +1303,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             
         } catch(err) {
         
-          handleError(accessory, false, target, err);
+          handleError(accessory, false, target, err, {set: true});
            
           setTimeout(() => {
            
@@ -1478,7 +1478,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           
           } catch(err) {
           
-            handleError(accessory, false, target, err);
+            handleError(accessory, false, target, err, {set: true});
           
           } finally {
           
@@ -1768,7 +1768,9 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
-  function handleError(accessory, state, target, err){
+  function handleError(accessory, state, target, err, action){
+  
+    let mode = action.poll ? 'polling' : (action.get ? 'getting' : 'setting');
   
     if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
       Logger.warn('Device seems to be offline' + ' (' + target + ')', accessory.displayName);
@@ -1779,8 +1781,10 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       } else {
         state = state ? !state : state;
       }
+    } else if(err.message && err.message.includes('500')){
+      Logger.warn('FritzBox could not process the request', accessory.displayName);
     } else {
-      Logger.error('An error occured during getting state' + ' (' + target + ')', accessory.displayName);
+      Logger.error('An error occured during ' + mode + ' state' + ' (' + target + ')', accessory.displayName);
       Logger.error(err);
     }
     
