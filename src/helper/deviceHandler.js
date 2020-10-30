@@ -5,6 +5,7 @@ const lua = require('./lua.js');
 
 const fs = require('fs-extra');
 const moment = require('moment');
+const ping = require('ping');
 const speedTest = require('speedtest-net');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
@@ -12,20 +13,22 @@ const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, reboot) => {
 
   async function get(accessory, service, characteristic, target, config, callback){
+    
+    Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName); 
   
-    let state = false;
     let fritzbox = accessory.context.config.fritzbox;
+    
+    if(typeof callback === 'function')
+      callback(null, accessory.getService(service).getCharacteristic(characteristic).value);
   
     switch (target) {
     
-      case 'presence':
-        
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);                 
-        
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+      case 'presence': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
-        
+
           let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
           let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
           let input = {NewIPAddress: accessory.context.config.address};
@@ -63,6 +66,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             } else {
             
               accessory.context.changedOn = Date.now();
+              
               Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
               
               accessory.context.informed = true;
@@ -76,7 +80,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             }
           
           } else {
-          
+
             if(accessory.context.informed && accessory.context.changedOn){
             
               accessory.context.informed = false;
@@ -85,18 +89,52 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
                
             }
+             
+            if(accessory.context.config.ping){
+            
+              let threshold = !isNaN(accessory.context.config.threshold) || 15;
+
+              let address = data.NewIPAddress ? data.NewIPAddress : accessory.context.config.address;
+                
+              let res = await ping.promise.probe(address, { timeout: 3 });
+              res.alive = res.alive ? 1 : 0;
+              
+              if(res.alive !== newState){
+              
+                if(res.alive){ 
+                
+                  accessory.context.lastSeen = Date.now(); 
+                  state = res.alive;
+             
+                } else { 
+                
+                  if(accessory.context.lastSeen){
+                  
+                    let lastSeenMoment = moment(accessory.context.lastSeen);
+                    let activeThreshold = moment().subtract(threshold, 'm');
+                    
+                    state = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
+                    
+                    if(newState !== state)
+                      Logger.debug('Ping and FritzBox states are NOT equal.', accessory.displayName);
+               
+                  }
+                  
+                }
+                
+              } else { 
+              
+                Logger.debug('Ping and FritzBox states are equal.', accessory.displayName);
+             
+              }
+              
+            }
           
           }
 
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
         
@@ -105,16 +143,13 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
+        
+      }  
          
-      case 'router': 
+      case 'router': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-         
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
         
@@ -146,7 +181,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               
               try {
               
-                await this.handler.initReboot(reboot.off);
+                await initReboot(reboot.off);
                 Logger.info('OFF script executed successfully!');
              
               } catch(err) {
@@ -162,13 +197,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
         
@@ -177,30 +206,13 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
-         
-      case 'wol':
-      
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(false);
        
-        if(typeof callback === 'function')
-          callback(null, false);
-         
-        break;
+      }
      
-      case 'wifi_2ghz':
+      case 'wifi_2ghz': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-         
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -210,13 +222,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
         
@@ -225,16 +231,13 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
          
-      case 'wifi_5ghz':
-      
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
+      }   
          
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+      case 'wifi_5ghz': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -244,31 +247,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-         
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
          
-      case 'wifi_guest':
-      
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
+      }   
          
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+      case 'wifi_guest': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -278,31 +272,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-         
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
+        
+      }  
          
-      case 'wps':
+      case 'wps': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-         
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -312,31 +297,57 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
-         
-      case 'aw':
+        
+      }
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
+      case 'dect': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        try {
+         
+          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+         
+          let body = await lua.requestLUA({
+            xhr: '1',
+            sid: sid,
+            page: 'dectSet',
+            no_sidrenew: ''
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'dect_activ');
+
+          Logger.debug(body, accessory.displayName);
+           
+          state = body.checked || body.checked === '' ? true : false;
+         
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err);
+       
+        }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+       
+        break;
+        
+      }
+         
+      case 'aw': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -346,31 +357,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
+        
+      }
          
-      case 'deflection':
+      case 'deflection': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-         
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -393,31 +395,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
          
-        if(typeof callback === 'function')
-          callback(null, state);
-         
         break;
+        
+      }
          
-      case 'led':
+      case 'led': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-       
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -429,40 +422,35 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             xhrId: 'all',
             sid: sid,
             page: 'led'
-          }, accessory.context.config.host, '/data.lua');
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
           Logger.debug(body, accessory.displayName);
            
           if(body && body.data && body.data.ledSettings)
             state = parseInt(body.data.ledSettings.ledDisplay) === 0 ? true : false;
+           
+          //old fw  
+          if(body && body.data && body.data.led_display)
+            state = parseInt(body.data.led_display) === 0 ? true : false;
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-         
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
-         
-        if(typeof callback === 'function')
-          callback(null, state);
        
         break;
+        
+      }
          
-      case 'lock':
+      case 'lock': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-       
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -475,7 +463,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             sid: sid,
             page: 'keyLo',
             no_sidrenew: ''
-          }, accessory.context.config.host, '/data.lua');
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
           Logger.debug(body, accessory.displayName);
            
@@ -484,59 +472,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-         
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
-         
-        if(typeof callback === 'function')
-          callback(null, state);
        
         break;
-         
-      case 'alarm':
-      
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-       
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(false);
-         
-        if(typeof callback === 'function')
-          callback(null, false);
-       
-        break;
-         
-      case 'wakeup':
-      
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-       
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(false);
-         
-        if(typeof callback === 'function')
-          callback(null, false);
-       
-        break;
+        
+      }
 
-      case 'ringlock':
+      case 'ringlock': {
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
-       
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
          
@@ -558,11 +509,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
                            
           for(const formdata of phonesFormData){
             
-            let body = await lua.requestLUA(formdata, accessory.context.config.host, '/data.lua', 'nightsetting'); 
+            let body = await lua.requestLUA(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting'); 
             
-            Logger.debug(body, accessory.displayName); 
+            Logger.debug(body, accessory.displayName);
        
-            actives.push(parseInt(body));
+            actives.push((parseInt(body.value) || 0));
             
           }
             
@@ -570,34 +521,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          state = handleError(accessory, state, target, err);
        
         }
-         
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
           .updateValue(state);
-         
-        if(typeof callback === 'function')
-          callback(null, state);
        
         break;
-         
-      case 'broadband':
-         
-        state = accessory.getService(service).getCharacteristic(characteristic).value;
-         
-        if(typeof callback === 'function')
-          callback(null, state);
         
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName);  
+      }
+         
+      case 'broadband': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
         
         try {
          
@@ -611,11 +550,6 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           let dl = (data.download.bandwidth * 8 / 1000 / 1000).toFixed(1);
           let ul = (data.upload.bandwidth * 8/ 1000 / 1000).toFixed(1);
           let ping = data.ping.latency.toFixed(0);
-
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(state);
           
           accessory
             .getService(service)
@@ -634,45 +568,84 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-            state = false;
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
        
         }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
          
         break;
-         
-      case 'phoneBook':
+        
+      }
       
-        Logger.debug((typeof callback !== 'function' ? 'Polling' : 'Getting') + ' state (' + target + ')...', accessory.displayName); 
-       
+      /*case 'wol': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
-          .updateValue(false);
-         
-        if(typeof callback === 'function')
-          callback(null, false);
-       
+          .updateValue(state);
+        
         break;
+     
+      }
+      
+      case 'alarm': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+        
+        break;
+        
+      }
+         
+      case 'wakeup': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+        
+        break;
+        
+      }
+         
+      case 'phoneBook': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+        
+        break;
+        
+      } */
 
-      default:
+      default: {
        
-        Logger.warn('Target (' + target + ') not found!', accessory.displayName);
-         
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        
         accessory
           .getService(service)
           .getCharacteristic(characteristic)
-          .updateValue(false);
-         
-        if(typeof callback === 'function')
-          callback(null, false);
-         
+          .updateValue(state);
+        
         break;
+       
+      }  
+        
     }
     
     return;
@@ -682,10 +655,12 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   async function set(accessory, service, characteristic, target, config, state, callback) {
   
     let fritzbox = accessory.context.config.fritzbox;
+    
+    callback(null, state);
   
     switch (target) {
     
-      case 'router':
+      case 'router': {
       
         if(state){
         
@@ -699,14 +674,10 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               .updateValue(!state);
          
           }, 1000);
-           
-          return callback(null, state);
           
-        }
-      
-        if(accessory.context.config.readOnly){
+        } else if(accessory.context.config.readOnly){
         
-          Logger.info('Can not be switched OFF! "readOnly" is active!');
+          Logger.info('Can not be switched OFF! "readOnly" is active!', accessory.displayName);
         
           setTimeout(() => {
            
@@ -719,18 +690,18 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
         } else {
         
-          Logger.info('OFF', accessory.displayName);
+          Logger.info('OFF' + ' (' + target + ')', accessory.displayName);
         
           if(reboot.on && accessory.context.config.master){
           
             try {
             
-              await this.handler.initReboot(reboot.on);
-              Logger.info('ON script executed successfully!');
+              await initReboot(reboot.on);
+              Logger.info('ON script executed successfully!', accessory.displayName);
            
             } catch(err) {
             
-              Logger.error('An error occured during executing ON script!');
+              Logger.error('An error occured during executing ON script!', accessory.displayName);
               Logger.error(err);
           
             }
@@ -745,12 +716,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
            
           } catch(err) {
           
-            if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-              Logger.warn('Device seems to be offline', accessory.displayName);
-            } else {
-              Logger.error('An error occured during getting state', accessory.displayName);
-              Logger.error(err);
-            }
+            handleError(accessory, false, target, err);
              
             setTimeout(() => {
              
@@ -765,25 +731,20 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
          
-      case 'wol':
+      case 'wol': {
          
         try {
          
           await fritzbox.exec('urn:dslforum-org:service:Hosts:1', 'X_AVM-DE_WakeOnLANByMACAddress', {NewMACAddress: accessory.context.config.address});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
        
         } finally {
         
@@ -798,25 +759,20 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
      
-      case 'wifi_2ghz':
+      case 'wifi_2ghz': {
          
         try {
          
           await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'SetEnable', {NewEnable: state});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -829,25 +785,20 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
          
-      case 'wifi_5ghz':
+      case 'wifi_5ghz': {
          
         try {
          
           await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:2', 'SetEnable', {NewEnable: state});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -860,25 +811,20 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
          
-      case 'wifi_guest':
+      case 'wifi_guest': {
          
         try {
          
           await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:3', 'SetEnable', {NewEnable: state});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -891,27 +837,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }  
          
-      case 'wps':
+      case 'wps': {
          
         try {
          
           let status = state ? 'pbc' : 'stop';
          
           await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'X_AVM-DE_SetWPSConfig', {'NewX_AVM-DE_WPSMode': status});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -924,25 +865,84 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
+        break;
+        
+      }
+      
+      case 'dect': {
+         
+        try {
+         
+          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          
+          let formData;
+          
+          if(state){
+            formData = {
+              xhr: '1',
+              sid: sid,
+              no_sidrenew: '',
+              dect_activ: 'on',
+              dect_pin: '****',
+              dect_eco_modi: '1',
+              starthh: '00',
+              startmm: '00',
+              endhh: '00',
+              endmm: '00',
+              dect_security: '0',
+              protectpin: '',
+              protectdiversion: 'on',
+              dect_problems: 'on',
+              catiq_problems: 'on',
+              dect_assi: '0',
+              btnSave: '',
+              oldpage: '/dect/dect_settings.lua'
+            };
+          } else {
+            formData = {
+              xhr: '1',
+              sid: sid,
+              no_sidrenew: '',
+              dect_assi: '0',
+              btnSave: '', 
+              oldpage: '/dect/dect_settings.lua'
+            };
+          }
+            
+          await lua.requestLUA(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
+          
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
+         
+        } catch(err) {
+        
+          handleError(accessory, false, target, err);
+           
+          setTimeout(() => {
+           
+            accessory
+              .getService(service)
+              .getCharacteristic(characteristic)
+              .updateValue(!state);
+           
+          }, 1000);
+       
+        }
          
         break;
+        
+      }
          
-      case 'aw':
+      case 'aw': {
          
         try {
          
           await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_TAM:1', 'SetEnable', {NewIndex: 0, NewEnable: state});
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -950,16 +950,16 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               .getService(service)
               .getCharacteristic(characteristic)
               .updateValue(!state);
-           
+
           }, 1000);
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }  
 
-      case 'deflection':
+      case 'deflection': {
       
         try {
        
@@ -970,16 +970,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             try {
              
               await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'SetDeflectionEnable', {NewDeflectionId: 0, NewEnable: state ? 1 : 0});
-              Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+              Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
              
             } catch(err) {
             
-              if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-                Logger.warn('Device seems to be offline', accessory.displayName);
-              } else {
-                Logger.error('An error occured during getting state', accessory.displayName);
-                Logger.error(err);
-              }
+              handleError(accessory, false, target, err);
                
               setTimeout(() => {
                
@@ -994,7 +989,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
            
           } else {
            
-            Logger.error('Can not set state, no deflections', accessory.displayName);
+            Logger.error('Can not set state, no deflections' + ' (' + target + ')', accessory.displayName);
              
             setTimeout(() => {
              
@@ -1009,12 +1004,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1026,19 +1016,19 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           }, 1000);
         
         }
-         
-        callback(null, state);
        
         break;
+        
+      }
          
-      case 'led':
+      case 'led': {
          
         try {
          
           let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
-         
-          await lua.requestLUA({
+          
+          let formData = {
             xhr: '1',
             led_brightness: '2',
             environment_light: '1',
@@ -1049,18 +1039,25 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             apply: '',
             sid: sid,
             page: 'led'
-          }, accessory.context.config.host, '/data.lua');
+          };
           
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          if(accessory.context.config.oldFW){
+            formData = {
+              xhr: '1',
+              led_display: state ? '0' : '2',
+              apply: '',
+              sid: sid,
+              page: 'led'
+            };
+          }
+         
+          await lua.requestLUA(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
+          
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1073,11 +1070,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
 
-      case 'lock':
+      case 'lock': {
          
         try {
          
@@ -1091,18 +1088,13 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             menu_active_page: 'keyLo',
             apply: '',
             page: 'keyLo'
-          }, accessory.context.config.host, '/data.lua');
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1115,11 +1107,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
 
-      case 'alarm':
+      case 'alarm': {
          
         try {
          
@@ -1162,16 +1154,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
            
           }
           
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName + ' Alarm');
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1184,11 +1171,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
          
-      case 'wakeup':
+      case 'wakeup': {
          
         try {
          
@@ -1202,16 +1189,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
            
           }
           
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1224,11 +1206,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
        
         }
          
-        callback(null, state);
-         
         break;
+        
+      }
          
-      case 'ringlock':
+      case 'ringlock': {
       
         try {
         
@@ -1315,18 +1297,13 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           }
           
           for(const formdata of phonesFormData)
-            await lua.requestLUA(formdata, accessory.context.config.host, '/data.lua', 'nightsetting');
+            await lua.requestLUA(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting');
             
-          Logger.info(state ? 'ON': 'OFF', accessory.displayName);
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
             
         } catch(err) {
         
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
+          handleError(accessory, false, target, err);
            
           setTimeout(() => {
            
@@ -1338,14 +1315,14 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           }, 1000);
         
         }
-        
-        callback(null, state);
        
         break;
+        
+      }
          
-      case 'broadband':
+      case 'broadband': {
       
-        Logger.info((state ? 'ON' : 'OFF') + ' not supported!', accessory.displayName);
+        Logger.info((state ? 'ON' : 'OFF') + ' not supported!' + ' (' + target + ')', accessory.displayName);
        
         setTimeout(() => {
           accessory
@@ -1354,15 +1331,15 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             .updateValue(false);
         }, 1000);
          
-        callback(null, state);
-         
         break;
+        
+      }
       
-      case 'phoneBook':
+      case 'phoneBook': {
           
         if(!state){
         
-          Logger.info('OFF not supported!', accessory.displayName);
+          Logger.info('OFF not supported! (' + target + ')', accessory.displayName);
            
           setTimeout(() => {
           
@@ -1371,163 +1348,158 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               .getCharacteristic(characteristic)
               .updateValue(true);
           
-          }, 1000); 
-           
-          return callback(null, state);
+          }, 1000);
           
-        }
-          
-        try {
+        } else {
         
-          /*let okz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonAreaCode');
-          okz = okz['NewX_AVM-DE_OKZPrefix'] + okz['NewX_AVM-DE_OKZ'];
-          okz = parseInt(okz);  //05341 */
+          try {
           
-          let lkz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
-          lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49      
-          
-          
-          let blacklists = config.blacklists &&
-                           config.blacklists.length
-            ? config.blacklists.map(ex => ex.name).filter(ex => ex && ex.length)
-            : []; 
-          
-          let telBook = [];
-          let blackBook = [];
-          
-          let books = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebookList');
-          books = books.NewPhonebookList.split(',');
-              
-          if(!Array.isArray(books))
-            books = [books];
+            /*let okz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonAreaCode');
+            okz = okz['NewX_AVM-DE_OKZPrefix'] + okz['NewX_AVM-DE_OKZ'];
+            okz = parseInt(okz);  //05341 */
             
-          Logger.debug('Found ' + books.length + ' phonebook(s). Fetching entries...', accessory.displayName);
+            let lkz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+            lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49      
             
-          for(const id of books){
-          
-            let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebook', {NewPhonebookID: id});
             
-            let bookName = data.NewPhonebookName;
-            let uri = data.NewPhonebookURL;
+            let blacklists = config.blacklists &&
+                             config.blacklists.length
+              ? config.blacklists.map(ex => ex.name).filter(ex => ex && ex.length)
+              : []; 
             
-            let book = await requestXml({ uri, rejectUnauthorized: false });
-
-            let contacts = book.phonebooks.phonebook.contact;
+            let telBook = [];
+            let blackBook = [];
             
-            if(contacts){
-            
-              for(const contact of contacts){
-              
-                let numbers = contact.telephony ? contact.telephony.number : false;
-                 
-                if(numbers){
-                 
-                  if(numbers.length){
-                   
-                    for(const number of numbers){
+            let books = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebookList');
+            books = books.NewPhonebookList.split(',');
                 
-                      let telnr = number._;
+            if(!Array.isArray(books))
+              books = [books];
+              
+            Logger.debug('Found ' + books.length + ' phonebook(s). Fetching entries...', accessory.displayName);
+              
+            for(const id of books){
+            
+              let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebook', {NewPhonebookID: id});
+              
+              let bookName = data.NewPhonebookName;
+              let uri = data.NewPhonebookURL;
+              
+              let book = await requestXml({ uri, rejectUnauthorized: false });
+  
+              let contacts = book.phonebooks.phonebook.contact;
+              
+              if(contacts){
+              
+                for(const contact of contacts){
+                
+                  let numbers = contact.telephony ? contact.telephony.number : false;
+                   
+                  if(numbers){
+                   
+                    if(numbers.length){
+                     
+                      for(const number of numbers){
                   
-                      telnr = telnr.replace(/\s/g, '');    
+                        let telnr = number._;
+                    
+                        telnr = telnr.replace(/\s/g, '');    
+                        
+                        let nr = '+' + lkz;
+                        let nr2 = '00' + lkz;
                       
+                        if(telnr.includes(nr) || telnr.includes(nr2)){
+                      
+                          telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
+                   
+                        } else {
+                       
+                          telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
+                    
+                        }
+                      
+                        telBook.push({name: contact.person.realName,number:telnr});
+      
+                        if(blacklists.includes(bookName))
+                          blackBook.push({name: contact.person.realName,number:telnr});
+      
+                      }
+                     
+                    } else {
+                     
                       let nr = '+' + lkz;
                       let nr2 = '00' + lkz;
-                    
+                      let telnr = numbers._;
+                   
+                      telnr = telnr.replace(/\s/g, '');
+                           
                       if(telnr.includes(nr) || telnr.includes(nr2)){
-                    
+                      
                         telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                 
+                    
                       } else {
-                     
+                      
                         telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                  
+                    
                       }
                     
                       telBook.push({name: contact.person.realName,number:telnr});
-    
+                  
                       if(blacklists.includes(bookName))
                         blackBook.push({name: contact.person.realName,number:telnr});
-    
+                     
                     }
-                   
-                  } else {
-                   
-                    let nr = '+' + lkz;
-                    let nr2 = '00' + lkz;
-                    let telnr = numbers._;
-                 
-                    telnr = telnr.replace(/\s/g, '');
-                         
-                    if(telnr.includes(nr) || telnr.includes(nr2)){
-                    
-                      telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                  
-                    } else {
-                    
-                      telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                  
-                    }
-                  
-                    telBook.push({name: contact.person.realName,number:telnr});
-                
-                    if(blacklists.includes(bookName))
-                      blackBook.push({name: contact.person.realName,number:telnr});
                    
                   }
-                 
+                
                 }
               
+              } else {
+              
+                Logger.debug('Phonebook [' + id + '] does not contain any contacts. Skipping..', accessory.displayName);  
+              
               }
-            
-            } else {
-            
-              Logger.debug('Phonebook [' + id + '] does not contain any contacts. Skipping..', accessory.displayName);  
+              
+              Logger.debug('Phone book [' + id + '] done.', accessory.displayName);
             
             }
             
-            Logger.debug('Phone book [' + id + '] done.', accessory.displayName);
+            Logger.info('Storing phonebook results to ' + configPath + '/phonebook.json', accessory.displayName);
+            await fs.ensureFile(configPath + '/phonebook.json');
+            await fs.writeJson(configPath + '/phonebook.json', telBook, { spaces: 2 });
+            
+            if(blackBook.length){
+              Logger.info('Storing blackbook results to ' + configPath + '/blackbook.json', accessory.displayName);
+              await fs.ensureFile(configPath + '/blackbook.json');
+              await fs.writeJson(configPath + '/blackbook.json', blackBook, { spaces: 2 });
+            }
+            
+            Logger.info('Done!', accessory.displayName);
+          
+          } catch(err) {
+          
+            handleError(accessory, false, target, err);
+          
+          } finally {
+          
+            setTimeout(() => {
+             
+              accessory
+                .getService(service)
+                .getCharacteristic(characteristic)
+                .updateValue(false);
+             
+            }, 1000);
           
           }
-          
-          Logger.info('Storing phonebook results to ' + configPath + '/phonebook.json', accessory.displayName);
-          await fs.ensureFile(configPath + '/phonebook.json');
-          await fs.writeJson(configPath + '/phonebook.json', telBook, { spaces: 2 });
-          
-          if(blackBook.length){
-            Logger.info('Storing blackbook results to ' + configPath + '/blackbook.json', accessory.displayName);
-            await fs.ensureFile(configPath + '/blackbook.json');
-            await fs.writeJson(configPath + '/blackbook.json', blackBook, { spaces: 2 });
-          }
-          
-          Logger.info('Done!', accessory.displayName);
-        
-        } catch(err) {
-        
-          if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
-            Logger.warn('Device seems to be offline', accessory.displayName);
-          } else {
-            Logger.error('An error occured during getting state', accessory.displayName);
-            Logger.error(err);
-          }
-        
-        } finally {
-        
-          setTimeout(() => {
-           
-            accessory
-              .getService(service)
-              .getCharacteristic(characteristic)
-              .updateValue(false);
-           
-          }, 1000);
         
         }
-        
-        callback(null, state);  
        
         break;
+    
+      }
          
-      default:
+      default: {
        
         Logger.warn('Target (' + target + ') not found!', accessory.displayName);
          
@@ -1538,9 +1510,10 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             .updateValue(!state);
         }, 1000);
          
-        callback(null, state);
-         
         break;
+        
+      }
+        
     }
     
     return;
@@ -1549,11 +1522,11 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   async function change(accessory, target, replacer, value){
   
-    let dest = false;
-  
     switch (target) {
     
-      case 'presence':
+      case 'presence': {
+      
+        let dest = false;
         
         if(value.newValue){
           dest = accessory.displayName === 'Anyone' ? 'anyone_in' : 'user_in';
@@ -1564,27 +1537,37 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
       
         break;
-        
-      case 'network':
+      
+      }  
+      
+      case 'network': {
         
         Telegram.send('network',  value.newValue ? 'on' : 'off', replacer);
       
         break;
         
-      case 'alarm':
+      }  
+        
+      case 'alarm': {
 
         Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
       
         break;
         
-      case 'router':
+      }
+        
+      case 'router': {
 
         if(!accessory.context.config.readOnly)
           Telegram.send('reboot', value.newValue ? 'finish' : 'start', accessory.displayName);
       
         break;
         
-      case 'callmonitor':
+      }  
+        
+      case 'callmonitor': {
+      
+        let dest = false;
         
         if(value.newValue){
           dest = accessory.context.config.subtype === 'incoming' ? 'incoming' : 'outgoing';
@@ -1595,10 +1578,15 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         Telegram.send('callmonitor', dest, replacer);
       
         break;
+       
+      }
         
-      default:
+      default: {
+      
         //fall through
         break;
+        
+      }
     
     }
     
@@ -1610,128 +1598,142 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
     if(devices.size){
       
-      let subtypes = {
-        '0026e147-5d51-4f42-b157-6aca6050be8e': {
-          name: 'WifiTwo',
-          type: 'wifi_2ghz'
-        },
-        'a72aeeca-c6ce-45ce-b026-5d400aab5fc9': {
-          name: 'WifiFive',
-          type: 'wifi_5ghz'
-        },
-        'a87bbf2b-885c-4713-8169-22abdbf0b2a1': {
-          name: 'WifiGuest',
-          type: 'wifi_guest'
-        },
-        '991dd58c-7d8c-46b1-acd1-411d8f6902ac': {
-          name: 'WifiWPS',
-          type: 'wps'
-        },
-        'd19ef9d5-3bc6-47ac-b6bb-7bdcf0df20b0': {
-          name: 'AnsweringMachine',
-          type: 'aw'
-        },
-        '658086c7-274c-4988-bd5e-3c720fa3054d': {
-          name: 'Deflection',
-          type: 'deflection'
-        },
-        'fd81f0dc-4324-457e-8164-289743873fb1': {
-          name: 'DeviceLED',
-          type: 'led'
-        },
-        '56af4239-46bc-4bae-b55b-dbc5be2d0897': {
-          name: 'DeviceLock',
-          type: 'lock'
-        },
-        'cab7d43e-422c-4452-bc9a-11c89454332b': {
-          name: 'RingLock',
-          type: 'ringlock'
-        }
-      };
-      
-      let validUUIDs = Object.keys(subtypes).map(type => type);
-    
-      accessories.forEach(acc => {
-        if(acc.context.config.type === 'router'){
-          acc.services.forEach(service => {
-            if(service.subtype === 'router'){
-              service.characteristics.forEach(characteristic => {
-                if(validUUIDs.includes(characteristic.UUID)){
-                  let extraCharacteristic = {
-                    name: acc.displayName + ' ' + characteristic.name,
-                    type: 'extra',
-                    subtype: subtypes[characteristic.UUID].type,
-                    parent: acc.displayName,
-                    characteristic: api.hap.Characteristic[subtypes[characteristic.UUID].name],
-                    options: false
-                  };
-                  devices.set(acc.UUID + '-' + extraCharacteristic.subtype, extraCharacteristic);
-                }
-              });
-            }
-          });
-        }
-      });
-    
-      try {
+      let allDevices = handleCharacteristics(accessories);
        
-        for(const [uuid, device] of devices){
-          
-          if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
-          
-            const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
-           
-            switch (device.type) {
-              
-              case 'router':
-             
-                await this.get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.type);
-             
-                break;
-             
-              case 'extra':
-              
-                let characteristic = device.characteristic || api.hap.Characteristic.On;
-              
-                await this.get(accessory, api.hap.Service.Switch, characteristic, device.subtype, device.options);
-              
-                break;
-              
-              case 'smarthome':
-                //
-                break;
-              
-              case 'presence':
-              
-                if(accessory.displayName !== 'Anyone')
-                  await this.get(accessory, api.hap.Service.OccupancySensor, api.hap.Characteristic.OccupancyDetected, device.type);
-                 
-                break;
-                
-              default:
-                // fall through
-                break;
-           
-            }
-          
-          }
+      for(const [uuid, device] of allDevices){
+        
+        if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+        
+          const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
          
+          switch (device.type) {
+            
+            case 'router': {
+           
+              await get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.type);
+           
+              break;
+              
+            }
+           
+            case 'extra': {
+            
+              let characteristic = device.characteristic || api.hap.Characteristic.On;
+            
+              await get(accessory, api.hap.Service.Switch, characteristic, device.subtype, device.options);
+            
+              break;
+              
+            }
+            
+            case 'smarthome': {
+              //
+              break;
+            
+            }
+            
+            case 'presence': {
+            
+              if(accessory.displayName !== 'Anyone')
+                await get(accessory, api.hap.Service.OccupancySensor, api.hap.Characteristic.OccupancyDetected, device.type);
+               
+              break;
+              
+            }
+              
+            default: {
+            
+              // fall through
+              break;
+           
+            }
+         
+          }
+        
         }
-       
-      } catch(err) {
-       
-        Logger.error('An error occured during polling!');
-        Logger.error(err);
-       
-      } finally {
-       
-        setTimeout(() => {
-          this.poll(accessories);
-        }, polling.timer);
        
       }
+     
+      setTimeout(() => {
+        poll(accessories);
+      }, polling.timer);
     
     }
+  
+  }
+  
+  function handleCharacteristics(accessories){
+  
+    let currentDevices = devices;
+  
+    let subtypes = {
+      '0026e147-5d51-4f42-b157-6aca6050be8e': {
+        name: 'WifiTwo',
+        type: 'wifi_2ghz'
+      },
+      'a72aeeca-c6ce-45ce-b026-5d400aab5fc9': {
+        name: 'WifiFive',
+        type: 'wifi_5ghz'
+      },
+      'a87bbf2b-885c-4713-8169-22abdbf0b2a1': {
+        name: 'WifiGuest',
+        type: 'wifi_guest'
+      },
+      '991dd58c-7d8c-46b1-acd1-411d8f6902ac': {
+        name: 'WifiWPS',
+        type: 'wps'
+      },
+      '1718fc65-453b-403a-ab81-79a1c96ba195': {
+        name: 'DECT',
+        type: 'dect'
+      },
+      'd19ef9d5-3bc6-47ac-b6bb-7bdcf0df20b0': {
+        name: 'AnsweringMachine',
+        type: 'aw'
+      },
+      '658086c7-274c-4988-bd5e-3c720fa3054d': {
+        name: 'Deflection',
+        type: 'deflection'
+      },
+      'fd81f0dc-4324-457e-8164-289743873fb1': {
+        name: 'DeviceLED',
+        type: 'led'
+      },
+      '56af4239-46bc-4bae-b55b-dbc5be2d0897': {
+        name: 'DeviceLock',
+        type: 'lock'
+      },
+      'cab7d43e-422c-4452-bc9a-11c89454332b': {
+        name: 'RingLock',
+        type: 'ringlock'
+      }
+    };
+    
+    let validUUIDs = Object.keys(subtypes).map(type => type);
+  
+    accessories.forEach(acc => {
+      if(acc.context.config.type === 'router'){
+        acc.services.forEach(service => {
+          if(service.subtype === 'router'){
+            service.characteristics.forEach(characteristic => {
+              if(validUUIDs.includes(characteristic.UUID)){
+                let extraCharacteristic = {
+                  name: acc.displayName + ' ' + characteristic.name,
+                  type: 'extra',
+                  subtype: subtypes[characteristic.UUID].type,
+                  parent: acc.displayName,
+                  characteristic: api.hap.Characteristic[subtypes[characteristic.UUID].name],
+                  options: false
+                };
+                currentDevices.set(acc.UUID + '-' + extraCharacteristic.subtype, extraCharacteristic);
+              }
+            });
+          }
+        });
+      }
+    });
+      
+    return currentDevices;  
   
   }
   
@@ -1766,12 +1768,31 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
+  function handleError(accessory, state, target, err){
+  
+    if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
+      Logger.warn('Device seems to be offline' + ' (' + target + ')', accessory.displayName);
+      if(typeof state === 'number'){
+        state = 0;
+      } else if(typeof state === 'boolean'){
+        state = false;
+      } else {
+        state = state ? !state : state;
+      }
+    } else {
+      Logger.error('An error occured during getting state' + ' (' + target + ')', accessory.displayName);
+      Logger.error(err);
+    }
+    
+    return state;
+  
+  }
+  
   return {
     get: get,
     set: set,
     change: change,
-    poll: poll,
-    initReboot: initReboot
+    poll: poll
   };
 
 };

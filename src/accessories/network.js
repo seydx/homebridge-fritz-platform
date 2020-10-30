@@ -10,9 +10,8 @@ class watchNetwork {
     this.Telegram = telegram;
     this.polling = polling;
     
-    this.timer = 60;
-    
-    this.start();
+    for(const [uuid, device] of this.devices)
+      this.start(device);
 
   }
 
@@ -20,76 +19,141 @@ class watchNetwork {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  async start () {
+  async start (device) {
   
     let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
   
     try {
-    
-      for(const [uuid, device] of this.devices){
       
-        //let state = false;
-        let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
-        let input = {NewIPAddress: device.address};
+      let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
+      let input = {NewIPAddress: device.address};
+      
+      if(validMAC.test(device.address)){
+        service = 'GetSpecificHostEntry';
+        input = {NewMACAddress: device.address};
+      }
+      
+      let data = await device.fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+      Logger.debug(data, device.name);
+      
+      let newState = parseInt(data.NewActive);
+      
+      device.passed = false;
+      
+      if(device.state !== undefined){
+      
+        if(device.onDelay || device.offDelay){
         
-        if(validMAC.test(device.address)){
-          service = 'GetSpecificHostEntry';
-          input = {NewMACAddress: device.address};
-        }
-        
-        let data = await device.fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
-        let state = parseInt(data.NewActive);
-        
-        if(state) {
-        
-          if(this.state === undefined){
+          if(device.state !== newState){
           
-            this.state = state;
+            if(device.changedOn){
+            
+              let millis = Date.now() - device.changedOn;
+              let secElapsed = Math.floor(millis / 1000);
+              
+              if(newState){
+              
+                if(device.onDelay){
+                
+                  if(secElapsed > device.onDelay){
+                    device.passed = true;
+                  }
+                
+                } else {
+                
+                  //no onDelay in config
+                  device.passed = true;
+                
+                }
+                
+              } else {
+              
+                if(device.offDelay){
+                
+                  if(secElapsed > device.offDelay){
+                    device.passed = true;
+                  }
+                
+                } else {
+                
+                  //no offDelay in config
+                  device.passed = true;
+                
+                }
+              
+              }  
+              
+            } else {
+            
+              if((newState && device.onDelay) || (!newState && device.offDelay)){
+                device.changedOn = Date.now();
+              }
+              
+              if(device.changedOn){
+                Logger.info('State changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), device.name);
+                
+                device.informed = true;
+                
+                if(newState){
+                  Logger.info('Wait ' + device.onDelay + 's before switching state!', device.name);
+                } else {
+                  Logger.info('Wait ' + device.offDelay + 's before switching state!', device.name);
+                }
+              } else {
+                device.passed = true;
+              }
+            
+            }
           
           } else {
           
-            if(this.state !== state){
+            if(device.informed && device.changedOn){
             
-              this.state = state;
-              this.Telegram.send('network', 'on', device.name);
-            
+              device.informed = false;
+              device.changedOn = false;
+               
+              Logger.info('State switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), device.name);
+               
             }
           
           }
         
         } else {
         
-          if(this.state === undefined){
-          
-            this.state = state;
-          
-          } else {
-          
-            if(this.state !== state){
-            
-              this.state = state;
-              this.Telegram.send('network', 'off', device.name);
-            
-            }
-          
+          //no off/on delay in config
+          if(device.state !== newState){
+            device.passed = true;
           }
         
         }
-        
-        Logger.debug(data, device.name);
       
+      } else {
+      
+        //first call
+        device.state = newState;
+      
+      }
+      
+      if(device.passed){
+        device.state = newState;
+        device.changedOn = false;
+        if(newState){
+          this.Telegram.send('network', 'on', device.name);
+        } else {
+          this.Telegram.send('network', 'off', device.name);
+        }
       }
     
     } catch(err) {
    
-      Logger.error('An error occured during polling network devices!');
+      Logger.error('An error occured during polling network device!', device.name);
       Logger.error(err);
    
     } finally {
   
       setTimeout(() => {
-        this.start();
-      }, this.timer * 1000);
+        this.start(device);
+      }, (device.polling || 60) * 1000);
   
     }
     

@@ -157,6 +157,20 @@ module.exports = {
     Characteristic.WifiWPS.UUID = '991dd58c-7d8c-46b1-acd1-411d8f6902ac';
     
     /// /////////////////////////////////////////////////////////////////////////
+    // DECT Characteristic
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.DECT = function() {
+      Characteristic.call(this, 'DECT Station', '1718fc65-453b-403a-ab81-79a1c96ba195');
+      this.setProps({
+        format: Characteristic.Formats.BOOL,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.DECT, Characteristic);
+    Characteristic.DECT.UUID = '1718fc65-453b-403a-ab81-79a1c96ba195';
+    
+    /// /////////////////////////////////////////////////////////////////////////
     // AnsweringMachine Characteristic
     /// /////////////////////////////////////////////////////////////////////////
     Characteristic.AnsweringMachine = function() {

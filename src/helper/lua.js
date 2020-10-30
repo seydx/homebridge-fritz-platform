@@ -6,25 +6,18 @@ const cheerio = require('cheerio');
 
 module.exports = {
 
-  requestLUA: async function(formData, host, path, typ){
+  requestLUA: async function(formData, host, path, target){
   
     let url = 'http://' + host + path + '?sid=' + formData.sid;
     
     try {    
         
       let post = await axios.post(url, querystring.stringify(formData), { headers: { 'Content-Type': 'application/x-www-form-urlencoded'}});
+      
+      if(target)
+        return this.parseOutput(post.data, target);
         
-      if(typ){
-        
-        let data = this.parseOutput(post.data, typ);
-          
-        return data;
-        
-      } else {
-        
-        return post.data;
-        
-      }
+      return post.data;
     
     } catch(error) {
       
@@ -32,14 +25,22 @@ module.exports = {
     
       if (error.response) {
         err = {
+          name: target,
           status: error.response.status,
           text: error.response.statusText,
           message: error.response.data !== '' ? error.response.data : error.response.statusText
         };
       } else if (error.request) {
-        err = 'No response from host!';
+        err = {
+          name: target,
+          code: error.code,
+          message: error.message
+        };
       } else {
-        err = error.message;
+        err = {
+          name: target,
+          message: error.message
+        };
       }
       
       throw err;
@@ -48,28 +49,16 @@ module.exports = {
   
   },
   
-  parseOutput: async function(data, type){
-  
-    let value;
+  parseOutput: async function(data, target){
     
     let $ = cheerio.load(data);
     let elements = $('input').toArray();
     
-    for(const el of elements){
-  
-      if(el.attribs.name === type && el.attribs.checked){
-
-        return el.attribs.value;
+    for(const el of elements)
+      if(el.attribs.name === target)
+        return el.attribs;
     
-      } else {
-        
-        value = el.attribs.value || 0;
-
-      }
-  
-    }
-    
-    return value;
+    return false;
   
   }
 

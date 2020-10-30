@@ -55,33 +55,6 @@ class extrasService {
     }
     
   }
-  
-  async setState(service, state, callback){
-  
-    if(state){
-    
-      try {
-      
-        Logger.info('Switching on', this.accessory.displayName);
-      
-      } catch(err){
-      
-        Logger.error('An error occured during switching WOL on', this.accessory.displayName);
-        Logger.error(err);
-      
-      }
-    
-      setTimeout(() => {
-        service
-          .getCharacteristic(this.api.hap.Characteristic.On)
-          .updateValue(false);
-      }, 1000);
-    
-    }
-    
-    callback(null, state);
-  
-  }
 
 }
 

@@ -29,7 +29,7 @@ class contactService {
     let service = accessory.getService(this.api.hap.Service.ContactSensor);
     
     if(!service){
-      Logger.info('Adding occupancy sensor', accessory.displayName);
+      Logger.info('Adding contact sensor', accessory.displayName);
       service = accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, 'callmonitor');
     }
     
@@ -45,7 +45,7 @@ class contactService {
       
       let text, message;
       
-      if(this.accessory.context.config.subtype == 'incoming'){
+      if(this.accessory.context.config.subtype == 'incoming' || this.accessory.context.config.subtype == 'group'){
       
         if (data[1] === 'ring') {
           
@@ -161,7 +161,7 @@ class contactService {
   
       }
 
-      if(this.accessory.context.config.subtype == 'outgoing'){
+      if(this.accessory.context.config.subtype == 'outgoing' || this.accessory.context.config.subtype == 'group'){
       
         if (data[1] === 'call') {
         
@@ -301,12 +301,12 @@ class contactService {
 
       if (data[1] === 'disconnect') {
 
-        if(this.inbound && this.accessory.context.config.subtype === 'incoming'){
+        if(this.inbound && (this.accessory.context.config.subtype === 'incoming' || this.accessory.context.config.subtype == 'group')){
             
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
             .updateValue(0);  
           
-        } else if(this.outgoing && this.accessory.context.config.subtype === 'outgoing'){
+        } else if(this.outgoing && (this.accessory.context.config.subtype === 'outgoing' || this.accessory.context.config.subtype == 'group')){
         
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
             .updateValue(0);  

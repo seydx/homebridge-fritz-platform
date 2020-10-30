@@ -38,7 +38,8 @@ class routerService {
         if((extra === 'wifi_2ghz' || 
             extra === 'wifi_5ghz' || 
             extra === 'wifi_guest' || 
-            extra === 'wps' || 
+            extra === 'wps' ||
+            extra === 'dect' ||  
             extra === 'aw' || 
             extra === 'deflection' || 
             extra === 'led' || 
@@ -125,6 +126,26 @@ class routerService {
         if(service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)){
           Logger.info('Removing WifiWPS Characteristic', accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiWPS));
+        }
+      }
+      
+      if(characteristics.includes('dect') && accessory.context.config.master){
+        if(!service.testCharacteristic(this.api.hap.Characteristic.DECT)){
+          Logger.info('Adding DECT Characteristic', accessory.displayName);
+          service.addCharacteristic(this.api.hap.Characteristic.DECT);
+        }
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('dect')){
+          service.getCharacteristic(this.api.hap.Characteristic.DECT)
+            .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DECT, 'dect', false));
+        } else {
+          service.getCharacteristic(this.api.hap.Characteristic.DECT)
+            .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DECT, 'dect', false))
+            .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DECT, 'dect', false));
+        }
+      } else {
+        if(service.testCharacteristic(this.api.hap.Characteristic.DECT)){
+          Logger.info('Removing DECT Characteristic', accessory.displayName);
+          service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DECT));
         }
       }
       

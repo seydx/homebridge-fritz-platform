@@ -117,7 +117,8 @@ function FritzPlatform (log, config, api) {
           if(router.master)
             this.fritzbox = router.fritzbox;
         
-          this.devices.set(uuid, router);
+          if(!router.hide)
+            this.devices.set(uuid, router);
           
           if(router.options){
           
@@ -125,7 +126,8 @@ function FritzPlatform (log, config, api) {
               if((extra === 'wifi_2ghz' || 
                   extra === 'wifi_5ghz' || 
                   extra === 'wifi_guest' || 
-                  extra === 'wps' || 
+                  extra === 'wps' ||
+                  extra === 'dect' ||  
                   extra === 'aw' || 
                   extra === 'deflection' || 
                   extra === 'led' || 
@@ -149,7 +151,8 @@ function FritzPlatform (log, config, api) {
                 subtype: subtype,
                 parent: router.name,
                 fritzbox: router.fritzbox,
-                options: false
+                options: false,
+                oldFW: router.oldFW
               };
               const switchUUID = UUIDGen.generate(extraSwitch.name);
               if (this.devices.has(switchUUID)) {
@@ -157,10 +160,10 @@ function FritzPlatform (log, config, api) {
               } else {
                 this.devices.set(switchUUID, extraSwitch);
               }
-            });
+            }); 
           
-          }
-          
+          } 
+            
         }
       }
       
@@ -324,7 +327,8 @@ function FritzPlatform (log, config, api) {
         name: null,
         type: 'extra',
         subtype: device,
-        options: config.extras[device]
+        options: config.extras[device],
+        oldFW: this.masterDevice.oldFW
       };
   
       switch (device){
@@ -458,35 +462,51 @@ function FritzPlatform (log, config, api) {
 
     this.config.callmonitor.type = 'callmonitor';
     
+    const group_name = this.config.callmonitor.group_name || 'Callmonitor';
     const incoming_name = this.config.callmonitor.incoming_name || 'Callmonitor Incoming';
     const outgoing_name = this.config.callmonitor.outgoing_name || 'Callmonitor Outgoing';
     
     this.Callmonitor = new Callmonitor(this.config.callmonitor);  
     this.Callmonitor.connect();
-        
-    const uuid_incoming = UUIDGen.generate(incoming_name);
-    const uuid_outgoing = UUIDGen.generate(outgoing_name);
     
-    if (this.devices.has(uuid_incoming)) {
-      Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', incoming_name);
+    if(this.config.callmonitor.group){
+      const uuid_group = UUIDGen.generate(group_name);
+      
+      if (this.devices.has(uuid_group)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', group_name);
+      } else {
+        let callmonitor = {
+          name: group_name,
+          subtype: 'group',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_group, callmonitor);
+      }
     } else {
-      let callmonitor = {
-        name: incoming_name,
-        subtype: 'incoming',
-        ...this.config.callmonitor
-      };
-      this.devices.set(uuid_incoming, callmonitor);
-    }
-    
-    if (this.devices.has(uuid_outgoing)) {
-      Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', uuid_outgoing);
-    } else {
-      let callmonitor = {
-        name: outgoing_name,
-        subtype: 'outgoing',
-        ...this.config.callmonitor
-      };
-      this.devices.set(uuid_outgoing, callmonitor);
+      const uuid_incoming = UUIDGen.generate(incoming_name);
+      const uuid_outgoing = UUIDGen.generate(outgoing_name);
+      
+      if (this.devices.has(uuid_incoming)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', incoming_name);
+      } else {
+        let callmonitor = {
+          name: incoming_name,
+          subtype: 'incoming',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_incoming, callmonitor);
+      }
+      
+      if (this.devices.has(uuid_outgoing)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', uuid_outgoing);
+      } else {
+        let callmonitor = {
+          name: outgoing_name,
+          subtype: 'outgoing',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_outgoing, callmonitor);
+      }
     }
     
   } else {
