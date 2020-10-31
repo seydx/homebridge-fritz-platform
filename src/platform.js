@@ -69,7 +69,7 @@ function FritzPlatform (log, config, api) {
     this.config.devices.map(device => {
       if(device.master && device.host && device.username && device.password){
         this.masterDevice = device;
-        this.masterDevice.fritzbox = new Fritzbox({ username: device.username, password: device.password, url: 'http://' + device.host + ':' + device.port, tr064: device.tr064, igd: device.igd, autoSsl: device.ssl });
+        this.masterDevice.fritzbox = new Fritzbox({ username: device.username, password: device.password, url: 'http://' + device.host + ':' + (device.port||49000), tr064: device.tr064, igd: device.igd, autoSsl: device.ssl });
         this.master.push(device);
       }
     });
