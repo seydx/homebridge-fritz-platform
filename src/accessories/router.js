@@ -60,10 +60,10 @@ class routerService {
           service.addCharacteristic(this.api.hap.Characteristic.WifiFive);
         }
         if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_5ghz') && !accessory.context.polling.exclude.includes('extra')){
-          service.getCharacteristic(this.api.hap.Characteristic.WifiTwo)
+          service.getCharacteristic(this.api.hap.Characteristic.WifiFive)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiFive, 'wifi_5ghz', false));
         } else {
-          service.getCharacteristic(this.api.hap.Characteristic.WifiTwo)
+          service.getCharacteristic(this.api.hap.Characteristic.WifiFive)
             .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiFive, 'wifi_5ghz', false))
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiFive, 'wifi_5ghz', false));
         }
@@ -316,7 +316,7 @@ class routerService {
           service.addCharacteristic(this.api.hap.Characteristic.DialAlarm);
         }
         service.getCharacteristic(this.api.hap.Characteristic.DialAlarm)
-          .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DialAlarm, 'alarm', this.extras.alarm))
+          .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DialAlarm, 'alarm', this.extras.alarm))  
           .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DialAlarm, 'alarm', this.extras.alarm))
           .on('change', this.handler.change.bind(this, accessory, accessory.context.config.subtype, accessory.displayName));
       } else {
