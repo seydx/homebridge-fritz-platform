@@ -356,6 +356,26 @@
             "required": true,
             "description": "The IP/MAC address of the device."
           },
+          "accType": {
+            "title": "Accessory Type",
+            "type": "string",
+            "oneOf": [
+              {
+                "title": "Occupancy",
+                "enum": [
+                  "occupancy"
+                ]
+              },
+              {
+                "title": "Motion",
+                "enum": [
+                  "motion"
+                ]
+              }
+            ],
+            "required": true,
+            "description": "The accessory type of the device."
+          },
           "ping": {
             "title": "Ping",
             "type": "boolean",
@@ -759,6 +779,26 @@
               "description": "Exposes Anyone Sensor to Apple Home.",
               "type": "boolean"
             },
+            "accType": {
+              "title": "Accessory Type",
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "Occupancy",
+                  "enum": [
+                    "occupancy"
+                  ]
+                },
+                {
+                  "title": "Motion",
+                  "enum": [
+                    "motion"
+                  ]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the anyone sensor."
+            },
             "onDelay": {
               "title": "Delay on detection",
               "type": "integer",
@@ -1117,6 +1157,7 @@
           "items": [
             "presence[].name",
             "presence[].address",
+            "presence[].accType",
             {
               "key": "presence[]",
               "type": "section",
@@ -1257,6 +1298,7 @@
           "orderable": false,
           "items": [
             "options.presence.anyone",
+            "options.presence.accType",
             "options.presence.onDelay",
             "options.presence.offDelay"
           ]

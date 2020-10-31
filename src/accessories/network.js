@@ -22,6 +22,7 @@ class watchNetwork {
   async start (device) {
   
     let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
+    let timer = !isNaN(parseInt(device.timer)) ? (device.timer < 10 ? 10 : device.timer) : 10;
   
     try {
       
@@ -153,7 +154,7 @@ class watchNetwork {
   
       setTimeout(() => {
         this.start(device);
-      }, (device.polling || 60) * 1000);
+      }, timer * 1000);
   
     }
     

@@ -3,20 +3,26 @@
 const Logger = require('../helper/logger.js');
 
 const fs = require('fs-extra');
+const moment = require('moment');
+
+var FakeGatoHistoryService;
 
 class contactService {
 
-  constructor (api, accessory, handler, callmonitor) {
+  constructor (api, log, accessory, handler, callmonitor) {
+  
+    FakeGatoHistoryService = require('fakegato-history')(api);
     
     this.api = api;
+    this.log = log;
     this.accessory = accessory;
-    
+
     this.handler = handler;
     this.client = callmonitor.client;
     
     this.call = {};
     
-    this.getService(this.accessory);
+    this.getService(accessory);
 
   }
 
@@ -32,6 +38,50 @@ class contactService {
       Logger.info('Adding contact sensor', accessory.displayName);
       service = accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, 'callmonitor');
     }
+    
+    if (!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
+      service.addCharacteristic(this.api.hap.Characteristic.LastActivation);
+    
+    if (!service.testCharacteristic(this.api.hap.Characteristic.TimesOpened))
+      service.addCharacteristic(this.api.hap.Characteristic.TimesOpened);
+    
+    if (!service.testCharacteristic(this.api.hap.Characteristic.OpenDuration))
+      service.addCharacteristic(this.api.hap.Characteristic.OpenDuration);
+    
+    if (!service.testCharacteristic(this.api.hap.Characteristic.ClosedDuration))
+      service.addCharacteristic(this.api.hap.Characteristic.ClosedDuration);
+
+    if (!service.testCharacteristic(this.api.hap.Characteristic.ResetTotal))
+      service.addCharacteristic(this.api.hap.Characteristic.ResetTotal);
+      
+    if(this.accessory.context.config.subtype === 'incoming' && !service.testCharacteristic(this.api.hap.Characteristic.Caller)){
+      service.addCharacteristic(this.api.hap.Characteristic.Caller);
+    } else if(this.accessory.context.config.subtype === 'outgoing' && !service.testCharacteristic(this.api.hap.Characteristic.Called)){
+      service.addCharacteristic(this.api.hap.Characteristic.Called);
+    } else if(this.accessory.context.config.subtype === 'group'){
+      if(!service.testCharacteristic(this.api.hap.Characteristic.Caller))
+        service.addCharacteristic(this.api.hap.Characteristic.Caller);
+      if(!service.testCharacteristic(this.api.hap.Characteristic.Called))
+        service.addCharacteristic(this.api.hap.Characteristic.Called);
+    }
+    
+    const now = Math.round(new Date().valueOf() / 1000); 
+    const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
+    
+    service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
+      .setValue(now - epoch)
+      .on('set', (value,callback) => {
+        Logger.info(this.accessory.displayName + ': Resetting FakeGato..');
+  
+        this.accessory.context.timesOpened = 0;
+  
+        service.getCharacteristic(this.api.hap.Characteristic.TimesOpened)
+          .updateValue(this.accessory.context.timesOpened);
+      
+        callback(null);
+      });
+    
+    this.historyService = new FakeGatoHistoryService('door', this.accessory, {storage:'fs'});
     
     this.getState(service);
   
@@ -64,9 +114,29 @@ class contactService {
             
           this.inbound = true;
           this.outgoing = false;
-        
+          
+          this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
+          
+          this.accessory.context.timesOpened += 1;
+          let lastActivation = moment().unix() - this.historyService.getInitialTime();
+          let closeDuration = moment().unix() - this.historyService.getInitialTime();
+              
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
             .updateValue(1);
+            
+          service.getCharacteristic(this.api.hap.Characteristic.Caller)
+            .updateValue(message.caller);
+              
+          service.getCharacteristic(this.api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
+              
+          service.getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+            .updateValue(closeDuration);
+              
+          service.getCharacteristic(this.api.hap.Characteristic.TimesOpened)
+            .updateValue(this.accessory.context.timesOpened);
+          
+          this.historyService.addEntry({time: moment().unix(), status: 1});
         
           if(this.accessory.context.config.incomingTo){
             
@@ -182,9 +252,29 @@ class contactService {
             
           this.outgoing = true;
           this.inbound = false;
-            
+        
+          this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
+          
+          this.accessory.context.timesOpened += 1;
+          let lastActivation = moment().unix() - this.historyService.getInitialTime();
+          let closeDuration = moment().unix() - this.historyService.getInitialTime();
+          
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
             .updateValue(1);
+          
+          service.getCharacteristic(this.api.hap.Characteristic.Called)
+            .updateValue(message.called);
+              
+          service.getCharacteristic(this.api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
+             
+          service.getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+            .updateValue(closeDuration);
+            
+          service.getCharacteristic(this.api.hap.Characteristic.TimesOpened)
+            .updateValue(this.accessory.context.timesOpened);
+          
+          this.historyService.addEntry({time: moment().unix(), status: 1});
         
           if(this.accessory.context.config.outgoingFrom){
           
@@ -304,12 +394,24 @@ class contactService {
         if(this.inbound && (this.accessory.context.config.subtype === 'incoming' || this.accessory.context.config.subtype == 'group')){
             
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
-            .updateValue(0);  
+            .updateValue(0); 
+
+          let openDuration = moment().unix() - this.historyService.getInitialTime();
+          service.getCharacteristic(this.api.hap.Characteristic.OpenDuration)
+            .updateValue(openDuration);
+            
+          this.historyService.addEntry({time: moment().unix(), status: 0});
           
         } else if(this.outgoing && (this.accessory.context.config.subtype === 'outgoing' || this.accessory.context.config.subtype == 'group')){
         
           service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
             .updateValue(0);  
+            
+          let openDuration = moment().unix() - this.historyService.getInitialTime();
+          service.getCharacteristic(this.api.hap.Characteristic.OpenDuration)
+            .updateValue(openDuration);
+            
+          this.historyService.addEntry({time: moment().unix(), status: 0});
           
         }
           

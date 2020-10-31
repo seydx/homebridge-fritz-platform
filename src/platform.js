@@ -18,6 +18,10 @@ const CallmonitorAccessory = require('./accessories/callmonitor.js');
 const ExtrasAccessory = require('./accessories/extras.js');
 const WatchNetwork = require('./accessories/network.js');
 
+//Custom Types
+const RouterTypes = require('./types/custom_types.js');
+const EveTypes = require('./types/eve_types.js');
+
 const PLUGIN_NAME = 'homebridge-fritz-platform';
 const PLATFORM_NAME = 'FritzPlatform';
 
@@ -39,8 +43,12 @@ function FritzPlatform (log, config, api) {
     return;
 
   Logger.init(log, config.debug);
+  
+  RouterTypes.registerWith(api.hap);
+  EveTypes.registerWith(api.hap);
 
   this.api = api;
+  this.log = log;
   this.accessories = [];
   this.config = config;
   
@@ -61,6 +69,7 @@ function FritzPlatform (log, config, api) {
     this.config.devices.map(device => {
       if(device.master && device.host && device.username && device.password){
         this.masterDevice = device;
+        this.masterDevice.fritzbox = new Fritzbox({ username: device.username, password: device.password, url: 'http://' + device.host + ':' + device.port, tr064: device.tr064, igd: device.igd, autoSsl: device.ssl });
         this.master.push(device);
       }
     });
@@ -112,7 +121,14 @@ function FritzPlatform (log, config, api) {
             ssl: router.ssl
           };
           
-          router.fritzbox = new Fritzbox({ username: options.username, password: options.password, url: 'http://' + options.host + ':' + options.port, tr064: options.tr064, igd: options.igd, autoSsl: options.ssl });
+          router.fritzbox = new Fritzbox({ 
+            username: options.username,
+            password: options.password, 
+            url: 'http://' + options.host + ':' + options.port, 
+            tr064: options.tr064, 
+            igd: options.igd, 
+            autoSsl: options.ssl
+          });
         
           if(router.master)
             this.fritzbox = router.fritzbox;
@@ -122,22 +138,9 @@ function FritzPlatform (log, config, api) {
           
           if(router.options){
           
-            const switches = Object.keys(router.options).filter(extra => {
-              if((extra === 'wifi_2ghz' || 
-                  extra === 'wifi_5ghz' || 
-                  extra === 'wifi_guest' || 
-                  extra === 'wps' ||
-                  extra === 'dect' ||  
-                  extra === 'aw' || 
-                  extra === 'deflection' || 
-                  extra === 'led' || 
-                  extra === 'lock' || 
-                  extra === 'broadband') && 
-                  router.options[extra] === 'switch')
-           
-                return extra;
-           
-            });
+            let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock', 'broadband'];
+          
+            const switches = Object.keys(router.options).filter(extra => validChars.includes(extra) && router.options[extra] === 'switch');
             
             switches.forEach(name => {
             
@@ -223,6 +226,13 @@ function FritzPlatform (log, config, api) {
       } else if (!this.validIP.test(user.address) && !this.validMAC.test(user.address)) {
         Logger.warn('The address for this user is not a valid IP/MAC address. This user will be skipped.', user.name);
         error = true;
+      }
+      
+      let validTypes = ['occupancy', 'motion'];
+      
+      if(!validTypes.includes(user.accType)){
+        Logger.warn('No or wrong accessory type setted up for this user. Setting it to "occupancy".', user.name);
+        user.accType = 'occupancy';
       }
 
       if (!error) {
@@ -378,10 +388,8 @@ function FritzPlatform (log, config, api) {
       }
     }
     this.polling = {
-      timer: config.options.polling && parseInt(config.options.polling.timer) ?  config.options.polling.timer * 1000 : 10000,
-      exclude: config.options.polling && 
-               config.options.polling.exclude && 
-               config.options.polling.exclude.length 
+      timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : false,
+      exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
         ?  config.options.polling.exclude.map(ex => ex.name).filter(ex => ex && ex.length)
         :  ['broadband', 'wakeup', 'alarm', 'phoneBook']
     };
@@ -414,17 +422,25 @@ function FritzPlatform (log, config, api) {
   
   if(this.presence.size){
     if(this.presenceOptions){
+      let accType = config.options.presence.accType;
+      let validTypes = ['occupancy', 'motion'];
+      if(!validTypes.includes(accType)){
+        Logger.warn('No or wrong accessory type setted up for the anyone sensor. Setting it to "occupancy".');
+        accType = 'occupancy';
+      }
       this.presenceOptions = {};
       this.presenceOptions = {
         'anyone': config.options.presence.anyone || false,
-        'offDelay': config.options.presence.offDelay || 90,
-        'onDelay': config.options.presence.onDelay || 30
+        'accType': accType,
+        'offDelay': !isNaN(parseInt(config.options.presence.offDelay)) ? config.options.presence.offDelay : 90,
+        'onDelay': !isNaN(parseInt(config.options.presence.onDelay)) ? config.options.presence.onDelay : 30
       };
     } else {
       Logger.debug('Setting default options for presence.');
       this.presenceOptions = {};
       this.presenceOptions = {
         'anyone': false,
+        'accType': 'occupancy',
         'offDelay': 90,
         'onDelay': 30
       };
@@ -433,7 +449,8 @@ function FritzPlatform (log, config, api) {
     if(this.presenceOptions.anyone){
       let presence = {
         name: 'Anyone',
-        type: 'presence'
+        type: 'presence',
+        accType: this.presenceOptions.accType 
       };
       const uuid = UUIDGen.generate(presence.name);
       if (this.devices.has(uuid)) {
@@ -450,13 +467,11 @@ function FritzPlatform (log, config, api) {
     this.config.callmonitor = config.callmonitor;
     this.config.callmonitor.port = this.config.callmonitor.port || 1012;
 
-    this.config.callmonitor.incomingTo = this.config.callmonitor.incomingTo && 
-                                         this.config.callmonitor.incomingTo.length
+    this.config.callmonitor.incomingTo = this.config.callmonitor.incomingTo && this.config.callmonitor.incomingTo.length
       ? this.config.callmonitor.incomingTo.map(ex => ex.number).filter(ex => ex && ex.length)
       : false;
                                          
-    this.config.callmonitor.outgoingFrom = this.config.callmonitor.outgoingFrom && 
-                                         this.config.callmonitor.outgoingFrom.length
+    this.config.callmonitor.outgoingFrom = this.config.callmonitor.outgoingFrom && this.config.callmonitor.outgoingFrom.length
       ? this.config.callmonitor.outgoingFrom.map(ex => ex.number).filter(ex => ex && ex.length)
       : false;
 
@@ -614,6 +629,10 @@ FritzPlatform.prototype = {
       manufacturer = device.manufacturer && device.manufacturer !== '' ? device.manufacturer : 'Homebridge';
       model = device.model && device.model !== '' ? device.model : device.type;
       serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : 'Homebridge';
+    } else if(device.type === 'callmonitor') {
+      manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
+      model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
+      serialNumber = device.subtype;
     } else {
       manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
       model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
@@ -643,7 +662,7 @@ FritzPlatform.prototype = {
         new WolAccessory(this.api, accessory, this.handler);
         break;
       case 'callmonitor':
-        new CallmonitorAccessory(this.api, accessory, this.handler, this.Callmonitor);
+        new CallmonitorAccessory(this.api, this.log, accessory, this.handler, this.Callmonitor);
         break;
       case 'extra':
         new ExtrasAccessory(this.api, accessory, this.handler);

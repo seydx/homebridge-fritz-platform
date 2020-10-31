@@ -25,7 +25,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
     
       case 'presence': {
       
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0;
          
         try {
 
@@ -46,7 +46,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           if(newState !== state){
           
             if(accessory.context.changedOn){
-            
+
               let millis = Date.now() - accessory.context.changedOn;
               let secElapsed = Math.floor(millis / 1000);
               
@@ -1520,11 +1520,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
-  async function change(accessory, target, replacer, value){
+  async function change(accessory, target, replacer, historyService, value){
   
     switch (target) {
     
       case 'presence': {
+      
+        if(historyService){
+          let lastActivation = moment().unix() - historyService.getInitialTime();
+          if(value.newValue){
+            accessory
+              .getService(api.hap.Service.MotionSensor)
+              .getCharacteristic(api.hap.Characteristic.LastActivation)
+              .updateValue(lastActivation);
+          }
+          historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+        }
       
         let dest = false;
         
@@ -1634,9 +1645,16 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             
             case 'presence': {
             
-              if(accessory.displayName !== 'Anyone')
-                await get(accessory, api.hap.Service.OccupancySensor, api.hap.Characteristic.OccupancyDetected, device.type);
-               
+              if(accessory.displayName !== 'Anyone'){
+                let accService = device.accType === 'occupancy' 
+                  ? api.hap.Service.OccupancySensor
+                  : api.hap.Service.MotionSensor; 
+                let accCharacteristic = device.accType === 'occupancy' 
+                  ? api.hap.Characteristic.OccupancyDetected
+                  : api.hap.Characteristic.MotionDetected; 
+                await get(accessory, accService, accCharacteristic, device.type);
+              } 
+            
               break;
               
             }

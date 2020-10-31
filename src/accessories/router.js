@@ -1,13 +1,10 @@
 'use strict';
 
 const Logger = require('../helper/logger.js');
-const RouterTypes = require('../types/router_types.js');
 
 class routerService {
 
   constructor (api, accessory, extras, handler) {
-    
-    RouterTypes.registerWith(api.hap);
     
     this.api = api;
     this.accessory = accessory;
