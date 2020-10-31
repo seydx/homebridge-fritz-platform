@@ -83,7 +83,7 @@ class occupancyService {
           .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
       } else {
         service.getCharacteristic(characteristicName)
-          .on('get', this.handler.get.bind(this, accessory, serviceName, characteristicName, 'presence', false))
+          .on('get', this.handler.get.bind(this, accessory, serviceName, characteristicName, 'presence', false)) 
           .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
       }
       

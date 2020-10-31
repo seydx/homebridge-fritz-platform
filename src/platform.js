@@ -195,7 +195,7 @@ function FritzPlatform (log, config, api) {
       }
 
       if (!error) {
-        device.type = 'smarthome';
+        device.type = 'smarthome-' + device.accType;
         const uuid = UUIDGen.generate(device.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
@@ -653,7 +653,7 @@ FritzPlatform.prototype = {
         new RouterAccessory(this.api, accessory, this.extrasAsCharacteristics, this.handler);
         break;
       case 'smarthome':
-        //new SmarthomeAccessory(this.api, accessory);
+        //new SmarthomeAccessory(this.api, accessory, this.handler);
         break;
       case 'presence':
         new PresenceAccessory(this.api, accessory, this.handler, this.accessories);

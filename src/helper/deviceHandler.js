@@ -64,9 +64,48 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
           let newState = parseInt(data.NewActive);
           
+          if(newState === state && accessory.context.config.ping){
+            
+            let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
+
+            let address = data.NewIPAddress ? data.NewIPAddress : accessory.context.config.address;
+              
+            let res = await ping.promise.probe(address, { timeout: 3 });
+            res.alive = res.alive ? 1 : 0;
+            
+            if(res.alive !== newState){
+            
+              if(res.alive){ 
+              
+                accessory.context.lastSeen = Date.now(); 
+                newState = res.alive;
+                
+                Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
+                Logger.debug('Taking the value of Ping.', accessory.displayName);
+           
+              } else { 
+              
+                if(accessory.context.lastSeen){
+                
+                  let lastSeenMoment = moment(accessory.context.lastSeen);
+                  let activeThreshold = moment().subtract(threshold, 'm');
+                  
+                  newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
+                  
+                  Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
+                  Logger.debug('Taking the value of Ping.', accessory.displayName);
+             
+                }
+                
+              }
+              
+            }
+          
+          }
+          
           if(newState !== state){
           
-            if(accessory.context.changedOn){
+            if(accessory.context.changedOn) {
 
               let millis = Date.now() - accessory.context.changedOn;
               let secElapsed = Math.floor(millis / 1000);
@@ -90,65 +129,22 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               
               Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
               
-              accessory.context.informed = true;
-              
-              if(newState){
+              if(newState) {
                 Logger.info('Wait ' + presenceOptions.onDelay + 's before switching state!', accessory.displayName);
               } else {
                 Logger.info('Wait ' + presenceOptions.offDelay + 's before switching state!', accessory.displayName);
               }
-            
+
             }
-          
+
           } else {
 
-            if(accessory.context.informed && accessory.context.changedOn){
-            
-              accessory.context.informed = false;
-              accessory.context.changedOn = false;
-               
-              Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
-               
-            }
-             
-            if(accessory.context.config.ping){
-            
-              let threshold = !isNaN(accessory.context.config.threshold) || 15;
+            if(accessory.context.changedOn){
 
-              let address = data.NewIPAddress ? data.NewIPAddress : accessory.context.config.address;
-                
-              let res = await ping.promise.probe(address, { timeout: 3 });
-              res.alive = res.alive ? 1 : 0;
-              
-              if(res.alive !== newState){
-              
-                if(res.alive){ 
-                
-                  accessory.context.lastSeen = Date.now(); 
-                  state = res.alive;
-             
-                } else { 
-                
-                  if(accessory.context.lastSeen){
-                  
-                    let lastSeenMoment = moment(accessory.context.lastSeen);
-                    let activeThreshold = moment().subtract(threshold, 'm');
-                    
-                    state = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
-                    
-                    if(newState !== state)
-                      Logger.debug('Ping and FritzBox states are NOT equal.', accessory.displayName);
-               
-                  }
-                  
-                }
-                
-              } else { 
-              
-                Logger.debug('Ping and FritzBox states are equal.', accessory.displayName);
-             
-              }
-              
+              accessory.context.changedOn = false;
+
+              Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
+
             }
           
           }
@@ -1586,16 +1582,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       }  
         
       case 'callmonitor': {
-      
-        let dest = false;
-        
-        if(value.newValue){
-          dest = accessory.context.config.subtype === 'incoming' ? 'incoming' : 'outgoing';
-        } else {
-          dest = 'disconnected';
-        }
 
-        Telegram.send('callmonitor', dest, replacer);
+        Telegram.send('callmonitor', value.state, replacer);
       
         break;
        

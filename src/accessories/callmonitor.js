@@ -211,7 +211,7 @@ class contactService {
               
               if(!this.denyCall){
                 
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, {newValue: 1});
+                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
               
               } else {
               
@@ -350,7 +350,7 @@ class contactService {
                 
               if(!this.denyCall){
                 
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, {newValue: 1});
+                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
               
               } else {
               
@@ -433,7 +433,7 @@ class contactService {
               
               if(!this.denyCall){
               
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, {newValue: 0});
+                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
               
               } else {
                 

@@ -837,6 +837,7 @@
               "title": "Polling Timer",
               "type": "integer",
               "placeholder": 10,
+              "default": 10,
               "minimum": 10,
               "description": "Timer to refresh data on background. (0 = off)",
               "required": true
