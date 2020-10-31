@@ -23,9 +23,30 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
     switch (target) {
     
+      case 'smarthome-contact': {
+      
+        //not implemented yet
+        break;
+      
+      }
+      
+      case 'smarthome-switch': {
+      
+        //not implemented yet
+        break;
+      
+      }
+      
+      case 'smarthome-thermostat': {
+      
+        //not implemented yet
+        break;
+      
+      }
+    
       case 'presence': {
       
-        let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0; 
          
         try {
 
@@ -149,7 +170,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
          
       case 'router': {
       
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;   
          
         try {
         
@@ -580,62 +601,10 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         break;
         
       }
-      
-      /*case 'wol': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(state);
-        
-        break;
-     
-      }
-      
-      case 'alarm': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(state);
-        
-        break;
-        
-      }
-         
-      case 'wakeup': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(state);
-        
-        break;
-        
-      }
-         
-      case 'phoneBook': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(state);
-        
-        break;
-        
-      } */
 
       default: {
        
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
         
         accessory
           .getService(service)
@@ -659,6 +628,27 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
     callback(null, state);
   
     switch (target) {
+    
+      case 'smarthome-contact': {
+      
+        //not implemented yet
+        break;
+      
+      }
+      
+      case 'smarthome-switch': {
+      
+        //not implemented yet
+        break;
+      
+      }
+      
+      case 'smarthome-thermostat': {
+      
+        //not implemented yet
+        break;
+      
+      }
     
       case 'router': {
       
@@ -1524,16 +1514,35 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
     switch (target) {
     
+      case 'smarthome-contact': {
+
+        //not implemented yet
+        break;
+        
+      }  
+      
+      case 'smarthome-switch': {
+
+        //not implemented yet
+        break;
+        
+      } 
+      
+      case 'smarthome-thermostat': {
+
+        //not implemented yet
+        break;
+        
+      } 
+    
       case 'presence': {
       
         if(historyService){
           let lastActivation = moment().unix() - historyService.getInitialTime();
-          if(value.newValue){
-            accessory
-              .getService(api.hap.Service.MotionSensor)
-              .getCharacteristic(api.hap.Characteristic.LastActivation)
-              .updateValue(lastActivation);
-          }
+          accessory
+            .getService(api.hap.Service.MotionSensor)
+            .getCharacteristic(api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
           historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
         }
       
@@ -1637,12 +1646,6 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               
             }
             
-            case 'smarthome': {
-              //
-              break;
-            
-            }
-            
             case 'presence': {
             
               if(accessory.displayName !== 'Anyone'){
@@ -1657,6 +1660,27 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             
               break;
               
+            }
+            
+            case 'smarthome-contact': {
+              
+              //not implemented yet
+              break;
+            
+            }
+            
+            case 'smarthome-switch': {
+              
+              //not implemented yet
+              break;
+            
+            }
+            
+            case 'smarthome-thermostat': {
+              
+              //not implemented yet
+              break;
+            
             }
               
             default: {
