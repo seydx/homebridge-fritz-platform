@@ -31,27 +31,15 @@ class routerService {
     
     if(accessory.context.config.options){
     
-      const characteristics = Object.keys(accessory.context.config.options).filter(extra => {
-        if((extra === 'wifi_2ghz' || 
-            extra === 'wifi_5ghz' || 
-            extra === 'wifi_guest' || 
-            extra === 'wps' ||
-            extra === 'dect' ||  
-            extra === 'aw' || 
-            extra === 'deflection' || 
-            extra === 'led' || 
-            extra === 'lock' || 
-            extra === 'broadband') &&
-            accessory.context.config.options[extra] === 'characteristic')
-          return extra;
-      });
+      let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock', 'broadband'];
+      const characteristics = Object.keys(accessory.context.config.options).filter(extra => validChars.includes(extra) && accessory.context.config.options[extra] === 'characteristic');
       
       if(characteristics.includes('wifi_2ghz')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)){
           Logger.info('Adding WifiTwo Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiTwo);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_2ghz')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_2ghz') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.WifiTwo)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiTwo, 'wifi_2ghz', false));
         } else {
@@ -71,7 +59,7 @@ class routerService {
           Logger.info('Adding WifiFive Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiFive);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_5ghz')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_5ghz') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.WifiTwo)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiFive, 'wifi_5ghz', false));
         } else {
@@ -91,7 +79,7 @@ class routerService {
           Logger.info('Adding WifiGuest Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiGuest);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_guest')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wifi_guest') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.WifiGuest)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiGuest, 'wifi_guest', false));
         } else {
@@ -111,7 +99,7 @@ class routerService {
           Logger.info('Adding WifiWPS Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiWPS);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wps')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('wps') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.WifiWPS)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WifiWPS, 'wps', false));
         } else {
@@ -131,7 +119,7 @@ class routerService {
           Logger.info('Adding DECT Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DECT);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('dect')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('dect') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.DECT)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DECT, 'dect', false));
         } else {
@@ -151,7 +139,7 @@ class routerService {
           Logger.info('Adding AnsweringMachine Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.AnsweringMachine);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('aw')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('aw') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.AnsweringMachine)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.AnsweringMachine, 'aw', false));
         } else {
@@ -171,7 +159,7 @@ class routerService {
           Logger.info('Adding Deflection Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Deflection);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('deflection')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('deflection') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.Deflection)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.Deflection, 'deflection', false));
         } else {
@@ -191,7 +179,7 @@ class routerService {
           Logger.info('Adding DeviceLED Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DeviceLED);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('led')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('led') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.DeviceLED)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DeviceLED, 'led', false));
         } else {
@@ -211,7 +199,7 @@ class routerService {
           Logger.info('Adding DeviceLock Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DeviceLock);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('lock')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('lock') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.DeviceLock)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.DeviceLock, 'lock', false));
         } else {
@@ -358,7 +346,7 @@ class routerService {
           Logger.info('Adding RingLock Characteristic', accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.RingLock);
         }
-        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('ringlock')){
+        if(accessory.context.polling.timer && !accessory.context.polling.exclude.includes('ringlock') && !accessory.context.polling.exclude.includes('extra')){
           service.getCharacteristic(this.api.hap.Characteristic.RingLock)
             .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.RingLock, 'ringlock', this.extras.ringlock));
         } else {
