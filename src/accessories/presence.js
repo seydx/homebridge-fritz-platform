@@ -103,7 +103,7 @@ class occupancyService {
     let state = service.getCharacteristic(characteristicName).value;
     let states = [];
   
-    for(const accessory of this.accessories)
+    for(const accessory of this.accessories){
       if(accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone'){
         let accService = accessory.getService(this.api.hap.Service.OccupancySensor);
         let accChararteristic = this.api.hap.Characteristic.OccupancyDetected;
@@ -113,8 +113,9 @@ class occupancyService {
         }
         states.push(accService.getCharacteristic(accChararteristic).value);
       }
+    }
      
-    state = states.includes(1) ? 1 : 0;
+    state = (states.includes(1) || states.includes(true)) ? 1 : 0;
        
     service
       .getCharacteristic(characteristicName)
