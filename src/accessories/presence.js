@@ -75,26 +75,12 @@ class occupancyService {
       this.historyService = new FakeGatoHistoryService('motion', this.accessory, {storage:'fs'}); 
         
     }
+    
+    service.getCharacteristic(characteristicName)
+      .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
   
-    if(accessory.displayName !== 'Anyone'){
-   
-      if(accessory.context.polling.timer && (!accessory.context.polling.exclude.includes('presence') && !accessory.context.polling.exclude.includes(accessory.displayName))){
-        service.getCharacteristic(characteristicName)
-          .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
-      } else {
-        service.getCharacteristic(characteristicName)
-          .on('get', this.handler.get.bind(this, accessory, serviceName, characteristicName, 'presence', false)) 
-          .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
-      }
-      
-    } else {
-    
-      service.getCharacteristic(characteristicName)
-        .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
-    
+    if(accessory.displayName === 'Anyone')
       this.getState(service, characteristicName);
-    
-    }
     
   }
   
@@ -123,7 +109,7 @@ class occupancyService {
        
     setTimeout(() => {
       this.getState(service, characteristicName);
-    }, 5000); 
+    }, 3000); 
   
   }
 
