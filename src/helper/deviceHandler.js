@@ -54,16 +54,27 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
           let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
           let target = 'IPAddress';
+          let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
+          let input = {NewIPAddress: accessory.context.config.address};
+          
+          let active = 'Active';
           
           if(validMAC.test(accessory.context.config.address)){
             target = 'MACAddress';
+            service = 'GetSpecificHostEntry';
+            input = {NewMACAddress: accessory.context.config.address};
           }
           
           let user = hostList.find(user => user[target] === accessory.context.config.address);
           
+          if(!user){
+            user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+            active = 'NewActive';
+          }
+          
           Logger.debug(user, accessory.displayName);
           
-          let newState = parseInt(user.Active);
+          let newState = parseInt(user[active]);
           
           if(newState === state && accessory.context.config.ping){
             
@@ -1689,7 +1700,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
-  async function refreshHosts(fritzbox, polling){
+  async function refreshHosts(fritzbox){
   
     try {
     
@@ -1707,7 +1718,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
     } finally {
     
       setTimeout(() => {
-        refreshHosts(fritzbox, polling);
+        refreshHosts(fritzbox);
       }, 7000);
     
     }
