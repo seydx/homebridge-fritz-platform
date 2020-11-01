@@ -388,7 +388,7 @@ function FritzPlatform (log, config, api) {
       }
     }
     this.polling = {
-      timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : false,
+      timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : 10000,
       exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
         ?  config.options.polling.exclude.map(ex => ex.name).filter(ex => ex && ex.length)
         :  ['broadband', 'wakeup', 'alarm', 'phoneBook']
@@ -550,8 +550,10 @@ function FritzPlatform (log, config, api) {
     this.messages = false;
   }  
   
+  this.handler = DeviceHandler(this.api, this.devices, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
   
-  this.handler = DeviceHandler(this.api, this.devices, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot); 
+  if(this.presence.size)
+    this.handler.refreshHosts(this.fritzbox, this.polling) 
   
   //listener to close the callmonitor
   this.api.on('shutdown', () => {
