@@ -10,6 +10,8 @@ const speedTest = require('speedtest-net');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
+let hostList;
+
 module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, reboot) => {
 
   async function get(accessory, service, characteristic, target, config, callback){
@@ -47,30 +49,29 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       case 'presence': {
       
         let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0; 
-         
-        try {
-
+        
+        if(hostList){
+        
           let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
-          let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
-          let input = {NewIPAddress: accessory.context.config.address};
+          let target = 'IPAddress';
           
           if(validMAC.test(accessory.context.config.address)){
-            service = 'GetSpecificHostEntry';
-            input = {NewMACAddress: accessory.context.config.address};
+            target = 'MACAddress';
           }
           
-          let data = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
-          Logger.debug(data, accessory.displayName);
-         
-          let newState = parseInt(data.NewActive);
+          let user = hostList.find(user => user[target] === accessory.context.config.address);
+          
+          Logger.debug(user, accessory.displayName);
+          
+          let newState = parseInt(user.Active);
           
           if(newState === state && accessory.context.config.ping){
             
             let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
 
-            let address = data.NewIPAddress ? data.NewIPAddress : accessory.context.config.address;
+            let address = user.IPAddress;
               
-            let res = await ping.promise.probe(address, { timeout: 3 });
+            let res = await ping.promise.probe(address);
             res.alive = res.alive ? 1 : 0;
             
             if(res.alive !== newState){
@@ -148,11 +149,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             }
           
           }
-
-        } catch(err) {
         
-          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
-       
         }
         
         accessory
@@ -1692,6 +1689,31 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
+  async function refreshHosts(fritzbox, polling){
+  
+    try {
+    
+      const data = await fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
+      const uri = 'https://' + fritzbox.url.hostname + ':49443' + data['NewX_AVM-DE_HostListPath'];
+      
+      const hosts = await requestXml({ uri, rejectUnauthorized: false });
+    
+      hostList = hosts.List.Item;
+    
+    } catch(err) {
+    
+      handleError({displayName: 'Hosts'}, false, 'hosts', err, {poll: true});
+    
+    } finally {
+    
+      setTimeout(() => {
+        refreshHosts(fritzbox, polling);
+      }, 7000);
+    
+    }
+  
+  }
+  
   function handleCharacteristics(accessories){
   
     let currentDevices = devices;
@@ -1826,7 +1848,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
     get: get,
     set: set,
     change: change,
-    poll: poll
+    poll: poll,
+    refreshHosts: refreshHosts
   };
 
 };
