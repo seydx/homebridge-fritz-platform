@@ -553,7 +553,7 @@ function FritzPlatform (log, config, api) {
   this.handler = DeviceHandler(this.api, this.devices, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
   
   if(this.presence.size)
-    this.handler.refreshHosts(this.fritzbox, this.polling) 
+    this.handler.refreshHosts(this.fritzbox); 
   
   //listener to close the callmonitor
   this.api.on('shutdown', () => {
