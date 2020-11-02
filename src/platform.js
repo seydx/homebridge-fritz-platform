@@ -390,7 +390,7 @@ function FritzPlatform (log, config, api) {
     this.polling = {
       timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : 10000,
       exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
-        ?  config.options.polling.exclude.map(ex => ex.name).filter(ex => ex && ex.length)
+        ?  config.options.polling.exclude
         :  ['broadband', 'wakeup', 'alarm', 'phoneBook']
     };
     this.reboot = {
@@ -468,12 +468,12 @@ function FritzPlatform (log, config, api) {
     this.config.callmonitor.port = this.config.callmonitor.port || 1012;
 
     this.config.callmonitor.incomingTo = this.config.callmonitor.incomingTo && this.config.callmonitor.incomingTo.length
-      ? this.config.callmonitor.incomingTo.map(ex => ex.number).filter(ex => ex && ex.length)
-      : false;
+      ? this.config.callmonitor.incomingTo
+      : [];
                                          
     this.config.callmonitor.outgoingFrom = this.config.callmonitor.outgoingFrom && this.config.callmonitor.outgoingFrom.length
-      ? this.config.callmonitor.outgoingFrom.map(ex => ex.number).filter(ex => ex && ex.length)
-      : false;
+      ? this.config.callmonitor.outgoingFrom
+      : [];
 
     this.config.callmonitor.type = 'callmonitor';
     
