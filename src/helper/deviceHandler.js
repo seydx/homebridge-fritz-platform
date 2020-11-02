@@ -1364,9 +1364,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
             lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49      
             
             
-            let blacklists = config.blacklists &&
-                             config.blacklists.length
-              ? config.blacklists.map(ex => ex.name).filter(ex => ex && ex.length)
+            let blacklists = config.blacklists && config.blacklists.length
+              ? config.blacklists
               : []; 
             
             let telBook = [];
