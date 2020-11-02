@@ -543,31 +543,21 @@
           "required": true
         },
         "incomingTo": {
+          "title": "Incoming To",
           "type": "array",
           "items": {
-            "title": "Incoming To - Number",
-            "type": "object",
-            "properties": {
-              "number": {
-                "title": "Number",
-                "type": "string",
-                "description": "Home Number to filter for incoming calls."
-              }
-            }
+            "title": "Number",
+            "type": "string",
+            "description": "Number to filter for incoming calls."
           }
         },
         "outgoingFrom": {
+          "title": "Outgoing To",
           "type": "array",
           "items": {
-            "title": "Outgoing From - Number",
-            "type": "object",
-            "properties": {
-              "number": {
-                "title": "Number",
-                "type": "string",
-                "description": "Home Number to filter for outgoing calls."
-              }
-            }
+            "title": "Number",
+            "type": "string",
+            "description": "Number to filter for outgoing calls."
           }
         }
       }
@@ -729,17 +719,12 @@
               "description": "Duration of the call."
             },
             "blacklists": {
+              "title": "Blacklists",
               "type": "array",
               "items": {
-                "title": "Blacklists",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "title": "Name",
-                    "type": "string",
-                    "description": "Name of the blacklist from FritzBox."
-                  }
-                }
+                "title": "Name",
+                "type": "string",
+                "description": "Name of the blacklist from FritzBox."
               }
             },
             "accType": {
@@ -841,18 +826,13 @@
               "description": "Timer to refresh data on background. (0 = off)",
               "required": true
             },
-            "exclude": {
+            "exclude": {   
+              "title": "Exclude", 
               "type": "array",
               "items": {
-                "title": "Exclude",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "title": "Catagory Name",
-                    "type": "string",
-                    "description": "Name of the catagory to exclude from polling."
-                  }
-                }
+                "title": "Name/Type/Catagory",
+                "type": "string",
+                "description": "Name/Type/Catagory of the device to exclude from polling."
               }
             }
           }
@@ -1135,7 +1115,7 @@
               "expanded": true,
               "buttonText": "Add Blacklist",
               "items": [
-                "extras.phoneBook.blacklists[].name"
+                "extras.phoneBook.blacklists[]"
               ]
             }
           ]
@@ -1244,7 +1224,7 @@
           "expanded": false,
           "buttonText": "Add Number",
           "items": [
-            "callmonitor.incomingTo[].number"
+            "callmonitor.incomingTo[]"
           ]
         },
         {
@@ -1255,7 +1235,7 @@
           "expanded": false,
           "buttonText": "Add Number",
           "items": [
-            "callmonitor.outgoingFrom[].number"
+            "callmonitor.outgoingFrom[]"
           ]
         }
       ]
@@ -1330,9 +1310,9 @@
               "orderable": false,
               "expandable": true,
               "expanded": false,
-              "buttonText": "Add Catagory",
+              "buttonText": "Add",
               "items": [
-                "options.polling.exclude[].name"
+                "options.polling.exclude[]"
               ]
             }
           ]
