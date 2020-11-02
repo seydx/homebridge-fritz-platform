@@ -47,120 +47,128 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       }
     
       case 'presence': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0; 
-        
-        if(hostList){
-        
-          let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
-          let target = 'IPAddress';
-          let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
-          let input = {NewIPAddress: accessory.context.config.address};
           
-          let active = 'Active';
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;    
           
-          if(validMAC.test(accessory.context.config.address)){
-            target = 'MACAddress';
-            service = 'GetSpecificHostEntry';
-            input = {NewMACAddress: accessory.context.config.address};
-          }
-          
-          let user = hostList.find(user => user[target] === accessory.context.config.address);
-          
-          if(!user){
-            user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
-            active = 'NewActive';
-          }
-          
-          Logger.debug(user, accessory.displayName);
-          
-          let newState = parseInt(user[active]);
-          
-          if(newState === state && accessory.context.config.ping){
-            
-            let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
+        try {  
 
-            let address = user.IPAddress;
-              
-            let res = await ping.promise.probe(address);
-            res.alive = res.alive ? 1 : 0;
-            
-            if(res.alive !== newState){
-            
-              if(res.alive){ 
-              
-                accessory.context.lastSeen = Date.now(); 
-                newState = res.alive;
-                
-                Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
-                Logger.debug('Taking the value of Ping.', accessory.displayName);
-           
-              } else { 
-              
-                if(accessory.context.lastSeen){
-                
-                  let lastSeenMoment = moment(accessory.context.lastSeen);
-                  let activeThreshold = moment().subtract(threshold, 'm');
-                  
-                  newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
-                  
+          if(hostList){
+
+            let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
+            let target = 'IPAddress';
+            let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
+            let input = {NewIPAddress: accessory.context.config.address};
+
+            let active = 'Active';
+
+            if(validMAC.test(accessory.context.config.address)){
+              target = 'MACAddress';
+              service = 'GetSpecificHostEntry';
+              input = {NewMACAddress: accessory.context.config.address};
+            }
+
+            let user = hostList.find(user => user[target] === accessory.context.config.address);
+
+            if(!user){
+              user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+              active = 'NewActive';
+            }
+
+            Logger.debug(user, accessory.displayName);
+
+            let newState = parseInt(user[active]);
+
+            if(newState === state && accessory.context.config.ping){
+
+              let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
+
+              let address = user.IPAddress;
+
+              let res = await ping.promise.probe(address);
+              res.alive = res.alive ? 1 : 0;
+
+              if(res.alive !== newState){
+
+                if(res.alive){ 
+
+                  accessory.context.lastSeen = Date.now(); 
+                  newState = res.alive;
+
                   Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
                   Logger.debug('Taking the value of Ping.', accessory.displayName);
-             
+
+                } else { 
+
+                  if(accessory.context.lastSeen){
+
+                    let lastSeenMoment = moment(accessory.context.lastSeen);
+                    let activeThreshold = moment().subtract(threshold, 'm');
+
+                    newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
+
+                    Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
+                    Logger.debug('Taking the value of Ping.', accessory.displayName);
+
+                  }
+
                 }
-                
-              }
-              
-            }
-          
-          }
-          
-          if(newState !== state){
-          
-            if(accessory.context.changedOn) {
 
-              let millis = Date.now() - accessory.context.changedOn;
-              let secElapsed = Math.floor(millis / 1000);
-              
-              let passed = false;
-              
-              if(newState && secElapsed > presenceOptions.onDelay){
-                passed = true;        
-              } else if(!newState && secElapsed > presenceOptions.offDelay){
-                passed = true; 
               }
-              
-              if(passed){
-                state = newState;
-                accessory.context.changedOn = false;
-              }
-              
-            } else {
-            
-              accessory.context.changedOn = Date.now();
-              
-              Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
-              
-              if(newState) {
-                Logger.info('Wait ' + presenceOptions.onDelay + 's before switching state!', accessory.displayName);
+
+            }
+
+            if(newState !== state){
+
+              if(accessory.context.changedOn) {
+
+                let millis = Date.now() - accessory.context.changedOn;
+                let secElapsed = Math.floor(millis / 1000);
+
+                let passed = false;
+
+                if(newState && secElapsed > presenceOptions.onDelay){
+                  passed = true;        
+                } else if(!newState && secElapsed > presenceOptions.offDelay){
+                  passed = true; 
+                }
+
+                if(passed){
+                  state = newState;
+                  accessory.context.changedOn = false;
+                }
+
               } else {
-                Logger.info('Wait ' + presenceOptions.offDelay + 's before switching state!', accessory.displayName);
+
+                accessory.context.changedOn = Date.now();
+
+                Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
+
+                if(newState) {
+                  Logger.info('Wait ' + presenceOptions.onDelay + 's before switching state!', accessory.displayName);
+                } else {
+                  Logger.info('Wait ' + presenceOptions.offDelay + 's before switching state!', accessory.displayName);
+                }
+
+              }
+
+            } else {
+
+              if(accessory.context.changedOn){
+
+                accessory.context.changedOn = false;
+
+                Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
+
               }
 
             }
 
-          } else {
-
-            if(accessory.context.changedOn){
-
-              accessory.context.changedOn = false;
-
-              Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
-
-            }
-          
           }
-        
+
+        } catch(err) {
+
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+
         }
         
         accessory
@@ -1710,6 +1718,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       const hosts = await requestXml({ uri, rejectUnauthorized: false });
     
       hostList = hosts.List.Item;
+        
+      //Logger.debug(hostList, 'Hosts')
     
     } catch(err) {
     
