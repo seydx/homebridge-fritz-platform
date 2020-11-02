@@ -1,10 +1,10 @@
 <p align="center">
-    <img src="https://i.imgur.com/YAEtHb5.png">
+  <a href="https://github.com/homebridge/homebridge"><img src="https://raw.githubusercontent.com/homebridge/branding/master/logos/homebridge-color-round-stylized.png" height="200"></a>
 </p>
 
 
 
-# Fritz!Platform
+# homebridge-fritz-platform
 
 This dynamic platform plugin allows almost full control of **AVM** hardware like:
 
