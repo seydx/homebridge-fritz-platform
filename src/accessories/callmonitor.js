@@ -111,6 +111,10 @@ class contactService {
             caller: data[3],
             called: data[4]
           };
+          
+          text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
+          this.callerNr = message.caller;
+          this.callerName = false;
             
           this.inbound = true;
           this.outgoing = false;
@@ -137,93 +141,83 @@ class contactService {
             .updateValue(this.accessory.context.timesOpened);
           
           this.historyService.addEntry({time: moment().unix(), status: 1});
+            
+          if(this.accessory.context.config.incomingTo.includes(message.called)){
         
-          if(this.accessory.context.config.incomingTo){
-            
-            Logger.debug('Checking incoming calls only to nr ' + this.accessory.context.config.incomingTo, this.accessory.displayName);
-            
-            if(this.accessory.context.config.incomingTo.includes(message.called)){
-          
-              Logger.debug('"incomingTo" nr matched!', this.accessory.displayName);
+            Logger.debug('"incomingTo" nr matched!', this.accessory.displayName);
               
-              text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
+            let phonebook = false;
               
-              this.callerNr = message.caller;
-              this.callerName = false;
-                
-              let phonebook = false;
-                
-              try {
-                
-                phonebook = await fs.readJson(this.api.user.storagePath() + '/phonebook.json');
-                
-              } catch(err) {
-                
-                Logger.error('An error occured during reading phonebook!', this.accessory.displayName);
-                Logger.error(err);
-                
-              }
+            try {
               
-              if(phonebook){
-                
-                for(const entry of phonebook){
+              phonebook = await fs.readJson(this.api.user.storagePath() + '/phonebook.json');
               
-                  if(message.caller === entry.number){
-                
-                    text = 'Incoming call from: ' + entry.name + ' ( '+ entry.number + ' ) to ' + message.called;
-                    this.callerName = entry.name;
-                    this.callerNr = entry.number;
-                
-                  }
+            } catch(err) {
               
-                }
-                  
-              }
-                
-              this.denyCall = false;
-              let blackbook = false;
-                
-              try {
-                
-                blackbook = await fs.readJson(this.api.user.storagePath() + '/blackbook.json');
-                
-              } catch(err) {
-                
-                Logger.error('An error occured during reading blackbook!', this.accessory.displayName);
-                Logger.error(err);
-                
-              }
-                
-              if(blackbook){
-                
-                this.denyCall = false;
-                
-                for(const entry of blackbook){
+              Logger.error('An error occured during reading phonebook!', this.accessory.displayName);
+              Logger.error(err);
               
-                  if(message.caller === entry.number)
-                    this.denyCall = true;
-              
-                }
-                  
-              }
-              
-              Logger.info(text, this.accessory.displayName);
-              
-              if(!this.denyCall){
-                
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
-              
-              } else {
-              
-                Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-              
-              }
-              
-            } else {
-           
-              Logger.info('"incomingTo" nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
-         
             }
+            
+            if(phonebook){
+              
+              for(const entry of phonebook){
+            
+                if(message.caller === entry.number){
+              
+                  text = 'Incoming call from: ' + entry.name + ' ( '+ entry.number + ' ) to ' + message.called;
+                  this.callerName = entry.name;
+                  this.callerNr = entry.number;
+              
+                }
+            
+              }
+                
+            }
+              
+            this.denyCall = false;
+            let blackbook = false;
+              
+            try {
+              
+              blackbook = await fs.readJson(this.api.user.storagePath() + '/blackbook.json');
+              
+            } catch(err) {
+              
+              Logger.error('An error occured during reading blackbook!', this.accessory.displayName);
+              Logger.error(err);
+              
+            }
+              
+            if(blackbook){
+              
+              this.denyCall = false;
+              
+              for(const entry of blackbook){
+            
+                if(message.caller === entry.number)
+                  this.denyCall = true;
+            
+              }
+                
+            }
+            
+            Logger.info(text, this.accessory.displayName);
+            
+            if(!this.denyCall){
+              
+              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
+            
+            } else {
+            
+              Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
+            
+            }
+            
+          } else {
+         
+            Logger.info('"incomingTo" nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
+            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
        
           }
         
@@ -249,6 +243,12 @@ class contactService {
             caller: data[4],
             called: data[5]
           };
+          
+          let called = message.called.replace(/\D/g,''); 
+          
+          text = 'Outgoing call from: ' + message.caller + ' to ' + message.called;
+          this.callerName = false;
+          this.callerNr = called;
             
           this.outgoing = true;
           this.inbound = false;
@@ -275,94 +275,83 @@ class contactService {
             .updateValue(this.accessory.context.timesOpened);
           
           this.historyService.addEntry({time: moment().unix(), status: 1});
-        
-          if(this.accessory.context.config.outgoingFrom){
           
-            Logger.debug('Checking outgoing calls only from nr ' + this.accessory.context.config.outgoingFrom, this.accessory.displayName);
+          if(this.accessory.context.config.outgoingFrom.includes(message.caller)){
           
-            if(this.accessory.context.config.outgoingFrom.includes(message.caller)){
-            
-              Logger.debug('"outgoingFrom" nr matched!', this.accessory.displayName);
-            
-              let called = message.called.replace(/\D/g,''); 
-
-              text = 'Calling: ' + called;
-              this.callerName = false;
-              this.callerNr = called;
-                
-              let phonebook = false;
-                
-              try {
-                
-                phonebook = await fs.readJson(this.api.user.storagePath() + '/phonebook.json');
-                
-              } catch(err) {
-                
-                Logger.error('An error occured during reading phonebook!', this.accessory.displayName);
-                Logger.error(err);
-                
-              }
+            Logger.debug('"outgoingFrom" nr matched!', this.accessory.displayName);
               
-              if(phonebook){
-                
-                for(const entry of phonebook){
+            let phonebook = false;
               
-                  if(called === entry.number){
-                
-                    text = 'Calling ' + entry.name + ' ( '+ entry.number + ' )';
-                    this.callerName = entry.name;
-                    this.callerNr = entry.number;
-                
-                  }
+            try {
               
-                }
-                
-              }
-            
-              this.denyCall = false;
-              let blackbook = false;
-                
-              try {
-                
-                blackbook = await fs.readJson(this.api.user.storagePath() + '/blackbook.json');
-                
-              } catch(err) {
-                
-                Logger.error('An error occured during reading blackbook!', this.accessory.displayName);
-                Logger.error(err);
-                
-              }
-                
-              if(blackbook){
-                
-                this.denyCall = false;
-                
-                for(const entry of blackbook){
+              phonebook = await fs.readJson(this.api.user.storagePath() + '/phonebook.json');
               
-                  if(message.caller === entry.number)
-                    this.denyCall = true;
+            } catch(err) {
               
-                }
-                  
-              }
-            
-              Logger.info(text, this.accessory.displayName);
-                
-              if(!this.denyCall){
-                
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
+              Logger.error('An error occured during reading phonebook!', this.accessory.displayName);
+              Logger.error(err);
               
-              } else {
-              
-                Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-              
-              }
-          
-            } else {
-           
-              Logger.info('"outgoingFrom" nr not matched. Calling from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
-         
             }
+            
+            if(phonebook){
+              
+              for(const entry of phonebook){
+            
+                if(called === entry.number){
+              
+                  text = 'Calling ' + entry.name + ' ( '+ entry.number + ' )';
+                  this.callerName = entry.name;
+                  this.callerNr = entry.number;
+              
+                }
+            
+              }
+              
+            }
+          
+            this.denyCall = false;
+            let blackbook = false;
+              
+            try {
+              
+              blackbook = await fs.readJson(this.api.user.storagePath() + '/blackbook.json');
+              
+            } catch(err) {
+              
+              Logger.error('An error occured during reading blackbook!', this.accessory.displayName);
+              Logger.error(err);
+              
+            }
+              
+            if(blackbook){
+              
+              this.denyCall = false;
+              
+              for(const entry of blackbook){
+            
+                if(message.caller === entry.number)
+                  this.denyCall = true;
+            
+              }
+                
+            }
+          
+            Logger.info(text, this.accessory.displayName);
+              
+            if(!this.denyCall){
+              
+              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
+            
+            } else {
+            
+              Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
+            
+            }
+        
+          } else {
+         
+            Logger.info('"outgoingFrom" nr not matched. Calling from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
+            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
        
           }
      
@@ -424,36 +413,25 @@ class contactService {
           delete(this.call[data[2]]);
         
           message = call;
-        
-          if(this.accessory.context.config.incomingTo || this.accessory.context.config.outgoingFrom){
           
-            if(this.accessory.context.config.incomingTo.includes(message.called) || this.accessory.context.config.outgoingFrom.includes(message.caller)){
-           
-              Logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr), this.accessory.displayName);
-              
-              if(!this.denyCall){
-              
-                this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
-              
-              } else {
-                
-                Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-                
-              }
-          
-            } else {
-          
-              if(message.type=='inbound'){
-            
-                Logger.debug('"incomingTo" nr not matched. Call disconnected with ' + message.caller, this.accessory.displayName);
-            
-              } else {
-              
-                Logger.debug('"outgoingFrom" nr not matched. Call disconnected with ' + message.called, this.accessory.displayName);
-           
-              }
+          if(this.accessory.context.config.incomingTo.includes(message.called) || this.accessory.context.config.outgoingFrom.includes(message.caller)){
          
+            Logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr), this.accessory.displayName);
+            
+            if(!this.denyCall){
+            
+              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
+            
+            } else {
+              
+              Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
+              
             }
+        
+          } else {
+        
+            Logger.debug((message.type === 'inbound' ? '"incomingTo"' : '"outgoingFrom"') + ' nr not matched. Call disconnected with ' + message.caller, this.accessory.displayName);
+            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
        
           }
      

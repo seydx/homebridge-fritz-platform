@@ -48,7 +48,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
     
       case 'presence': {
           
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;    
+        let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0;    
           
         try {  
 

@@ -512,21 +512,6 @@
           "description": "Groups incoming and outgoing sensor to one.",
           "type": "boolean"
         },
-        "group_name": {
-          "title": "Group Name",
-          "type": "string",
-          "description": "Set the callmonitor name for display in the Home app. (Default: Callmonitor)"
-        },
-        "incoming_name": {
-          "title": "Name for the Incoming Accessory",
-          "type": "string",
-          "description": "Set the callmonitor incoming name for display in the Home app. (Default: Callmonitor Incoming)"
-        },
-        "outgoing_name": {
-          "title": "Name for the Outgoing Accessory",
-          "type": "string",
-          "description": "Set the callmonitor outgoing name for display in the Home app. (Default: Callmonitor Outgoing)"
-        },
         "ip": {
           "title": "IP Address",
           "type": "string",
@@ -1201,21 +1186,9 @@
       "expanded": false,
       "items": [
         "callmonitor.active",
+        "callmonitor.group",
         "callmonitor.ip",
         "callmonitor.port",
-        "callmonitor.incoming_name",
-        "callmonitor.outgoing_name",
-        {
-          "key": "callmonitor",
-          "type": "section",
-          "title": "Group",
-          "expandable": true,
-          "expanded": true,
-          "items": [
-            "callmonitor.group",
-            "callmonitor.group_name"
-          ]
-        },
         {
           "key": "callmonitor.incomingTo",
           "type": "section",
