@@ -10,9 +10,9 @@ const speedTest = require('speedtest-net');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
-let hostList;
+let hostList, smarthomeList;
 
-module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, reboot) => {
+module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath, Telegram, presenceOptions, polling, reboot) => {
 
   async function get(accessory, service, characteristic, target, config, callback){
     
@@ -25,21 +25,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
     switch (target) {
     
-      case 'smarthome-contact': {
-      
-        //not implemented yet
-        break;
-      
-      }
-      
-      case 'smarthome-switch': {
-      
-        //not implemented yet
-        break;
-      
-      }
-      
-      case 'smarthome-thermostat': {
+      case 'smarthome': {
       
         //not implemented yet
         break;
@@ -50,116 +36,112 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           
         let state = accessory.getService(service).getCharacteristic(characteristic).value ? 1 : 0;    
           
-        try {  
+        try {
 
-          if(hostList){
+          let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
+          let target = 'IPAddress';
+          let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
+          let input = {NewIPAddress: accessory.context.config.address};
 
-            let validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
-            let target = 'IPAddress';
-            let service = 'X_AVM-DE_GetSpecificHostEntryByIP';
-            let input = {NewIPAddress: accessory.context.config.address};
+          let active = 'Active';
 
-            let active = 'Active';
+          if(validMAC.test(accessory.context.config.address)){
+            target = 'MACAddress';
+            service = 'GetSpecificHostEntry';
+            input = {NewMACAddress: accessory.context.config.address};
+          }
 
-            if(validMAC.test(accessory.context.config.address)){
-              target = 'MACAddress';
-              service = 'GetSpecificHostEntry';
-              input = {NewMACAddress: accessory.context.config.address};
-            }
+          let user = hostList ? hostList.find(user => user[target] === accessory.context.config.address) : false;
 
-            let user = hostList.find(user => user[target] === accessory.context.config.address);
+          if(!user){
+            user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+            active = 'NewActive';
+          }
 
-            if(!user){
-              user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
-              active = 'NewActive';
-            }
+          Logger.debug(user, accessory.displayName);
 
-            Logger.debug(user, accessory.displayName);
+          let newState = parseInt(user[active]);
 
-            let newState = parseInt(user[active]);
+          if(newState === state && accessory.context.config.ping){
 
-            if(newState === state && accessory.context.config.ping){
+            let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
 
-              let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
+            let address = user.IPAddress;
 
-              let address = user.IPAddress;
+            let res = await ping.promise.probe(address);
+            res.alive = res.alive ? 1 : 0;
 
-              let res = await ping.promise.probe(address);
-              res.alive = res.alive ? 1 : 0;
+            if(res.alive !== newState){
 
-              if(res.alive !== newState){
+              if(res.alive){ 
 
-                if(res.alive){ 
+                accessory.context.lastSeen = Date.now(); 
+                newState = res.alive;
 
-                  accessory.context.lastSeen = Date.now(); 
-                  newState = res.alive;
+                Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
+                Logger.debug('Taking the value of Ping.', accessory.displayName);
+
+              } else { 
+
+                if(accessory.context.lastSeen){
+
+                  let lastSeenMoment = moment(accessory.context.lastSeen);
+                  let activeThreshold = moment().subtract(threshold, 'm');
+
+                  newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
 
                   Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
                   Logger.debug('Taking the value of Ping.', accessory.displayName);
 
-                } else { 
-
-                  if(accessory.context.lastSeen){
-
-                    let lastSeenMoment = moment(accessory.context.lastSeen);
-                    let activeThreshold = moment().subtract(threshold, 'm');
-
-                    newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
-
-                    Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
-                    Logger.debug('Taking the value of Ping.', accessory.displayName);
-
-                  }
-
                 }
 
               }
 
             }
 
-            if(newState !== state){
+          }
 
-              if(accessory.context.changedOn) {
+          if(newState !== state){
 
-                let millis = Date.now() - accessory.context.changedOn;
-                let secElapsed = Math.floor(millis / 1000);
+            if(accessory.context.changedOn) {
 
-                let passed = false;
+              let millis = Date.now() - accessory.context.changedOn;
+              let secElapsed = Math.floor(millis / 1000);
 
-                if(newState && secElapsed > presenceOptions.onDelay){
-                  passed = true;        
-                } else if(!newState && secElapsed > presenceOptions.offDelay){
-                  passed = true; 
-                }
+              let passed = false;
 
-                if(passed){
-                  state = newState;
-                  accessory.context.changedOn = false;
-                }
+              if(newState && secElapsed > presenceOptions.onDelay){
+                passed = true;        
+              } else if(!newState && secElapsed > presenceOptions.offDelay){
+                passed = true; 
+              }
 
-              } else {
-
-                accessory.context.changedOn = Date.now();
-
-                Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
-
-                if(newState) {
-                  Logger.info('Wait ' + presenceOptions.onDelay + 's before switching state!', accessory.displayName);
-                } else {
-                  Logger.info('Wait ' + presenceOptions.offDelay + 's before switching state!', accessory.displayName);
-                }
-
+              if(passed){
+                state = newState;
+                accessory.context.changedOn = false;
               }
 
             } else {
 
-              if(accessory.context.changedOn){
+              accessory.context.changedOn = Date.now();
 
-                accessory.context.changedOn = false;
+              Logger.info('Occupancy state changed to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
 
-                Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
-
+              if(newState) {
+                Logger.info('Wait ' + presenceOptions.onDelay + 's before switching state!', accessory.displayName);
+              } else {
+                Logger.info('Wait ' + presenceOptions.offDelay + 's before switching state!', accessory.displayName);
               }
+
+            }
+
+          } else {
+
+            if(accessory.context.changedOn){
+
+              accessory.context.changedOn = false;
+
+              Logger.info('Occupancy state switched back to ' + (newState ? 'DETECTED' : 'NOT DETECTED'), accessory.displayName);
 
             }
 
@@ -641,21 +623,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
     switch (target) {
     
-      case 'smarthome-contact': {
-      
-        //not implemented yet
-        break;
-      
-      }
-      
-      case 'smarthome-switch': {
-      
-        //not implemented yet
-        break;
-      
-      }
-      
-      case 'smarthome-thermostat': {
+      case 'smarthome': {
       
         //not implemented yet
         break;
@@ -1524,28 +1492,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   async function change(accessory, target, replacer, historyService, value){
   
     switch (target) {
-    
-      case 'smarthome-contact': {
-
-        //not implemented yet
-        break;
-        
-      }  
       
-      case 'smarthome-switch': {
-
-        //not implemented yet
-        break;
-        
-      } 
-      
-      case 'smarthome-thermostat': {
-
-        //not implemented yet
-        break;
-        
-      } 
-    
       case 'presence': {
       
         if(historyService){
@@ -1565,7 +1512,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
           dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
         }
         
-        Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
+        if(Telegram)
+          Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
       
         break;
       
@@ -1573,7 +1521,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
       
       case 'network': {
         
-        Telegram.send('network',  value.newValue ? 'on' : 'off', replacer);
+        if(Telegram) 
+          Telegram.send('network',  value.newValue ? 'on' : 'off', replacer);
       
         break;
         
@@ -1581,7 +1530,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
       case 'alarm': {
 
-        Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
+        if(Telegram)
+          Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
       
         break;
         
@@ -1589,7 +1539,7 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
       case 'router': {
 
-        if(!accessory.context.config.readOnly)
+        if(!accessory.context.config.readOnly && Telegram)
           Telegram.send('reboot', value.newValue ? 'finish' : 'start', accessory.displayName);
       
         break;
@@ -1598,7 +1548,8 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         
       case 'callmonitor': {
 
-        Telegram.send('callmonitor', value.state, replacer);
+        if(Telegram)
+          Telegram.send('callmonitor', value.state, replacer);
       
         break;
        
@@ -1648,43 +1599,6 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
               break;
               
             }
-            
-            case 'presence': {
-            
-              if(accessory.displayName !== 'Anyone'){
-                let accService = device.accType === 'occupancy' 
-                  ? api.hap.Service.OccupancySensor
-                  : api.hap.Service.MotionSensor; 
-                let accCharacteristic = device.accType === 'occupancy' 
-                  ? api.hap.Characteristic.OccupancyDetected
-                  : api.hap.Characteristic.MotionDetected; 
-                await get(accessory, accService, accCharacteristic, device.type);
-              } 
-            
-              break;
-              
-            }
-            
-            case 'smarthome-contact': {
-              
-              //not implemented yet
-              break;
-            
-            }
-            
-            case 'smarthome-switch': {
-              
-              //not implemented yet
-              break;
-            
-            }
-            
-            case 'smarthome-thermostat': {
-              
-              //not implemented yet
-              break;
-            
-            }
               
             default: {
             
@@ -1698,6 +1612,14 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
         }
        
       }
+      
+      if(presence.size){
+        await refreshHosts(accessories);
+      }
+      
+      if(smarthome.size){
+        await refreshSmarthome(accessories);
+      }
      
       setTimeout(() => {
         poll(accessories);
@@ -1707,30 +1629,104 @@ module.exports = (api, devices, configPath, Telegram, presenceOptions, polling, 
   
   }
   
-  async function refreshHosts(fritzbox){
+  async function refreshHosts(accessories){
   
-    try {
+    let poll;
+  
+    for(const [uuid, device] of presence){
+      if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+        poll = true;
+      }
+    }
     
-      const data = await fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
-      const uri = 'https://' + fritzbox.url.hostname + ':49443' + data['NewX_AVM-DE_HostListPath'];
+    if(poll){
+    
+      try {
       
-      const hosts = await requestXml({ uri, rejectUnauthorized: false });
-    
-      hostList = hosts.List.Item;
+        const data = await fritzboxMaster.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
+        const uri = 'https://' + fritzboxMaster.url.hostname + ':49443' + data['NewX_AVM-DE_HostListPath'];
         
-      //Logger.debug(hostList, 'Hosts')
-    
-    } catch(err) {
-    
-      handleError({displayName: 'Hosts'}, false, 'hosts', err, {poll: true});
-    
-    } finally {
-    
-      setTimeout(() => {
-        refreshHosts(fritzbox);
-      }, 7000);
+        const hosts = await requestXml({ uri, rejectUnauthorized: false });
+      
+        hostList = hosts.List.Item;
+        //Logger.debug(hostList, 'Hosts')
+        
+        for(const [uuid, device] of presence){
+     
+          if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+     
+            const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
+            
+            if(accessory.displayName !== 'Anyone'){
+              let accService = device.accType === 'occupancy' 
+                ? api.hap.Service.OccupancySensor
+                : api.hap.Service.MotionSensor; 
+              let accCharacteristic = device.accType === 'occupancy' 
+                ? api.hap.Characteristic.OccupancyDetected
+                : api.hap.Characteristic.MotionDetected; 
+              await get(accessory, accService, accCharacteristic, device.type);
+            }           
+     
+          }
+     
+        }
+      
+      } catch(err) {
+      
+        handleError({displayName: 'Hosts'}, false, 'hosts', err, {poll: true});
+      
+      }
     
     }
+    
+    return;
+  
+  }
+  
+  async function refreshSmarthome(accessories){
+  
+    let poll;
+  
+    for(const [uuid, device] of smarthome){
+      if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+        poll = true;
+      }
+    }
+    
+    if(poll){
+    
+      try {
+      
+        let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+        let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+        let uri = 'http://' + fritzboxMaster.url.hostname + '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' + sid;
+        
+        let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
+
+        smarthomeList = smarthomes.devicelist.device;
+        //console.log(smarthomeList)
+        
+        for(const [uuid, device] of smarthome){
+     
+          if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+     
+            const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
+            
+            //TODO          
+     
+          }
+     
+        }
+      
+      } catch(err) {
+      
+        handleError({displayName: 'Smarthome'}, false, 'smarthome', err, {poll: true});
+      
+      }
+    
+    }
+    
+    return;
   
   }
   

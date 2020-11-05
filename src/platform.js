@@ -10,13 +10,16 @@ const Callmonitor = require('./helper/callmonitor');
 const DeviceHandler = require('./helper/deviceHandler.js');
 
 //Accessories
-const RouterAccessory = require('./accessories/router.js');
-const SmarthomeAccessory = require('./accessories/smarthome.js');
-const PresenceAccessory = require('./accessories/presence.js');
-const WolAccessory = require('./accessories/wol.js');
-const CallmonitorAccessory = require('./accessories/callmonitor.js');
-const ExtrasAccessory = require('./accessories/extras.js');
-const WatchNetwork = require('./accessories/network.js');
+const RouterAccessory = require('./accessories/router/router.js');
+const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
+const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
+const SmarthomeSensorAccessory = require('./accessories/smarthome/sensor.js');
+const PresenceMotionAccessory = require('./accessories/presence/motion.js');
+const PresenceOccupancyAccessory = require('./accessories/presence/occupancy.js');
+const WolAccessory = require('./accessories/wol/wol.js');
+const CallmonitorAccessory = require('./accessories/callmonitor/callmonitor.js');
+const ExtrasAccessory = require('./accessories/extras/extras.js');
+const WatchNetwork = require('./accessories/network/network.js');
 
 //Custom Types
 const RouterTypes = require('./types/custom_types.js');
@@ -55,6 +58,7 @@ function FritzPlatform (log, config, api) {
   this.devices = new Map();
   this.network = new Map(); 
   this.presence = new Map();
+  this.smarthome = new Map();
   
   this.masterDevice = false;
   this.presenceOptions = false;
@@ -195,12 +199,14 @@ function FritzPlatform (log, config, api) {
       }
 
       if (!error) {
-        device.type = 'smarthome-' + device.accType;
+        device.ain = device.ain.replace(/\s/g,'');
+        device.type = 'smarthome';
         const uuid = UUIDGen.generate(device.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
         } else {
           this.devices.set(uuid, device);
+          this.smarthome.set(uuid, device);
         }
       }
       
@@ -546,10 +552,7 @@ function FritzPlatform (log, config, api) {
     this.messages = false;
   }  
   
-  this.handler = DeviceHandler(this.api, this.devices, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
-  
-  if(this.presence.size)
-    this.handler.refreshHosts(this.fritzbox); 
+  this.handler = DeviceHandler(this.api, this.fritzbox, this.devices, this.presence, this.smarthome, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
   
   //listener to close the callmonitor
   this.api.on('shutdown', () => {
@@ -627,10 +630,6 @@ FritzPlatform.prototype = {
       manufacturer = device.manufacturer && device.manufacturer !== '' ? device.manufacturer : 'Homebridge';
       model = device.model && device.model !== '' ? device.model : device.type;
       serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : 'Homebridge';
-    } else if(device.type === 'callmonitor') {
-      manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
-      model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
-      serialNumber = device.subtype;
     } else {
       manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
       model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
@@ -650,11 +649,19 @@ FritzPlatform.prototype = {
       case 'router':
         new RouterAccessory(this.api, accessory, this.extrasAsCharacteristics, this.handler);
         break;
-      case 'smarthome':
-        //new SmarthomeAccessory(this.api, accessory, this.handler);
-        break;
+      /*case 'smarthome':
+        if(device.accType === 'switch')
+          new SmarthomeSwitchAccessory(this.api, accessory, this.handler);
+        if(device.accType === 'thermostat')
+          new SmarthomeThermostatAccessory(this.api, accessory, this.handler);
+        if(device.accType === 'contact')
+          new SmarthomeSensorAccessory(this.api, accessory, this.handler);
+        break;*/
       case 'presence':
-        new PresenceAccessory(this.api, accessory, this.handler, this.accessories);
+        if(device.accType === 'motion')
+          new PresenceMotionAccessory(this.api, accessory, this.handler, this.accessories);
+        if(device.accType === 'occupancy')
+          new PresenceOccupancyAccessory(this.api, accessory, this.handler, this.accessories);
         break;
       case 'wol':
         new WolAccessory(this.api, accessory, this.handler);
