@@ -121,6 +121,7 @@
                     "name": "DECT 301",
                     "ain": "09995 0692315",
                     "temperature": true,
+                    "window": true,
                     "accType": "thermostat"
                 }
             ],
