@@ -343,14 +343,15 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             res.alive = res.alive ? 1 : 0;
 
             if(res.alive !== newState){
+            
+              Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
 
               if(res.alive){ 
 
                 accessory.context.lastSeen = Date.now(); 
                 newState = res.alive;
 
-                Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
-                Logger.debug('Taking the value of Ping.', accessory.displayName);
+                Logger.debug('Taking the value of Ping. (DETECTED)', accessory.displayName);
 
               } else { 
 
@@ -358,11 +359,15 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
 
                   let lastSeenMoment = moment(accessory.context.lastSeen);
                   let activeThreshold = moment().subtract(threshold, 'm');
-
-                  newState = lastSeenMoment.isAfter(activeThreshold) ? 1 : 0;
-
-                  Logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
-                  Logger.debug('Taking the value of Ping.', accessory.displayName);
+                  
+                  if(lastSeenMoment.isAfter(activeThreshold)){
+                    newState = 1;
+                    accessory.context.lastSeen = false;
+                    Logger.debug('Taking the value of Ping. (DETECTED - THRESHOLD REACHED)', accessory.displayName);
+                  } else {
+                    newState = 0;
+                    Logger.debug('Taking the value of Ping. (NOT DETECTED - THRESHOLD NOT REACHED)', accessory.displayName);
+                  }
 
                 }
 
