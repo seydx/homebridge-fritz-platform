@@ -62,7 +62,7 @@ class extrasService {
     
     this.historyService = new this.FakeGatoHistoryService('door', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
     
-    if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) || !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) || !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
+    if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
  
       service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
         .on('change', this.handler.change.bind(this, this.accessory, 'smarthome-contact', this.accessory.displayName, this.historyService));
