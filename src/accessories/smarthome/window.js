@@ -44,13 +44,16 @@ class SmarthomeWindowAccessory {
     if (!service.testCharacteristic(this.api.hap.Characteristic.ClosedDuration))
       service.addCharacteristic(this.api.hap.Characteristic.ClosedDuration);
     
-    const now = Math.round(new Date().valueOf() / 1000); 
-    const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
-    
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
-      .setValue(now - epoch)
       .on('set', (value,callback) => {
+       
         Logger.info('Resetting FakeGato..', this.accessory.displayName);
+        
+        const now = Math.round(new Date().valueOf() / 1000); 
+        const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
+        
+        service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
+          .updateValue(now - epoch);
   
         this.accessory.context.timesOpened = 0;
   
