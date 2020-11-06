@@ -27,56 +27,67 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     switch (target) {
     
       case 'smarthome-switch': {
-      
+
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
         
-        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain));
-        Logger.debug(device, accessory.displayName); 
+        try {
         
-        if(device && device.online && device.switch){
-        
-          state = device.switch.state ? true : false;
-        
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(state);
-            
-          if(accessory.context.config.energy && device.powermeter){
-            
-            let currentPower = device.powermeter.power || 0;
-            let totalPower = device.powermeter.energy || 0;
-            let voltage = device.powermeter.voltage || 0;
-            let ampere = (currentPower/voltage || 0).toFixed(2);
-            
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.OutletInUse)
-              .updateValue(currentPower > 0 ? true : false);  
-            
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.CurrentConsumption)
-              .updateValue(currentPower);    
+          if(!smarthomeList)
+            await this.refreshSmarthome(false, true);
+          
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain));
+          Logger.debug(device, accessory.displayName); 
+          
+          if(device && device.online && device.switch){
+          
+            state = device.switch.state ? true : false;
               
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.TotalConsumption)
-              .updateValue(totalPower);   
+            if(accessory.context.config.energy && device.powermeter){
               
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.Volts)
-              .updateValue(voltage);   
+              let currentPower = device.powermeter.power || 0;
+              let totalPower = device.powermeter.energy || 0;
+              let voltage = device.powermeter.voltage || 0;
+              let ampere = (currentPower/voltage || 0).toFixed(2);
               
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.Amperes)
-              .updateValue(ampere);                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.OutletInUse)
+                .updateValue(currentPower > 0 ? true : false);  
+              
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.CurrentConsumption)
+                .updateValue(currentPower);    
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.TotalConsumption)
+                .updateValue(totalPower);   
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Volts)
+                .updateValue(voltage);   
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Amperes)
+                .updateValue(ampere);                
+            
+            }
           
           }
         
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+        
         }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
       
         break;
       
@@ -86,19 +97,30 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
         
-        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
-        Logger.debug(device, accessory.displayName);
+        try {
         
-        if(device && device.online && device.temperature){
+          if(!smarthomeList)
+            await this.refreshSmarthome(false, true);
         
-          state = device.temperature.value || 0;
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          Logger.debug(device, accessory.displayName);
+          
+          if(device && device.online && device.temperature){
+          
+            state = device.temperature.value || 0;
+          
+          }
         
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(state);
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
         
         }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
       
         break;
       
@@ -108,19 +130,30 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
         
-        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
-        Logger.debug(device, accessory.displayName);
+        try {
         
-        if(device && device.online && device.alert){
+          if(!smarthomeList)
+            await this.refreshSmarthome(false, true);
         
-          state = device.alert.state || 0;
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          Logger.debug(device, accessory.displayName);
+          
+          if(device && device.online && device.alert){
+          
+            state = device.alert.state || 0;
+          
+          }
         
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(state);
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
         
         }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
         
         break;
       
@@ -129,20 +162,28 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       case 'smarthome-window': {
       
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+      
+        try {
         
-        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
-        Logger.debug(device, accessory.displayName);
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          Logger.debug(device, accessory.displayName);
+          
+          if(device && device.online && device.thermostat){
+          
+            state = device.thermostat.windowOpen || 0;
+          
+          }
         
-        if(device && device.online && device.thermostat){
+        } catch(err) {
         
-          state = device.thermostat.windowOpen || 0;
-        
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(state);
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
         
         }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
         
         break;
       
@@ -155,44 +196,52 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         let currentTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
         let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
         
-        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
-        Logger.debug(device, accessory.displayName);
+        try {
         
-        if(device && device.online && device.thermostat){
-        
-          currentTemp = device.thermostat.current;
-          targetTemp = device.thermostat.target;
-           
-          if(targetTemp === 'off'){
-           
-            currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
-            targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
-            
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
-              .updateValue(targetState);
-           
-          } else {
-           
-            if(currentTemp > targetTemp){
-               
-              //targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL
-              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
-               
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          Logger.debug(device, accessory.displayName);
+          
+          if(device && device.online && device.thermostat){
+          
+            currentTemp = device.thermostat.current;
+            targetTemp = device.thermostat.target;
+             
+            if(targetTemp === 'off'){
+             
+              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
+              targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
+              
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
+                .updateValue(targetState);
+             
             } else {
              
-              //targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT
-              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+              if(currentTemp > targetTemp){
+                 
+                //targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL
+                currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
+                 
+              } else {
+               
+                //targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT
+                currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+               
+              }
+               
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.TargetTemperature)
+                .updateValue(targetTemp);
              
             }
-             
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.TargetTemperature)
-              .updateValue(targetTemp);
-           
+          
           }
+        
+        } catch(err) {
+        
+          handleError(accessory, currentState, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
         
         }
         
@@ -2113,9 +2162,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
   }
   
-  async function refreshSmarthome(accessories, get){
-  
-    let poll;
+  async function refreshSmarthome(accessories, poll){
   
     for(const [uuid, device] of smarthome){
       if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
@@ -2123,7 +2170,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       }
     }
     
-    if(poll || get){
+    if(poll){
     
       try {
       
@@ -2199,38 +2246,42 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
         //Logger.debug(smarthomeList, 'SmartHome')
         
-        for(const [uuid, device] of smarthome){
-     
-          if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
-     
-            const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
-            
-            switch(device.subtype) {
-            
-              case 'smarthome-switch':
-                await get(accessory, device.energy ? api.hap.Service.Outlet : api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
-                break;
-                
-              case 'smarthome-temperature':
-                await get(accessory, api.hap.Service.TemperatureSensor, api.hap.Characteristic.CurrentTemperature, device.subtype);
-                break;
-                
-              case 'smarthome-contact':
-                await get(accessory, api.hap.Service.ContactSensor, api.hap.Characteristic.ContactSensorState, device.subtype);
-                break;                                                                                                 
-                
-              case 'smarthome-thermostat':
-                await get(accessory, api.hap.Service.Thermostat, false, device.subtype);
-                break;
-                
-              default:
-                //fall through
-                break;
-            
-            }         
-     
+        if(accessories){
+        
+          for(const [uuid, device] of smarthome){
+       
+            if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
+       
+              const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
+              
+              switch(device.subtype) {
+              
+                case 'smarthome-switch':
+                  await get(accessory, device.energy ? api.hap.Service.Outlet : api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
+                  break;
+                  
+                case 'smarthome-temperature':
+                  await get(accessory, api.hap.Service.TemperatureSensor, api.hap.Characteristic.CurrentTemperature, device.subtype);
+                  break;
+                  
+                case 'smarthome-contact':
+                  await get(accessory, api.hap.Service.ContactSensor, api.hap.Characteristic.ContactSensorState, device.subtype);
+                  break;                                                                                                 
+                  
+                case 'smarthome-thermostat':
+                  await get(accessory, api.hap.Service.Thermostat, false, device.subtype);
+                  break;
+                  
+                default:
+                  //fall through
+                  break;
+              
+              }         
+       
+            }
+       
           }
-     
+        
         }
       
       } catch(err) {
@@ -2357,12 +2408,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
       Logger.warn('Device seems to be offline' + ' (' + target + ')', accessory.displayName);
-      if(typeof state === 'number'){
+      if(typeof state === 1){
         state = 0;
-      } else if(typeof state === 'boolean'){
+      } else if(state === true){
         state = false;
-      } else {
-        state = state ? !state : state;
       }
     } else if(err.message && err.message.includes('500')){
       Logger.warn('FritzBox could not process the request', accessory.displayName);
