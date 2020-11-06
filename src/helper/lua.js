@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 
 module.exports = {
 
-  requestLUA: async function(formData, host, path, target){
+  request: async function(formData, host, path, target){
   
     let url = 'http://' + host + path + '?sid=' + formData.sid;
     

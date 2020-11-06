@@ -2,6 +2,7 @@
 
 const Logger = require('./logger.js');
 const lua = require('./lua.js');
+const aha = require('./aha.js');
 
 const fs = require('fs-extra');
 const moment = require('moment');
@@ -25,9 +26,135 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     switch (target) {
     
-      case 'smarthome': {
+      case 'smarthome-switch': {
       
-        //not implemented yet
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+        
+        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain));
+        Logger.debug(device, accessory.displayName); 
+        
+        if(device && device.online && device.switch){
+        
+          state = device.switch.state ? true : false;
+        
+          accessory
+            .getService(service)
+            .getCharacteristic(characteristic)
+            .updateValue(state);
+        
+        }
+      
+        break;
+      
+      }
+      
+      case 'smarthome-temperature': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+        
+        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+        Logger.debug(device, accessory.displayName);
+        
+        if(device && device.online && device.temperature){
+        
+          state = device.temperature.value || 0;
+        
+          accessory
+            .getService(service)
+            .getCharacteristic(characteristic)
+            .updateValue(state);
+        
+        }
+      
+        break;
+      
+      }
+      
+      case 'smarthome-contact': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+        
+        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+        Logger.debug(device, accessory.displayName);
+        
+        if(device && device.online && device.alert){
+        
+          state = device.alert.state || 0;
+        
+          accessory
+            .getService(service)
+            .getCharacteristic(characteristic)
+            .updateValue(state);
+        
+        }
+        
+        break;
+      
+      }
+      
+      case 'smarthome-thermostat': {
+      
+        let currentState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;
+        //let targetState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;
+        let currentTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
+        let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
+        //let units = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TemperatureDisplayUnits).value;
+        
+        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+        Logger.debug(device, accessory.displayName);
+        
+        if(device && device.online && device.thermostat){
+        
+          currentTemp = device.thermostat.current;
+          targetTemp = device.thermostat.target;
+           
+          if(targetTemp === 'off'){
+           
+            currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
+           
+          } else {
+           
+            if(currentTemp > targetTemp){
+               
+              //targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL
+              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
+               
+            } else {
+             
+              //targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT
+              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+             
+            }
+             
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.TargetTemperature)
+              .updateValue(targetTemp);
+           
+          }
+        
+        }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
+          .updateValue(currentState);
+          
+        /*accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
+          .updateValue(targetState);*/
+          
+        accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
+          .updateValue(currentTemp);
+          
+        /*accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.TemperatureDisplayUnits)
+          .updateValue(units);*/
+        
         break;
       
       }
@@ -334,7 +461,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
          
-          let body = await lua.requestLUA({
+          let body = await lua.request({
             xhr: '1',
             sid: sid,
             page: 'dectSet',
@@ -432,7 +559,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
          
-          let body = await lua.requestLUA({
+          let body = await lua.request({
             xhr: '1',
             xhrId: 'all',
             sid: sid,
@@ -464,7 +591,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       }
          
       case 'lock': {
-      
+ 
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
          
         try {
@@ -472,7 +599,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
          
-          let body = await lua.requestLUA({
+          let body = await lua.request({
             xhr: '1',
             xhrId: 'all',
             sid: sid,
@@ -524,7 +651,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                            
           for(const formdata of phonesFormData){
             
-            let body = await lua.requestLUA(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting'); 
+            let body = await lua.request(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting'); 
             
             Logger.debug(body, accessory.displayName);
        
@@ -623,9 +750,100 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     switch (target) {
     
-      case 'smarthome': {
+      case 'smarthome-switch': {
       
-        //not implemented yet
+        try {
+        
+          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          let cmd = state ? 'setswitchon' : 'setswitchoff';
+          
+          await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+          
+          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
+        
+        } catch(err) {
+        
+          handleError(accessory, false, target, err, {set: true});
+        
+        }
+        
+        break;
+      
+      }
+      
+      case 'smarthome-thermostat': {
+      
+        try {
+        
+          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          let cmd, text;
+          
+          if(config === 'temperature'){
+          
+            let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
+          
+            cmd = 'sethkrtsoll&param='+temp;
+            text = 'Setting temperature to ' + state;
+            
+            if(accessory.context.waitForEndValue){
+              clearTimeout(accessory.context.waitForEndValue);
+              accessory.context.waitForEndValue = false;
+            }
+        
+            accessory.context.waitForEndValue = setTimeout(async () => {
+            
+              try {
+              
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 1000);
+        
+          } else {
+         
+            let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
+            
+            let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
+            
+            cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
+            text = state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF';
+            
+            if(accessory.context.waitForEndState){
+              clearTimeout(accessory.context.waitForEndState);
+              accessory.context.waitForEndState = false;
+            }
+        
+            accessory.context.waitForEndState = setTimeout(async () => {
+            
+              try {
+              
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 1000);
+        
+          }
+        
+        } catch(err) {
+        
+          handleError(accessory, false, target, err, {set: true});
+        
+        }
+        
         break;
       
       }
@@ -880,7 +1098,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             };
           }
             
-          await lua.requestLUA(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
+          await lua.request(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
@@ -1021,7 +1239,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             };
           }
          
-          await lua.requestLUA(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
+          await lua.request(formData, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
@@ -1051,7 +1269,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
          
-          await lua.requestLUA({
+          await lua.request({
             xhr: '1',
             keylock_enabled: state ? '1' : '0',
             sid: sid,
@@ -1267,7 +1485,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           }
           
           for(const formdata of phonesFormData)
-            await lua.requestLUA(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting');
+            await lua.request(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting');
             
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
             
@@ -1433,14 +1651,14 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             
             }
             
-            Logger.info('Storing phonebook results to ' + configPath + '/phonebook.json', accessory.displayName);
-            await fs.ensureFile(configPath + '/phonebook.json');
-            await fs.writeJson(configPath + '/phonebook.json', telBook, { spaces: 2 });
+            Logger.info('Storing phonebook results to ' + configPath + '/fritzbox/phonebook.json', accessory.displayName);
+            await fs.ensureFile(configPath + '/fritzbox/phonebook.json');
+            await fs.writeJson(configPath + '/fritzbox/phonebook.json', telBook, { spaces: 2 });
             
             if(blackBook.length){
-              Logger.info('Storing blackbook results to ' + configPath + '/blackbook.json', accessory.displayName);
-              await fs.ensureFile(configPath + '/blackbook.json');
-              await fs.writeJson(configPath + '/blackbook.json', blackBook, { spaces: 2 });
+              Logger.info('Storing blackbook results to ' + configPath + '/fritzbox/blackbook.json', accessory.displayName);
+              await fs.ensureFile(configPath + '/fritzbox/blackbook.json');
+              await fs.writeJson(configPath + '/fritzbox/blackbook.json', blackBook, { spaces: 2 });
             }
             
             Logger.info('Done!', accessory.displayName);
@@ -1492,6 +1710,68 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   async function change(accessory, target, replacer, historyService, value){
   
     switch (target) {
+    
+      case 'smarthome-contact': {
+        
+        if(value.newValue){
+        
+          accessory.context.timesOpened = accessory.context.timesOpened || 0;
+          accessory.context.timesOpened += 1;
+          
+          let lastActivation = moment().unix() - historyService.getInitialTime();
+          let closeDuration = moment().unix() - historyService.getInitialTime();
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
+            
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.TimesOpened)
+            .updateValue(accessory.context.timesOpened);
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(closeDuration);
+        
+        } else {
+        
+          let openDuration = moment().unix() - historyService.getInitialTime();
+        
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(openDuration);
+        
+        }
+          
+        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+      
+        break;
+      
+      }
+      
+      case 'smarthome-temperature': {
+      
+        historyService.addEntry({time: moment().unix(), temp: value.newValue, humidity: 0, ppm: 0});
+      
+        break;
+      
+      }
+      
+      case 'smarthome-thermostat': {
+      
+        let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
+        let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
+        let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
+          
+        historyService.addEntry({time: moment().unix(), currentTemp: currentTemp, setTemp: targetTemp, valvePosition: targetState});
+      
+        break;
+      
+      }
       
       case 'presence': {
       
@@ -1545,14 +1825,63 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         break;
         
       }  
-        
-      case 'callmonitor': {
-
-        if(Telegram)
-          Telegram.send('callmonitor', value.state, replacer);
       
+      case 'callmonitor': {
+        
+        if(value.newValue){
+        
+          accessory.context.timesOpened = accessory.context.timesOpened || 0;
+          accessory.context.timesOpened += 1;
+          
+          let lastActivation = moment().unix() - historyService.getInitialTime();
+          let closeDuration = moment().unix() - historyService.getInitialTime();
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
+            
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.TimesOpened)
+            .updateValue(accessory.context.timesOpened);
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(closeDuration);
+        
+        } else {
+        
+          let openDuration = moment().unix() - historyService.getInitialTime();
+        
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(openDuration);
+        
+        }
+          
+        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+        
+        
+        console.log(replacer);
+        
+        if(Telegram && !replacer.denyCall){
+        
+          let dest;
+        
+          if(value.newValue) {
+            dest = replacer.inbound ? 'incoming' : 'outgoing';
+          } else {
+            dest  = 'disconnected';
+          }
+        
+          Telegram.send('callmonitor', dest, replacer.text);
+        }
+        
         break;
-       
+      
       }
         
       default: {
@@ -1703,8 +2032,69 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
 
-        smarthomeList = smarthomes.devicelist.device;
-        //console.log(smarthomeList)
+        //smarthomeList = smarthomes.devicelist.device;
+        
+        smarthomeList = smarthomes.devicelist.device.map(device => {
+          const convertTemp = value => {
+            value = parseInt(value);
+            if (value == 254)
+              return 'on';
+            else if (value == 253)
+              return 'off';
+            else {
+              return (parseFloat(value) - 16) / 2 + 8;
+            }
+          };
+          if(device['$'].functionbitmask !== '1'){
+            let dev = {
+              name: device.name,
+              ain: device['$'].identifier.replace(/\s/g,''),
+              online: parseInt(device.present),
+              bitmask: device['$'].functionbitmask,
+              busy: parseInt(device.txbusy),
+              battery: device.battery 
+                ? { 
+                  value: parseInt(device.battery) || 0, 
+                  low: parseInt(device.batterylow) || 0
+                }
+                : false,
+              alert: device.alert
+                ? {
+                  state: parseInt(device.alert.state) || 0
+                }
+                : false,  
+              temperature: device.temperature
+                ? { 
+                  value: parseInt(device.temperature.celsius)/10 || 0, 
+                  offset: parseInt(device.temperature.offset) || 0 
+                }
+                : false,
+              powermeter: device.powermeter
+                ? { 
+                  voltage: parseInt(device.powermeter.voltage)/1000 || 0, 
+                  power: parseInt(device.powermeter.power)/1000 || 0, 
+                  energy: parseInt(device.powermeter.energy) || 0
+                }
+                : false,
+              switch: device.switch
+                ? {
+                  state: parseInt(device.switch.state) || 0
+                }
+                : false,    
+              thermostat: device.hkr
+                ? {
+                  current: convertTemp(device.hkr.tist) || 0,
+                  target: convertTemp(device.hkr.tsoll) || 0,
+                  windowOpen: parseInt(device.hkr.windowopenactiv) || 0
+                }
+                : false
+            };
+            return dev;
+          }
+        
+        }).filter(device => device);
+        
+        //Logger.debug(smarthomeList, 'SmartHome')
         
         for(const [uuid, device] of smarthome){
      
@@ -1712,7 +2102,29 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
      
             const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
             
-            //TODO          
+            switch(device.subtype) {
+            
+              case 'smarthome-switch':
+                await get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
+                break;
+                
+              case 'smarthome-temperature':
+                await get(accessory, api.hap.Service.TemperatureSensor, api.hap.Characteristic.CurrentTemperature, device.subtype);
+                break;
+                
+              case 'smarthome-contact':
+                await get(accessory, api.hap.Service.ContactSensor, api.hap.Characteristic.ContactSensorState, device.subtype);
+                break;                                                                                                 
+                
+              case 'smarthome-thermostat':
+                await get(accessory, api.hap.Service.Thermostat, false, device.subtype);
+                break;
+                
+              default:
+                //fall through
+                break;
+            
+            }         
      
           }
      

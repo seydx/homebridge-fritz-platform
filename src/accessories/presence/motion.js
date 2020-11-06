@@ -2,21 +2,18 @@
 
 const Logger = require('../../helper/logger.js');
 
-var FakeGatoHistoryService;
-
 class occupancyService {
 
-  constructor (api, accessory, handler, accessories) {
-  
-    FakeGatoHistoryService = require('fakegato-history')(api);
+  constructor (api, accessory, handler, accessories, FakeGatoHistoryService) {
     
     this.api = api;
     this.accessory = accessory;
     this.accessories = accessories;
+    this.FakeGatoHistoryService = FakeGatoHistoryService;
     
     this.handler = handler;
     
-    this.getService(this.accessory);
+    this.getService();
 
   }
 
@@ -24,39 +21,39 @@ class occupancyService {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  async getService (accessory) {
+  async getService () {
     
-    let service = accessory.getService(this.api.hap.Service.MotionSensor);
-    let serviceOld = accessory.getService(this.api.hap.Service.OccupancySensor);
+    let service = this.accessory.getService(this.api.hap.Service.MotionSensor);
+    let serviceOld = this.accessory.getService(this.api.hap.Service.OccupancySensor);
     
     if(serviceOld){
-      Logger.info('Removing occupancy sensor', accessory.displayName);
-      accessory.removeService(accessory.getService(this.api.hap.Service.OccupancySensor));
+      Logger.info('Removing occupancy sensor', this.accessory.displayName);
+      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.OccupancySensor));
     }
     
     if(!service){
-      Logger.info('Adding motion sensor', accessory.displayName);
-      service = accessory.addService(this.api.hap.Service.MotionSensor, this.accessory.displayName, 'presence');
+      Logger.info('Adding motion sensor', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.MotionSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
     if(!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
       service.addCharacteristic(this.api.hap.Characteristic.LastActivation);
     
-    this.historyService = new FakeGatoHistoryService('motion', this.accessory, {storage:'fs'}); 
+    this.historyService = new this.FakeGatoHistoryService('motion', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
     
-    if(accessory.displayName === 'Anyone' || (accessory.context.polling.timer && (!accessory.context.polling.exclude.includes('presence') && !accessory.context.polling.exclude.includes(accessory.displayName)))){
+    if(this.accessory.displayName === 'Anyone' || (this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) || !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) || !this.accessory.context.polling.exclude.includes(this.accessory.displayName)))){
    
       service.getCharacteristic(this.api.hap.Characteristic.MotionDetected)
-        .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
+        .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, this.historyService));
         
-      if(accessory.displayName === 'Anyone')
+      if(this.accessory.displayName === 'Anyone')
         this.getState();
    
     } else {
     
       service.getCharacteristic(this.api.hap.Characteristic.MotionDetected)
-        .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.MotionSensor, this.api.hap.Characteristic.MotionDetected, 'presence', false))
-        .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, this.historyService));
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.MotionSensor, this.api.hap.Characteristic.MotionDetected, 'presence', false))
+        .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, this.historyService));
     
     }
     

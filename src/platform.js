@@ -4,6 +4,7 @@ const Logger = require('./helper/logger.js');
 const packageFile = require('../package.json');
 
 const { Fritzbox } = require('@seydx/fritzbox');
+const fs = require('fs-extra');
 
 const Telegram = require('./helper/telegram');
 const Callmonitor = require('./helper/callmonitor');
@@ -12,6 +13,7 @@ const DeviceHandler = require('./helper/deviceHandler.js');
 //Accessories
 const RouterAccessory = require('./accessories/router/router.js');
 const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
+const SmarthomeTemperatureAccessory = require('./accessories/smarthome/temperature.js');
 const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
 const SmarthomeSensorAccessory = require('./accessories/smarthome/sensor.js');
 const PresenceMotionAccessory = require('./accessories/presence/motion.js');
@@ -28,13 +30,11 @@ const EveTypes = require('./types/eve_types.js');
 const PLUGIN_NAME = 'homebridge-fritz-platform';
 const PLATFORM_NAME = 'FritzPlatform';
 
-var Accessory, Service, Characteristic, UUIDGen;
+var Accessory, UUIDGen, FakeGatoHistoryService;
 
 module.exports = function (homebridge) {
 
   Accessory = homebridge.platformAccessory;
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
   
   return FritzPlatform;
@@ -49,6 +49,7 @@ function FritzPlatform (log, config, api) {
   
   RouterTypes.registerWith(api.hap);
   EveTypes.registerWith(api.hap);
+  FakeGatoHistoryService = require('fakegato-history')(api);
 
   this.api = api;
   this.log = log;
@@ -93,6 +94,8 @@ function FritzPlatform (log, config, api) {
     this.config.devices.forEach(router => {
     
       let error = false;
+      
+      let validTypes = ['dsl', 'cable', 'repeater'];
 
       if (!router.name) {
         Logger.warn('One of the router has no name configured. This router will be skipped.');
@@ -106,10 +109,14 @@ function FritzPlatform (log, config, api) {
       } else if (!router.password) {
         Logger.warn('There is no password configured for this router. This router will be skipped.', router.name);
         error = true;
+      } else if(!router.connection || !validTypes.includes(router.connection)) {
+        Logger.warn('There is no or no valid connection type configured for this router. Setting it to default: "dsl"', router.name);
+        router.connection = 'dsl';
       }
 
       if (!error) {
         router.type = 'router';
+        router.subtype = router.connection;
         const uuid = UUIDGen.generate(router.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate router will be skipped.', router.name);
@@ -183,6 +190,7 @@ function FritzPlatform (log, config, api) {
     this.config.smarthome.forEach(device => {
     
       let error = false;
+      let validTypes = ['switch', 'contact', 'thermostat'];
 
       if (!device.name) {
         Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
@@ -190,17 +198,15 @@ function FritzPlatform (log, config, api) {
       } else if (!device.ain) {
         Logger.warn('There is no AIN configured for this smarthome device. This device will be skipped.', device.name);
         error = true;
-      } else if (!device.accType) {
-        Logger.warn('There is no type configured for this smarthome device. This device will be skipped.', device.name);
-        error = true;
-      } else if(device.accType !== 'switch' && device.accType !== 'contact' && device.accType !== 'thermostat'){
-        Logger.warn('The configured type (' + device.accType + ') is not supported. This device will be skipped.', device.name);
+      } else if (!device.accType || !validTypes.includes(device.accType)) {
+        Logger.warn('There is no or no valid type configured for this smarthome device. This device will be skipped.', device.name);
         error = true;
       }
 
       if (!error) {
         device.ain = device.ain.replace(/\s/g,'');
         device.type = 'smarthome';
+        device.subtype = 'smarthome-' + device.accType;
         const uuid = UUIDGen.generate(device.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
@@ -208,6 +214,26 @@ function FritzPlatform (log, config, api) {
           this.devices.set(uuid, device);
           this.smarthome.set(uuid, device);
         }
+        
+        if(device.temperature){
+        
+          let tempDevice = {
+            name: device.name + ' Temperature',
+            type: 'smarthome',
+            subtype: 'smarthome-temperature',
+            ain: device.ain
+          };
+
+          const uuidTemp = UUIDGen.generate(tempDevice.name);
+          if (this.devices.has(uuidTemp)) {
+            Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', tempDevice.name);
+          } else {
+            this.devices.set(uuidTemp, tempDevice);
+            this.smarthome.set(uuidTemp, tempDevice);
+          }
+        
+        }
+        
       }
       
     });
@@ -243,6 +269,7 @@ function FritzPlatform (log, config, api) {
 
       if (!error) {
         user.type = 'presence';
+        user.subtype = 'presence-' + user.accType;
         const uuid = UUIDGen.generate(user.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate user will be skipped.', user.name);
@@ -276,6 +303,7 @@ function FritzPlatform (log, config, api) {
 
       if (!error) {
         device.type = 'wol';
+        device.subtype = 'wol';
         const uuid = UUIDGen.generate(device.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
@@ -308,6 +336,7 @@ function FritzPlatform (log, config, api) {
 
       if (!error) {
         device.type = 'network';
+        device.subtype = 'network';
         const uuid = UUIDGen.generate(device.name);
         if (this.network.has(uuid)) {
           Logger.warn('Multiple network devices are configured with this name. Duplicate devices will be skipped.', device.name);
@@ -456,6 +485,7 @@ function FritzPlatform (log, config, api) {
       let presence = {
         name: 'Anyone',
         type: 'presence',
+        subtype: 'presence-' + this.presenceOptions.accType,
         accType: this.presenceOptions.accType 
       };
       const uuid = UUIDGen.generate(presence.name);
@@ -554,14 +584,14 @@ function FritzPlatform (log, config, api) {
   
   this.handler = DeviceHandler(this.api, this.fritzbox, this.devices, this.presence, this.smarthome, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
   
+  if(this.network.size)
+    new WatchNetwork(this.network, this.Telegram, this.polling);
+    
   //listener to close the callmonitor
   this.api.on('shutdown', () => {
     if(this.Callmonitor)
       this.Callmonitor.stop();
   });
-  
-  if(this.network.size)
-    new WatchNetwork(this.network, this.Telegram, this.polling);
   
   this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
   
@@ -569,7 +599,13 @@ function FritzPlatform (log, config, api) {
 
 FritzPlatform.prototype = {
 
-  didFinishLaunching: function(){
+  didFinishLaunching: async function(){
+  
+    try {
+      await fs.ensureDir(this.api.user.storagePath() + '/fritzbox');
+    } catch(err) {
+      Logger.warn('Can not create fritzbox directory into your homebridge directory. Please create it manually.');
+    }
 
     for (const entry of this.devices.entries()) {
     
@@ -629,11 +665,11 @@ FritzPlatform.prototype = {
     if(device.type === 'router'){
       manufacturer = device.manufacturer && device.manufacturer !== '' ? device.manufacturer : 'Homebridge';
       model = device.model && device.model !== '' ? device.model : device.type;
-      serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : 'Homebridge';
+      serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : accessory.displayName;
     } else {
       manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
       model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
-      serialNumber = this.masterDevice.serialNumber && this.masterDevice.serialNumber !== '' ? this.masterDevice.serialNumber : 'Homebridge';
+      serialNumber = accessory.displayName; //needs to be unique for fakegato
     }
     
     if (AccessoryInformation) {
@@ -649,25 +685,27 @@ FritzPlatform.prototype = {
       case 'router':
         new RouterAccessory(this.api, accessory, this.extrasAsCharacteristics, this.handler);
         break;
-      /*case 'smarthome':
-        if(device.accType === 'switch')
+      case 'smarthome':
+        if(device.subtype === 'smarthome-switch')
           new SmarthomeSwitchAccessory(this.api, accessory, this.handler);
-        if(device.accType === 'thermostat')
-          new SmarthomeThermostatAccessory(this.api, accessory, this.handler);
-        if(device.accType === 'contact')
-          new SmarthomeSensorAccessory(this.api, accessory, this.handler);
-        break;*/
+        if(device.subtype === 'smarthome-temperature')
+          new SmarthomeTemperatureAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-thermostat')
+          new SmarthomeThermostatAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-contact')
+          new SmarthomeSensorAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        break;
       case 'presence':
-        if(device.accType === 'motion')
-          new PresenceMotionAccessory(this.api, accessory, this.handler, this.accessories);
-        if(device.accType === 'occupancy')
-          new PresenceOccupancyAccessory(this.api, accessory, this.handler, this.accessories);
+        if(device.subtype === 'presence-motion')
+          new PresenceMotionAccessory(this.api, accessory, this.handler, this.accessories, FakeGatoHistoryService);
+        if(device.subtype === 'presence-occupancy')
+          new PresenceOccupancyAccessory(this.api, accessory, this.handler, this.accessories, FakeGatoHistoryService);
         break;
       case 'wol':
         new WolAccessory(this.api, accessory, this.handler);
         break;
       case 'callmonitor':
-        new CallmonitorAccessory(this.api, this.log, accessory, this.handler, this.Callmonitor);
+        new CallmonitorAccessory(this.api, this.log, accessory, this.handler, this.Callmonitor, FakeGatoHistoryService);
         break;
       case 'extra':
         new ExtrasAccessory(this.api, accessory, this.handler);

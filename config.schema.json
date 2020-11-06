@@ -430,6 +430,16 @@
             "placeholder": "01234567890",
             "description": "The AIN of the device."
           },
+          "energy": {
+            "title": "Power Meter",
+            "type": "boolean",
+            "description": "Enable this, if the device has a built in power meter."
+          },
+          "temperature": {
+            "title": "Temperature Sensor",
+            "type": "boolean",
+            "description": "Enable this, if the device has a built in temperature sensor."
+          },
           "accType": {
             "title": "Accessory Type",
             "type": "string",
@@ -1172,7 +1182,19 @@
           "items": [
             "smarthome[].name",
             "smarthome[].ain",
-            "smarthome[].accType"
+            "smarthome[].accType",
+            {
+              "key": "smarthome[]",
+              "title": "Advanced",
+              "type": "section",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "items": [
+                "smarthome[].energy",
+                "smarthome[].temperature"
+              ]
+            }
           ]
         }
       ]

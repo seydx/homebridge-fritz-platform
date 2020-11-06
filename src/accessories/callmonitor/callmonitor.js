@@ -5,24 +5,21 @@ const Logger = require('../../helper/logger.js');
 const fs = require('fs-extra');
 const moment = require('moment');
 
-var FakeGatoHistoryService;
-
 class contactService {
 
-  constructor (api, log, accessory, handler, callmonitor) {
-  
-    FakeGatoHistoryService = require('fakegato-history')(api);
+  constructor (api, log, accessory, handler, callmonitor, FakeGatoHistoryService) {
     
     this.api = api;
     this.log = log;
     this.accessory = accessory;
+    this.FakeGatoHistoryService = FakeGatoHistoryService;
 
     this.handler = handler;
     this.client = callmonitor.client;
     
     this.call = {};
     
-    this.getService(accessory);
+    this.getService();
 
   }
 
@@ -30,13 +27,13 @@ class contactService {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService (accessory) {
+  getService () {
     
-    let service = accessory.getService(this.api.hap.Service.ContactSensor);
+    let service = this.accessory.getService(this.api.hap.Service.ContactSensor);
     
     if(!service){
-      Logger.info('Adding contact sensor', accessory.displayName);
-      service = accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, 'callmonitor');
+      Logger.info('Adding contact sensor', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
     if (!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
@@ -81,7 +78,16 @@ class contactService {
         callback(null);
       });
     
-    this.historyService = new FakeGatoHistoryService('door', this.accessory, {storage:'fs'});
+    this.historyService = new this.FakeGatoHistoryService('door', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'});
+    
+    service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
+      .on('change', value => {
+        this.handler.change(this.accessory, 'callmonitor', { 
+          denyCall: this.denyCall,
+          text: this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr,
+          inbound: this.inbound
+        }, this.historyService, value);
+      });
     
     this.getState(service);
   
@@ -115,30 +121,9 @@ class contactService {
           text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
           this.callerNr = message.caller;
           this.callerName = false;
-            
+          this.denyCall = false;  
           this.inbound = true;
           this.outgoing = false;
-          
-          this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
-          
-          this.accessory.context.timesOpened += 1;
-          let lastActivation = moment().unix() - this.historyService.getInitialTime();
-          let closeDuration = moment().unix() - this.historyService.getInitialTime();
-              
-          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
-            .updateValue(1);
-            
-          service.getCharacteristic(this.api.hap.Characteristic.Caller)
-            .updateValue(message.caller);
-              
-          service.getCharacteristic(this.api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
-              
-          service.getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-            .updateValue(closeDuration);
-              
-          service.getCharacteristic(this.api.hap.Characteristic.TimesOpened)
-            .updateValue(this.accessory.context.timesOpened);
           
           this.historyService.addEntry({time: moment().unix(), status: 1});
             
@@ -174,8 +159,7 @@ class contactService {
               }
                 
             }
-              
-            this.denyCall = false;
+            
             let blackbook = false;
               
             try {
@@ -189,37 +173,27 @@ class contactService {
               
             }
               
-            if(blackbook){
-              
-              this.denyCall = false;
-              
-              for(const entry of blackbook){
-            
+            if(blackbook)
+              for(const entry of blackbook)
                 if(message.caller === entry.number)
                   this.denyCall = true;
             
-              }
-                
-            }
-            
             Logger.info(text, this.accessory.displayName);
             
-            if(!this.denyCall){
-              
-              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
-            
-            } else {
-            
+            if(this.denyCall)
               Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-            
-            }
             
           } else {
          
             Logger.info('"incomingTo" nr not matched. Receiving new call from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
-            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'incoming'});
        
           }
+              
+          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
+            .updateValue(1);
+            
+          service.getCharacteristic(this.api.hap.Characteristic.Caller)
+            .updateValue(message.caller);
         
         }
   
@@ -249,32 +223,9 @@ class contactService {
           text = 'Outgoing call from: ' + message.caller + ' to ' + message.called;
           this.callerName = false;
           this.callerNr = called;
-            
+          this.denyCall = false;  
           this.outgoing = true;
           this.inbound = false;
-        
-          this.accessory.context.timesOpened = this.accessory.context.timesOpened || 0;
-          
-          this.accessory.context.timesOpened += 1;
-          let lastActivation = moment().unix() - this.historyService.getInitialTime();
-          let closeDuration = moment().unix() - this.historyService.getInitialTime();
-          
-          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
-            .updateValue(1);
-          
-          service.getCharacteristic(this.api.hap.Characteristic.Called)
-            .updateValue(message.called);
-              
-          service.getCharacteristic(this.api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
-             
-          service.getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-            .updateValue(closeDuration);
-            
-          service.getCharacteristic(this.api.hap.Characteristic.TimesOpened)
-            .updateValue(this.accessory.context.timesOpened);
-          
-          this.historyService.addEntry({time: moment().unix(), status: 1});
           
           if(this.accessory.context.config.outgoingFrom.includes(message.caller)){
           
@@ -309,7 +260,6 @@ class contactService {
               
             }
           
-            this.denyCall = false;
             let blackbook = false;
               
             try {
@@ -323,37 +273,27 @@ class contactService {
               
             }
               
-            if(blackbook){
-              
-              this.denyCall = false;
-              
-              for(const entry of blackbook){
-            
+            if(blackbook)
+              for(const entry of blackbook)
                 if(message.caller === entry.number)
                   this.denyCall = true;
-            
-              }
-                
-            }
           
             Logger.info(text, this.accessory.displayName);
               
-            if(!this.denyCall){
-              
-              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
-            
-            } else {
-            
+            if(!this.denyCall)
               Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-            
-            }
         
           } else {
          
             Logger.info('"outgoingFrom" nr not matched. Calling from ' + message.caller + ' to ' + message.called, this.accessory.displayName);
-            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'outgoing'});
        
           }
+          
+          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
+            .updateValue(1);
+          
+          service.getCharacteristic(this.api.hap.Characteristic.Called)
+            .updateValue(message.called);
      
         }
     
@@ -379,30 +319,6 @@ class contactService {
       }
 
       if (data[1] === 'disconnect') {
-
-        if(this.inbound && (this.accessory.context.config.subtype === 'incoming' || this.accessory.context.config.subtype == 'group')){
-            
-          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
-            .updateValue(0); 
-
-          let openDuration = moment().unix() - this.historyService.getInitialTime();
-          service.getCharacteristic(this.api.hap.Characteristic.OpenDuration)
-            .updateValue(openDuration);
-            
-          this.historyService.addEntry({time: moment().unix(), status: 0});
-          
-        } else if(this.outgoing && (this.accessory.context.config.subtype === 'outgoing' || this.accessory.context.config.subtype == 'group')){
-        
-          service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
-            .updateValue(0);  
-            
-          let openDuration = moment().unix() - this.historyService.getInitialTime();
-          service.getCharacteristic(this.api.hap.Characteristic.OpenDuration)
-            .updateValue(openDuration);
-            
-          this.historyService.addEntry({time: moment().unix(), status: 0});
-          
-        }
           
         if(this.call[data[2]]){
         
@@ -418,24 +334,19 @@ class contactService {
          
             Logger.info('Call disconnected with ' + (this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr), this.accessory.displayName);
             
-            if(!this.denyCall){
-            
-              this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
-            
-            } else {
-              
+            if(this.denyCall)
               Logger.debug('Blocking Telegram notification for ' + message.caller, this.accessory.displayName);
-              
-            }
         
           } else {
         
             Logger.debug((message.type === 'inbound' ? '"incomingTo"' : '"outgoingFrom"') + ' nr not matched. Call disconnected with ' + message.caller, this.accessory.displayName);
-            this.handler.change(this.accessory, 'callmonitor', this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr, false, {state: 'disconnected'});
        
           }
      
         }
+        
+        service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
+          .updateValue(0); 
    
       }
     

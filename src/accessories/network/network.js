@@ -139,9 +139,11 @@ class watchNetwork {
         device.state = newState;
         device.changedOn = false;
         if(newState){
-          this.Telegram.send('network', 'on', device.name);
+          if(this.Telegram)
+            this.Telegram.send('network', 'on', device.name);
         } else {
-          this.Telegram.send('network', 'off', device.name);
+          if(this.Telegram)
+            this.Telegram.send('network', 'off', device.name);
         }
       }
     

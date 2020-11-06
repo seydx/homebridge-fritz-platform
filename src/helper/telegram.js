@@ -72,7 +72,7 @@ class Telegram {
       
       } else {
       
-        Logger.debug('Telegram: Skip sending, no message defined or not found');
+        Logger.debug('Telegram: Skip sending, no message defined for ' + target);
       
       }
     

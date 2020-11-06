@@ -11,7 +11,7 @@ class extrasService {
     
     this.handler = handler;
     
-    this.getService(this.accessory);
+    this.getService();
 
   }
 
@@ -19,39 +19,39 @@ class extrasService {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService (accessory) {
+  getService () {
     
-    let service = accessory.getService(this.api.hap.Service.Switch);
+    let service = this.accessory.getService(this.api.hap.Service.Switch);
     
     if(!service){
-      Logger.info('Adding switch', accessory.displayName);
-      service = accessory.addService(this.api.hap.Service.Switch, this.accessory.displayName, 'extra');
+      Logger.info('Adding switch', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.Switch, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
-    if(accessory.context.config.subtype === 'broadband'){
+    if(this.accessory.context.config.subtype === 'broadband'){
       if(!service.testCharacteristic(this.api.hap.Characteristic.Download)){
-        Logger.info('Adding Download Characteristic', accessory.displayName);
+        Logger.info('Adding Download Characteristic', this.accessory.displayName);
         service.addCharacteristic(this.api.hap.Characteristic.Download);
       }
       if(!service.testCharacteristic(this.api.hap.Characteristic.Upload)){
-        Logger.info('Adding Upload Characteristic', accessory.displayName);
+        Logger.info('Adding Upload Characteristic', this.accessory.displayName);
         service.addCharacteristic(this.api.hap.Characteristic.Upload);
       }
       if(!service.testCharacteristic(this.api.hap.Characteristic.Ping)){
-        Logger.info('Adding Ping Characteristic', accessory.displayName);
+        Logger.info('Adding Ping Characteristic', this.accessory.displayName);
         service.addCharacteristic(this.api.hap.Characteristic.Ping);
       }
     }
     
-    if(accessory.context.polling.timer && (!accessory.context.polling.exclude.includes(accessory.context.config.subtype) || !accessory.context.polling.exclude.includes(accessory.displayName))){
+    if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) || !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) || !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
       service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, accessory.context.config.subtype, accessory.context.config.options))
-        .on('change', this.handler.change.bind(this, accessory, accessory.context.config.subtype, accessory.displayName));
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
+        .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, false));
     } else {
       service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, accessory.context.config.subtype, accessory.context.config.options))
-        .on('set', this.handler.set.bind(this, accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, accessory.context.config.subtype, accessory.context.config.options))
-        .on('change', this.handler.change.bind(this, accessory, accessory.context.config.subtype, accessory.displayName));
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
+        .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, false));
     }
     
   }

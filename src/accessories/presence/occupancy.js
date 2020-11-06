@@ -12,7 +12,7 @@ class occupancyService {
     
     this.handler = handler;
     
-    this.getService(this.accessory);
+    this.getService();
 
   }
 
@@ -20,34 +20,34 @@ class occupancyService {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  async getService (accessory) {
+  async getService () {
     
-    let service = accessory.getService(this.api.hap.Service.OccupancySensor);
-    let serviceOld = accessory.getService(this.api.hap.Service.MotionSensor);
+    let service = this.accessory.getService(this.api.hap.Service.OccupancySensor);
+    let serviceOld = this.accessory.getService(this.api.hap.Service.MotionSensor);
     
     if(serviceOld){
-      Logger.info('Removing motion sensor', accessory.displayName);
-      accessory.removeService(accessory.getService(this.api.hap.Service.MotionSensor));
+      Logger.info('Removing motion sensor', this.accessory.displayName);
+      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.MotionSensor));
     }
     
     if(!service){
-      Logger.info('Adding occupancy sensor', accessory.displayName);
-      service = accessory.addService(this.api.hap.Service.OccupancySensor, this.accessory.displayName, 'presence');
+      Logger.info('Adding occupancy sensor', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.OccupancySensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
-    if(accessory.displayName === 'Anyone' || (accessory.context.polling.timer && (!accessory.context.polling.exclude.includes('presence') && !accessory.context.polling.exclude.includes(accessory.displayName)))){
+    if(this.accessory.displayName === 'Anyone' || (this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) || !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) || !this.accessory.context.polling.exclude.includes(this.accessory.displayName)))){
    
       service.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected)
-        .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, false));
+        .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, false));
         
-      if(accessory.displayName === 'Anyone')
+      if(this.accessory.displayName === 'Anyone')
         this.getState();
    
     } else {
     
       service.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected)
-        .on('get', this.handler.get.bind(this, accessory, this.api.hap.Service.OccupancySensor, this.api.hap.Characteristic.OccupancyDetected, 'presence', false))
-        .on('change', this.handler.change.bind(this, accessory, 'presence', accessory.displayName, false));
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.OccupancySensor, this.api.hap.Characteristic.OccupancyDetected, 'presence', false))
+        .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, false));
     
     }
     
