@@ -75,6 +75,7 @@
                     "model": "Repeater",
                     "serialNumber": "123456",
                     "readOnly": false,
+                    "oldFW": true,
                     "connection": "repeater",
                     "hide": false,
                     "options": {
@@ -85,12 +86,16 @@
             ],
             "presence": [
                 {
-                    "name": "Test",
-                    "address": "2E:1A:25:90:88:A1"
+                    "name": "Seyit",
+                    "address": "11:1A:25:22:88:33",
+                    "accType": "occupancy",
+                    "ping": true,
+                    "threshold": 15
                 },
                 {
-                    "name": "Test2",
-                    "address": "06:64:F0:49:63:F8"
+                    "name": "Test",
+                    "address": "06:64:F0:49:63:F8",
+                    "accType": "motion"
                 }
             ],
             "wol": [
@@ -101,18 +106,21 @@
             ],
             "smarthome": [
                 {
-                    "name": "Han Fun Sensor",
-                    "ain": "01234567890",
-                    "accType": "contact"
-                },
-                {
                     "name": "DECT 200",
-                    "ain": "01234567890",
+                    "ain": "11630 0190819",
+                    "energy": true,
+                    "temperature": true,
                     "accType": "switch"
                 },
                 {
+                    "name": "HAN FUN Sensor",
+                    "ain": "119340107283",
+                    "accType": "contact"
+                },
+                {
                     "name": "DECT 301",
-                    "ain": "01234567890",
+                    "ain": "09995 0692315",
+                    "temperature": true,
                     "accType": "thermostat"
                 }
             ],
@@ -128,20 +136,13 @@
             "callmonitor": {
                 "active": true,
                 "group": true,
-                "group_name": "Callmonitor",
-                "incoming_name": "Callmonitor Incoming",
-                "outgoing_name": "Callmonitor Outgoing",
                 "ip": "192.168.178.1",
                 "port": 1012,
                 "incomingTo": [
-                    {
-                        "number": "8923846"
-                    }
+                    "8923846"
                 ],
                 "outgoingFrom": [
-                    {
-                        "number": "8923846"
-                    }
+                    "8923846"
                 ]
             },
             "extras": {
@@ -169,9 +170,7 @@
                     "duration": 30,
                     "accType": "characteristic",
                     "blacklists": [
-                        {
-                            "name": "Blacklist"
-                        }
+                        "Blacklist"
                     ]
                 }
             },
@@ -188,22 +187,15 @@
                 "polling": {
                     "timer": 10,
                     "exclude": [
-                        {
-                            "name": "FritzBox 7590"
-                        },
-                        {
-                            "name": "wifi_2ghz"
-                        },
-                        {
-                            "name": "router"
-                        }
+                        "router",
+                        "extras"
                     ]
                 }
             },
             "telegram": {
                 "active": true,
-                "token": "464245231:AAECj0KFkxl0sdfsdf8kdFpNZpRR_dH2OAT8",
-                "chatID": "-2964523542",
+                "token": "464245222:AAECj0KFkxl0sdfsdf8kdFpNZpRR_dH2OA11",
+                "chatID": "-29645235123",
                 "messages": {
                     "presence": {
                         "user_in": "Welcome at home @",
