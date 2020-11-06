@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class extrasService {
+class ExtrasSwitchAccessory {
 
   constructor (api, accessory, handler) {
     
@@ -24,7 +24,7 @@ class extrasService {
     let service = this.accessory.getService(this.api.hap.Service.Switch);
     
     if(!service){
-      Logger.info('Adding switch', this.accessory.displayName);
+      Logger.info('Adding Switch service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.Switch, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -58,4 +58,4 @@ class extrasService {
 
 }
 
-module.exports = extrasService;
+module.exports = ExtrasSwitchAccessory;

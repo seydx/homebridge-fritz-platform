@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class extrasService {
+class SmarthomeOutletAccessory {
 
   constructor (api, accessory, handler, FakeGatoHistoryService) {
     
@@ -26,12 +26,12 @@ class extrasService {
     let serviceOld = this.accessory.getService(this.api.hap.Service.Switch);
     
     if(serviceOld){
-      Logger.info('Removing switch', this.accessory.displayName);
+      Logger.info('Removing Switch service', this.accessory.displayName);
       this.accessory.removeService(serviceOld);
     }
         
     if(!service){
-      Logger.info('Adding outlet', this.accessory.displayName);
+      Logger.info('Adding Outlet service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.Outlet, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -87,4 +87,4 @@ class extrasService {
 
 }
 
-module.exports = extrasService;
+module.exports = SmarthomeOutletAccessory;

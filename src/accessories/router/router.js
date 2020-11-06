@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class routerService {
+class RouterSwitchAccessory {
 
   constructor (api, accessory, extras, handler) {
     
@@ -25,7 +25,7 @@ class routerService {
     let service = this.accessory.getService(this.api.hap.Service.Switch);
     
     if(!service){
-      Logger.info('Adding switch', this.accessory.displayName);
+      Logger.info('Adding Switch service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.Switch, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -36,7 +36,7 @@ class routerService {
       
       if(characteristics.includes('wifi_2ghz')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)){
-          Logger.info('Adding WifiTwo Characteristic', this.accessory.displayName);
+          Logger.info('Adding WifiTwo characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiTwo);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('wifi_2ghz') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -49,14 +49,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)){
-          Logger.info('Removing WifiTwo Characteristic', this.accessory.displayName);
+          Logger.info('Removing WifiTwo characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiTwo));
         }
       }
       
       if(characteristics.includes('wifi_5ghz')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WifiFive)){
-          Logger.info('Adding WifiFive Characteristic', this.accessory.displayName);
+          Logger.info('Adding WifiFive characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiFive);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('wifi_5ghz') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -69,14 +69,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.WifiFive)){
-          Logger.info('Removing WifiFive Characteristic', this.accessory.displayName);
+          Logger.info('Removing WifiFive characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiFive));
         }
       }
       
       if(characteristics.includes('wifi_guest')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WifiGuest)){
-          Logger.info('Adding WifiGuest Characteristic', this.accessory.displayName);
+          Logger.info('Adding WifiGuest characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiGuest);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('wifi_guest') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -89,14 +89,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.WifiGuest)){
-          Logger.info('Removing WifiGuest Characteristic', this.accessory.displayName);
+          Logger.info('Removing WifiGuest characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiGuest));
         }
       }
       
       if(characteristics.includes('wps')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)){
-          Logger.info('Adding WifiWPS Characteristic', this.accessory.displayName);
+          Logger.info('Adding WifiWPS characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WifiWPS);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('wps') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -109,14 +109,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)){
-          Logger.info('Removing WifiWPS Characteristic', this.accessory.displayName);
+          Logger.info('Removing WifiWPS characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiWPS));
         }
       }
       
       if(characteristics.includes('dect') && this.accessory.context.config.master){
         if(!service.testCharacteristic(this.api.hap.Characteristic.DECT)){
-          Logger.info('Adding DECT Characteristic', this.accessory.displayName);
+          Logger.info('Adding DECT characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DECT);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('dect') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -129,14 +129,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.DECT)){
-          Logger.info('Removing DECT Characteristic', this.accessory.displayName);
+          Logger.info('Removing DECT characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DECT));
         }
       }
       
       if(characteristics.includes('aw') && this.accessory.context.config.master){
         if(!service.testCharacteristic(this.api.hap.Characteristic.AnsweringMachine)){
-          Logger.info('Adding AnsweringMachine Characteristic', this.accessory.displayName);
+          Logger.info('Adding AnsweringMachine characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.AnsweringMachine);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('aw') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -149,14 +149,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.AnsweringMachine)){
-          Logger.info('Removing AnsweringMachine Characteristic', this.accessory.displayName);
+          Logger.info('Removing AnsweringMachine characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.AnsweringMachine));
         }
       }
       
       if(characteristics.includes('deflection') && this.accessory.context.config.master){
         if(!service.testCharacteristic(this.api.hap.Characteristic.Deflection)){
-          Logger.info('Adding Deflection Characteristic', this.accessory.displayName);
+          Logger.info('Adding Deflection characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Deflection);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('deflection') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -169,14 +169,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.Deflection)){
-          Logger.info('Removing Deflection Characteristic', this.accessory.displayName);
+          Logger.info('Removing Deflection characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Deflection));
         }
       }
       
       if(characteristics.includes('led')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.DeviceLED)){
-          Logger.info('Adding DeviceLED Characteristic', this.accessory.displayName);
+          Logger.info('Adding DeviceLED characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DeviceLED);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('led') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -189,14 +189,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.DeviceLED)){
-          Logger.info('Removing DeviceLED Characteristic', this.accessory.displayName);
+          Logger.info('Removing DeviceLED characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLED));
         }
       }
       
       if(characteristics.includes('lock')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)){
-          Logger.info('Adding DeviceLock Characteristic', this.accessory.displayName);
+          Logger.info('Adding DeviceLock characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DeviceLock);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('lock') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -209,22 +209,22 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)){
-          Logger.info('Removing DeviceLock Characteristic', this.accessory.displayName);
+          Logger.info('Removing DeviceLock characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLock));
         }
       }
       
       if(characteristics.includes('broadband') && this.accessory.context.config.master){
         if(!service.testCharacteristic(this.api.hap.Characteristic.Download)){
-          Logger.info('Adding Download Characteristic', this.accessory.displayName);
+          Logger.info('Adding Download characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Download);
         }
         if(!service.testCharacteristic(this.api.hap.Characteristic.Upload)){
-          Logger.info('Adding Upload Characteristic', this.accessory.displayName);
+          Logger.info('Adding Upload characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Upload);
         }
         if(!service.testCharacteristic(this.api.hap.Characteristic.Ping)){
-          Logger.info('Adding Ping Characteristic', this.accessory.displayName);
+          Logger.info('Adding Ping characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Ping);
         }
         service.getCharacteristic(this.api.hap.Characteristic.Download)
@@ -232,15 +232,15 @@ class routerService {
           .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.Download, 'broadband', 'dl'));
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.Download)){
-          Logger.info('Removing Download Characteristic', this.accessory.displayName);
+          Logger.info('Removing Download characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Download));
         }
         if(service.testCharacteristic(this.api.hap.Characteristic.Upload)){
-          Logger.info('Removing Upload Characteristic', this.accessory.displayName);
+          Logger.info('Removing Upload characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Upload));
         }
         if(service.testCharacteristic(this.api.hap.Characteristic.Ping)){
-          Logger.info('Removing Ping Characteristic', this.accessory.displayName);
+          Logger.info('Removing Ping characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Ping));
         }
       }
@@ -248,57 +248,57 @@ class routerService {
     } else {
     
       if(service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)){
-        Logger.info('Removing WifiTwo Characteristic', this.accessory.displayName);
+        Logger.info('Removing WifiTwo characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Reconnect));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.WifiFive)){
-        Logger.info('Removing WifiFive Characteristic', this.accessory.displayName);
+        Logger.info('Removing WifiFive characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiFive));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.WifiGuest)){
-        Logger.info('Removing WifiGuest Characteristic', this.accessory.displayName);
+        Logger.info('Removing WifiGuest characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiGuest));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)){
-        Logger.info('Removing WifiWPS Characteristic', this.accessory.displayName);
+        Logger.info('Removing WifiWPS characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiWPS));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.AnsweringMachine)){
-        Logger.info('Removing AnsweringMachine Characteristic', this.accessory.displayName);
+        Logger.info('Removing AnsweringMachine characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.AnsweringMachine));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.Deflection)){
-        Logger.info('Removing Deflection Characteristic', this.accessory.displayName);
+        Logger.info('Removing Deflection characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Deflection));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.DeviceLED)){
-        Logger.info('Removing DeviceLED Characteristic', this.accessory.displayName);
+        Logger.info('Removing DeviceLED characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLED));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)){
-        Logger.info('Removing DeviceLock Characteristic', this.accessory.displayName);
+        Logger.info('Removing DeviceLock characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLock));
       }
       
       if(service.testCharacteristic(this.api.hap.Characteristic.Download)){
-        Logger.info('Removing Download Characteristic', this.accessory.displayName);
+        Logger.info('Removing Download characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Download));
       } 
       
       if(service.testCharacteristic(this.api.hap.Characteristic.Upload)){
-        Logger.info('Removing Upload Characteristic', this.accessory.displayName);
+        Logger.info('Removing Upload characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Upload));
       } 
       
       if(service.testCharacteristic(this.api.hap.Characteristic.Ping)){
-        Logger.info('Removing Ping Characteristic', this.accessory.displayName);
+        Logger.info('Removing Ping characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Ping));
       } 
     
@@ -312,7 +312,7 @@ class routerService {
       
       if(characteristics.includes('alarm') && this.extras.alarm.telNr){
         if(!service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)){
-          Logger.info('Adding DialAlarm Characteristic', this.accessory.displayName);
+          Logger.info('Adding DialAlarm characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DialAlarm);
         }
         service.getCharacteristic(this.api.hap.Characteristic.DialAlarm)
@@ -321,14 +321,14 @@ class routerService {
           .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, false));
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)){
-          Logger.info('Removing DialAlarm Characteristic', this.accessory.displayName);
+          Logger.info('Removing DialAlarm characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DialAlarm));
         }
       }
       
       if(characteristics.includes('wakeup') && this.extras.wakeup.internNr){
         if(!service.testCharacteristic(this.api.hap.Characteristic.WakeUp)){
-          Logger.info('Adding WakeUp Characteristic', this.accessory.displayName);
+          Logger.info('Adding WakeUp characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WakeUp);
         }
         service.getCharacteristic(this.api.hap.Characteristic.WakeUp)
@@ -336,14 +336,14 @@ class routerService {
           .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.WakeUp, 'wakeup', this.extras.wakeup));
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.WakeUp)){
-          Logger.info('Removing WakeUp Characteristic', this.accessory.displayName);
+          Logger.info('Removing WakeUp characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WakeUp));
         }
       }
       
       if(characteristics.includes('ringlock') && this.extras.ringlock.DECTphones){
         if(!service.testCharacteristic(this.api.hap.Characteristic.RingLock)){
-          Logger.info('Adding RingLock Characteristic', this.accessory.displayName);
+          Logger.info('Adding RingLock characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.RingLock);
         }
         if(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('ringlock') && !this.accessory.context.polling.exclude.includes('extra')){
@@ -356,14 +356,14 @@ class routerService {
         }
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.RingLock)){
-          Logger.info('Removing RingLock Characteristic', this.accessory.displayName);
+          Logger.info('Removing RingLock characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.RingLock));
         }
       }
       
       if(characteristics.includes('phoneBook')){
         if(!service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)){
-          Logger.info('Adding PhoneBook Characteristic', this.accessory.displayName);
+          Logger.info('Adding PhoneBook characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.PhoneBook);
         }
         service.getCharacteristic(this.api.hap.Characteristic.PhoneBook)
@@ -371,7 +371,7 @@ class routerService {
           .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.PhoneBook, 'phoneBook', this.extras.phoneBook));
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)){
-          Logger.info('Removing PhoneBook Characteristic', this.accessory.displayName);
+          Logger.info('Removing PhoneBook characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.PhoneBook));
         }
       }
@@ -379,22 +379,22 @@ class routerService {
     } else {
     
       if(service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)){
-        Logger.info('Removing DialAlarm Characteristic', this.accessory.displayName);
+        Logger.info('Removing DialAlarm characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DialAlarm));
       }
 
       if(service.testCharacteristic(this.api.hap.Characteristic.WakeUp)){
-        Logger.info('Removing WakeUp Characteristic', this.accessory.displayName);
+        Logger.info('Removing WakeUp characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WakeUp));
       }
 
       if(service.testCharacteristic(this.api.hap.Characteristic.RingLock)){
-        Logger.info('Removing RingLock Characteristic', this.accessory.displayName);
+        Logger.info('Removing RingLock characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.RingLock));
       }  
 
       if(service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)){
-        Logger.info('Removing PhoneBook Characteristic', this.accessory.displayName);
+        Logger.info('Removing PhoneBook characteristic', this.accessory.displayName);
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.PhoneBook));
       }
     
@@ -416,4 +416,4 @@ class routerService {
 
 }
 
-module.exports = routerService;
+module.exports = RouterSwitchAccessory;

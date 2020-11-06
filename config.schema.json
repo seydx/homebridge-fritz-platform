@@ -433,17 +433,22 @@
           "energy": {
             "title": "Power Meter",
             "type": "boolean",
-            "description": "Enable this, if the device has a built in power meter."
+            "description": "Enable this, if the device has a built in power meter. The switch will be exposed as an outlet accessory instead of a switch accessory with FakeGato functionality to HomeKit. (Only for Switch accessory types)"
           },
           "temperature": {
             "title": "Temperature Sensor",
             "type": "boolean",
-            "description": "Enable this, if the device has a built in temperature sensor."
+            "description": "Enable this, if the device has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
           },
           "window": {
             "title": "Window Sensor",
             "type": "boolean",
-            "description": "Enable this, if the device has a built in window open function."
+            "description": "Enable this, if the device has a built in window open function. This exposes an additional window (contact) as an accessory to HomeKit. (Only for Thermostat accessory types)"
+          },
+          "brightness": {
+            "title": "Brightness",
+            "type": "boolean",
+            "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit. (Only for Lightbulb accessory types)"
           },
           "accType": {
             "title": "Accessory Type",
@@ -465,6 +470,12 @@
                 "title": "Thermostat",
                 "enum": [
                   "thermostat"
+                ]
+              },
+              {
+                "title": "Lightbulb",
+                "enum": [
+                  "lightbulb"
                 ]
               }
             ],
@@ -1198,7 +1209,8 @@
               "items": [
                 "smarthome[].energy",
                 "smarthome[].temperature",
-                "smarthome[].window"
+                "smarthome[].window",
+                "smarthome[].brightness"
               ]
             }
           ]

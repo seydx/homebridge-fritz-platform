@@ -22,6 +22,7 @@ const PresenceOccupancyAccessory = require('./accessories/presence/occupancy.js'
 
 const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
 const SmarthomeOutletAccessory = require('./accessories/smarthome/outlet.js');
+const SmarthomeLightbulbAccessory = require('./accessories/smarthome/lightbulb.js');
 const SmarthomeTemperatureAccessory = require('./accessories/smarthome/temperature.js');
 const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
 const SmarthomeContactAccessory = require('./accessories/smarthome/contact.js');
@@ -194,7 +195,7 @@ function FritzPlatform (log, config, api) {
     this.config.smarthome.forEach(device => {
     
       let error = false;
-      let validTypes = ['switch', 'contact', 'thermostat'];
+      let validTypes = ['switch', 'contact', 'thermostat', 'lightbulb'];
 
       if (!device.name) {
         Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
@@ -721,6 +722,8 @@ FritzPlatform.prototype = {
           new SmarthomeContactAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
         if(device.subtype === 'smarthome-window')
           new SmarthomeWindowAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-lightbulb')
+          new SmarthomeLightbulbAccessory(this.api, accessory, this.handler);
         break;
       case 'presence':
         if(device.subtype === 'presence-motion')

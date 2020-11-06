@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class occupancyService {
+class PresenceMotionAccessory {
 
   constructor (api, accessory, handler, accessories, FakeGatoHistoryService) {
     
@@ -27,12 +27,12 @@ class occupancyService {
     let serviceOld = this.accessory.getService(this.api.hap.Service.OccupancySensor);
     
     if(serviceOld){
-      Logger.info('Removing occupancy sensor', this.accessory.displayName);
+      Logger.info('Removing Occupancy service', this.accessory.displayName);
       this.accessory.removeService(serviceOld);
     }
     
     if(!service){
-      Logger.info('Adding motion sensor', this.accessory.displayName);
+      Logger.info('Adding Motion service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.MotionSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -94,4 +94,4 @@ class occupancyService {
 
 }
 
-module.exports = occupancyService;
+module.exports = PresenceMotionAccessory;

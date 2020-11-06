@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class extrasService {
+class SmarthomeThermostatAccessory {
 
   constructor (api, accessory, handler, FakeGatoHistoryService) {
     
@@ -25,7 +25,7 @@ class extrasService {
     let service = this.accessory.getService(this.api.hap.Service.Thermostat);
     
     if(!service){
-      Logger.info('Adding thermostat service', this.accessory.displayName);
+      Logger.info('Adding Thermostat service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.Thermostat, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -96,4 +96,4 @@ class extrasService {
 
 }
 
-module.exports = extrasService;
+module.exports = SmarthomeThermostatAccessory;

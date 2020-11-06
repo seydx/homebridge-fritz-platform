@@ -26,6 +26,50 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     switch (target) {
     
+      case 'smarthome-lightbulb': {
+
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+        let brightness;
+        
+        if(accessory.context.config.brightness)
+          brightness = accessory.getService(service).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+        
+        try {
+        
+          if(!smarthomeList)
+            await this.refreshSmarthome(false, true);
+        
+          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          Logger.debug(device, accessory.displayName);
+          
+          if(device && device.online && device.light){
+          
+            state = device.light.state || 0;
+            brightness = device.light.brightness ? device.light.brightness.levelpercentage : 0;
+          
+          }
+        
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+        
+        }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+          
+        if(accessory.context.config.brightness)
+          accessory
+            .getService(service)
+            .getCharacteristic(api.hap.Characteristic.Brightness)
+            .updateValue(brightness);
+      
+        break;
+      
+      }
+    
       case 'smarthome-switch': {
 
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
@@ -850,6 +894,60 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     switch (target) {
     
+      case 'smarthome-lightbulb': {
+      
+        try {
+        
+          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          let cmd, text;
+          
+          if(config === 'on'){
+          
+            cmd = state ? 'setsimpleonoff&onoff=1' : 'setsimpleonoff&onoff=0';
+            text = (state ? 'ON': 'OFF') + ' (' + target + ')';
+             
+            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+              
+            Logger.info(text, accessory.displayName);
+          
+          } else {
+          
+            cmd = 'setlevelpercentage&level=' + state;
+            text = ('Setting brightness to ' + state) + ' (' + target + ')';
+          
+            if(accessory.context.waitForEndValue){
+              clearTimeout(accessory.context.waitForEndValue);
+              accessory.context.waitForEndValue = false;
+            }
+             
+            accessory.context.waitForEndValue = setTimeout(async () => {
+            
+              try {
+              
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 1000);
+          
+          }
+        
+        } catch(err) {
+        
+          handleError(accessory, false, target, err, {set: true});
+        
+        }
+        
+        break;
+      
+      }
+    
       case 'smarthome-switch': {
       
         try {
@@ -885,7 +983,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
           
             cmd = 'sethkrtsoll&param='+temp;
-            text = 'Setting temperature to ' + state;
+            text = ('Setting temperature to ' + state) + ' (' + target + ')';
             
             if(accessory.context.waitForEndValue){
               clearTimeout(accessory.context.waitForEndValue);
@@ -914,7 +1012,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
             
             cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
-            text = state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF';
+            text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
             
             if(accessory.context.waitForEndState){
               clearTimeout(accessory.context.waitForEndState);
@@ -2237,6 +2335,26 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                   target: convertTemp(device.hkr.tsoll) || 0,
                   windowOpen: parseInt(device.hkr.windowopenactiv) || 0
                 }
+                : false,
+              light: device.simpleonoff
+                ? {
+                  state: parseInt(device.simpleonoff) || 0,
+                  brightness: device.levelcontrol
+                    ? {
+                      level: parseInt(device.levelcontrol.level),                        // 0 - 255
+                      levelpercentage: parseInt(device.levelcontrol.levelpercentage)     // 0 - 100
+                    }
+                    : false,
+                  color: device.colorcontrol
+                    ? {
+                      supported_modes: parseInt(device.colorcontrol.supported_modes),
+                      current_mode: parseInt(device.colorcontrol.current_mode),
+                      hue: parseInt(device.colorcontrol.hue),                            // 0� - 359�
+                      saturation: parseInt(device.colorcontrol.saturation),              // 0% - 100% (if current_mode === 1)
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700� - 6500� Kelvin
+                    }
+                    : false
+                }
                 : false
             };
             return dev;
@@ -2255,6 +2373,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
               
               switch(device.subtype) {
+              
+                case 'smarthome-lightbulb':
+                  await get(accessory, api.hap.Service.Lightbulb, api.hap.Characteristic.On, device.subtype);
+                  if(device.brightness)
+                    await get(accessory, api.hap.Service.Lightbulb, api.hap.Characteristic.Brightness, device.subtype);
+                  break;
               
                 case 'smarthome-switch':
                   await get(accessory, device.energy ? api.hap.Service.Outlet : api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
@@ -2408,10 +2532,14 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     if((err.code && (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'EHOSTUNREACH' || err.code === 'ECONNRESET')) || (err.message && (err.message.includes('Not Found')))){
       Logger.warn('Device seems to be offline' + ' (' + target + ')', accessory.displayName);
-      if(typeof state === 1){
+      if(state === 1){
         state = 0;
+      } else if(state === 0) {
+        state = 1;
       } else if(state === true){
         state = false;
+      } else if(state === false) {
+        state = true;
       }
     } else if(err.message && err.message.includes('500')){
       Logger.warn('FritzBox could not process the request', accessory.displayName);

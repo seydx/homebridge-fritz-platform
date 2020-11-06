@@ -5,7 +5,7 @@ const Logger = require('../../helper/logger.js');
 const fs = require('fs-extra');
 const moment = require('moment');
 
-class contactService {
+class CallmonitorContactAccessory {
 
   constructor (api, log, accessory, handler, callmonitor, FakeGatoHistoryService) {
     
@@ -32,7 +32,7 @@ class contactService {
     let service = this.accessory.getService(this.api.hap.Service.ContactSensor);
     
     if(!service){
-      Logger.info('Adding contact sensor', this.accessory.displayName);
+      Logger.info('Adding Contact service', this.accessory.displayName);
       service = this.accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
@@ -68,7 +68,7 @@ class contactService {
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
       .setValue(now - epoch)
       .on('set', (value,callback) => {
-        Logger.info(this.accessory.displayName + ': Resetting FakeGato..');
+        Logger.info('Resetting FakeGato..', this.accessory.displayName);
   
         this.accessory.context.timesOpened = 0;
   
@@ -389,4 +389,4 @@ class contactService {
 
 }
 
-module.exports = contactService;
+module.exports = CallmonitorContactAccessory;

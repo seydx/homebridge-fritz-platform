@@ -2,7 +2,7 @@
 
 const Logger = require('../../helper/logger.js');
 
-class watchNetwork {
+class WatchNetworkService {
 
   constructor (devices, telegram, polling) {
     
@@ -164,4 +164,4 @@ class watchNetwork {
 
 }
 
-module.exports = watchNetwork;
+module.exports = WatchNetworkService;
