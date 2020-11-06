@@ -154,7 +154,7 @@ function FritzPlatform (log, config, api) {
           
           if(router.options){
           
-            let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock', 'broadband'];
+            let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock'];
           
             const switches = Object.keys(router.options).filter(extra => validChars.includes(extra) && router.options[extra] === 'switch');
             
@@ -450,7 +450,7 @@ function FritzPlatform (log, config, api) {
       timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : 10000,
       exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
         ?  config.options.polling.exclude
-        :  ['broadband', 'wakeup', 'alarm', 'phoneBook']
+        :  ['wakeup', 'alarm', 'phoneBook']
     };
     this.reboot = {
       on: config.options.reboot && config.options.reboot.on ? config.options.reboot.on : false,
@@ -459,16 +459,13 @@ function FritzPlatform (log, config, api) {
   } else {
     this.polling = {
       timer: 10000,
-      exclude: ['broadband', 'wakeup', 'alarm', 'phoneBook']
+      exclude: ['wakeup', 'alarm', 'phoneBook']
     };
     this.reboot = {
       on: false,
       off: false
     };
   }
-  
-  if(!this.polling.exclude.includes('broadband'))
-    this.polling.exclude.push('broadband');
     
   if(!this.polling.exclude.includes('wakeup'))
     this.polling.exclude.push('wakeup');

@@ -5,57 +5,6 @@ const inherits = require('util').inherits;
 module.exports = {
   registerWith: function (hap) {
     const Characteristic = hap.Characteristic;
-
-    /// /////////////////////////////////////////////////////////////////////////
-    // Download Characteristic
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.Download = function() {
-      Characteristic.call(this, 'Download', '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9');
-      this.setProps({
-        format: Characteristic.Formats.FLOAT,
-        maxValue: 9999,
-        minValue: 0,
-        minStep: 0.1,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-    inherits(Characteristic.Download, Characteristic);
-    Characteristic.Download.UUID = '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9';
-    
-    /// /////////////////////////////////////////////////////////////////////////
-    // Upload Characteristic
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.Upload = function() {
-      Characteristic.call(this, 'Upload', '9b2e94f7-a665-4575-9efd-1b37474d758b');
-      this.setProps({
-        format: Characteristic.Formats.FLOAT,
-        maxValue: 9999,
-        minValue: 0,
-        minStep: 0.1,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-    inherits(Characteristic.Upload, Characteristic);
-    Characteristic.Upload.UUID = '9b2e94f7-a665-4575-9efd-1b37474d758b';
-    
-    /// /////////////////////////////////////////////////////////////////////////
-    // Ping Characteristic
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.Ping = function() {
-      Characteristic.call(this, 'Ping', 'ce18aaef-1026-4538-943b-026501599dc0');
-      this.setProps({
-        format: Characteristic.Formats.FLOAT,
-        maxValue: 9999,
-        minValue: 0,
-        minStep: 0.1,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
-      });
-      this.value = this.getDefaultValue();
-    };
-    inherits(Characteristic.Ping, Characteristic);
-    Characteristic.Ping.UUID = 'ce18aaef-1026-4538-943b-026501599dc0';
     
     /// /////////////////////////////////////////////////////////////////////////
     // WifiTwo Characteristic

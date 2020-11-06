@@ -7,7 +7,6 @@ const aha = require('./aha.js');
 const fs = require('fs-extra');
 const moment = require('moment');
 const ping = require('ping');
-const speedTest = require('speedtest-net');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
@@ -821,53 +820,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getCharacteristic(characteristic)
           .updateValue(state);
        
-        break;
-        
-      }
-         
-      case 'broadband': {
-      
-        let state = accessory.getService(service).getCharacteristic(characteristic).value;
-        
-        try {
-         
-          let data = await speedTest({
-            acceptLicense: true,
-            acceptGdpr: true
-          });
-          
-          Logger.debug(data, accessory.displayName);
-           
-          let dl = (data.download.bandwidth * 8 / 1000 / 1000).toFixed(1);
-          let ul = (data.upload.bandwidth * 8/ 1000 / 1000).toFixed(1);
-          let ping = data.ping.latency.toFixed(0);
-          
-          accessory
-            .getService(service)
-            .getCharacteristic(api.hap.Characteristic.Download)
-            .updateValue(dl);
-           
-          accessory
-            .getService(service)
-            .getCharacteristic(api.hap.Characteristic.Upload)
-            .updateValue(ul);
-             
-          accessory
-            .getService(service)
-            .getCharacteristic(api.hap.Characteristic.Ping)
-            .updateValue(ping);
-         
-        } catch(err) {
-        
-          handleError(accessory, false, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
-       
-        }
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(characteristic)
-          .updateValue(state);
-         
         break;
         
       }
@@ -1707,21 +1659,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
         }
        
-        break;
-        
-      }
-         
-      case 'broadband': {
-      
-        Logger.info((state ? 'ON' : 'OFF') + ' not supported!' + ' (' + target + ')', accessory.displayName);
-       
-        setTimeout(() => {
-          accessory
-            .getService(service)
-            .getCharacteristic(characteristic)
-            .updateValue(false);
-        }, 1000);
-         
         break;
         
       }
