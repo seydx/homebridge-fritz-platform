@@ -440,6 +440,11 @@
             "type": "boolean",
             "description": "Enable this, if the device has a built in temperature sensor."
           },
+          "window": {
+            "title": "Window Sensor",
+            "type": "boolean",
+            "description": "Enable this, if the device has a built in window open function."
+          },
           "accType": {
             "title": "Accessory Type",
             "type": "string",
@@ -1192,7 +1197,8 @@
               "expanded": false,
               "items": [
                 "smarthome[].energy",
-                "smarthome[].temperature"
+                "smarthome[].temperature",
+                "smarthome[].window"
               ]
             }
           ]

@@ -27,7 +27,7 @@ class occupancyService {
     
     if(serviceOld){
       Logger.info('Removing motion sensor', this.accessory.displayName);
-      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.MotionSensor));
+      this.accessory.removeService(serviceOld);
     }
     
     if(!service){
@@ -40,8 +40,11 @@ class occupancyService {
       service.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected)
         .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, false));
         
-      if(this.accessory.displayName === 'Anyone')
-        this.getState();
+      if(this.accessory.displayName === 'Anyone'){
+        setTimeout(() => {
+          this.getState();
+        }, 1000);
+      }
    
     } else {
     

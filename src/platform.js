@@ -12,16 +12,20 @@ const DeviceHandler = require('./helper/deviceHandler.js');
 
 //Accessories
 const RouterAccessory = require('./accessories/router/router.js');
-const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
-const SmarthomeTemperatureAccessory = require('./accessories/smarthome/temperature.js');
-const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
-const SmarthomeSensorAccessory = require('./accessories/smarthome/sensor.js');
-const PresenceMotionAccessory = require('./accessories/presence/motion.js');
-const PresenceOccupancyAccessory = require('./accessories/presence/occupancy.js');
 const WolAccessory = require('./accessories/wol/wol.js');
 const CallmonitorAccessory = require('./accessories/callmonitor/callmonitor.js');
 const ExtrasAccessory = require('./accessories/extras/extras.js');
 const WatchNetwork = require('./accessories/network/network.js');
+
+const PresenceMotionAccessory = require('./accessories/presence/motion.js');
+const PresenceOccupancyAccessory = require('./accessories/presence/occupancy.js');
+
+const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
+const SmarthomeOutletAccessory = require('./accessories/smarthome/outlet.js');
+const SmarthomeTemperatureAccessory = require('./accessories/smarthome/temperature.js');
+const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
+const SmarthomeContactAccessory = require('./accessories/smarthome/contact.js');
+const SmarthomeWindowAccessory = require('./accessories/smarthome/window.js');
 
 //Custom Types
 const RouterTypes = require('./types/custom_types.js');
@@ -230,6 +234,25 @@ function FritzPlatform (log, config, api) {
           } else {
             this.devices.set(uuidTemp, tempDevice);
             this.smarthome.set(uuidTemp, tempDevice);
+          }
+        
+        }
+        
+        if(device.window){
+        
+          let windowDevice = {
+            name: device.name + ' Window',
+            type: 'smarthome',
+            subtype: 'smarthome-window',
+            ain: device.ain
+          };
+
+          const uuidWindow = UUIDGen.generate(windowDevice.name);
+          if (this.devices.has(uuidWindow)) {
+            Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', windowDevice.name);
+          } else {
+            this.devices.set(uuidWindow, windowDevice);
+            this.smarthome.set(uuidWindow, windowDevice);
           }
         
         }
@@ -686,14 +709,18 @@ FritzPlatform.prototype = {
         new RouterAccessory(this.api, accessory, this.extrasAsCharacteristics, this.handler);
         break;
       case 'smarthome':
-        if(device.subtype === 'smarthome-switch')
+        if(device.subtype === 'smarthome-switch' && device.energy)
+          new SmarthomeOutletAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-switch' && !device.energy)
           new SmarthomeSwitchAccessory(this.api, accessory, this.handler);
         if(device.subtype === 'smarthome-temperature')
           new SmarthomeTemperatureAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
         if(device.subtype === 'smarthome-thermostat')
           new SmarthomeThermostatAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
         if(device.subtype === 'smarthome-contact')
-          new SmarthomeSensorAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+          new SmarthomeContactAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-window')
+          new SmarthomeWindowAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
         break;
       case 'presence':
         if(device.subtype === 'presence-motion')

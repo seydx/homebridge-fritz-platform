@@ -10,8 +10,6 @@ module.exports = {
     
       let uri = 'http://' + host + '/webservices/homeautoswitch.lua?ain=' + ain + '&sid=' + sid + '&switchcmd=' + cmd;
       
-      console.log(uri);
-      
       await axios.get(uri);  
         
       return;

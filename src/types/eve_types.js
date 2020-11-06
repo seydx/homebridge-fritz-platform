@@ -136,6 +136,89 @@ module.exports = {
     };
     inherits(Characteristic.ClosedDuration, Characteristic);
     Characteristic.ClosedDuration.UUID = 'E863F119-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // CurrentConsumption
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.CurrentConsumption = function() {
+      Characteristic.call(this, 'Current Consumption', 'E863F10D-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        unit: 'W',
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.CurrentConsumption, Characteristic);
+    Characteristic.CurrentConsumption.UUID = 'E863F10D-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // TotalConsumption
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.TotalConsumption = function() {
+      Characteristic.call(this, 'Total Consumption', 'E863F10C-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        unit: 'kWh',
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.TotalConsumption, Characteristic);
+    Characteristic.TotalConsumption.UUID = 'E863F10C-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Volts
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.Volts = function() {
+      Characteristic.call(this, 'Volts', 'E863F10A-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        unit: 'V',
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Volts, Characteristic);
+    Characteristic.Volts.UUID = 'E863F10A-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Amperes
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.Amperes = function() {
+      Characteristic.call(this, 'Amperes', 'E863F126-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        unit: 'A',
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Amperes, Characteristic);
+    Characteristic.Amperes.UUID = 'E863F126-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Outlet
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Service.Outlet = function(displayName, subtype) {
+      Service.call(this, displayName, '00000047-0000-1000-8000-0026BB765291', subtype);
+      
+      // Required Characteristics
+      this.addCharacteristic(Characteristic.On);
+      this.addCharacteristic(Characteristic.OutletInUse);
+
+      // Optional Characteristics EVE
+      this.addOptionalCharacteristic(Characteristic.CurrentConsumption);
+      this.addOptionalCharacteristic(Characteristic.TotalConsumption);
+      this.addOptionalCharacteristic(Characteristic.Volts);
+      this.addOptionalCharacteristic(Characteristic.Amperes);
+
+      // Optional Characteristics
+      this.addOptionalCharacteristic(Characteristic.Name);
+    
+    };
+    inherits(Service.Outlet, Service);
+    Service.Outlet.UUID = '00000047-0000-1000-8000-0026BB765291';
 
     /// /////////////////////////////////////////////////////////////////////////
     // ContactSensor
@@ -145,11 +228,11 @@ module.exports = {
       // Required Characteristics
       this.addCharacteristic(Characteristic.ContactSensorState);
 
-      //EVE
-      this.addCharacteristic(Characteristic.TimesOpened);
-      this.addCharacteristic(Characteristic.OpenDuration);
-      this.addCharacteristic(Characteristic.ClosedDuration);
-      this.addCharacteristic(Characteristic.LastActivation);
+      // Optional Characteristics EVE
+      this.addOptionalCharacteristic(Characteristic.TimesOpened);
+      this.addOptionalCharacteristic(Characteristic.OpenDuration);
+      this.addOptionalCharacteristic(Characteristic.ClosedDuration);
+      this.addOptionalCharacteristic(Characteristic.LastActivation);
 
       // Optional Characteristics
       this.addOptionalCharacteristic(Characteristic.StatusActive);
@@ -169,8 +252,8 @@ module.exports = {
       // Required Characteristics
       this.addCharacteristic(Characteristic.MotionDetected);
 
-      //EVE
-      this.addCharacteristic(Characteristic.LastActivation);
+      // Optional Characteristics EVE
+      this.addOptionalCharacteristic(Characteristic.LastActivation);
 
       // Optional Characteristics
       this.addOptionalCharacteristic(Characteristic.StatusActive);

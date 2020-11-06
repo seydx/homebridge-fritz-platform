@@ -41,6 +41,40 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             .getService(service)
             .getCharacteristic(characteristic)
             .updateValue(state);
+            
+          if(accessory.context.config.energy && device.powermeter){
+            
+            let currentPower = device.powermeter.power || 0;
+            let totalPower = device.powermeter.energy || 0;
+            let voltage = device.powermeter.voltage || 0;
+            let ampere = (currentPower/voltage || 0).toFixed(2);
+            
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.OutletInUse)
+              .updateValue(currentPower > 0 ? true : false);  
+            
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.CurrentConsumption)
+              .updateValue(currentPower);    
+              
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.TotalConsumption)
+              .updateValue(totalPower);   
+              
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Volts)
+              .updateValue(voltage);   
+              
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Amperes)
+              .updateValue(ampere);                
+          
+          }
         
         }
       
@@ -92,13 +126,34 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
       }
       
+      case 'smarthome-window': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value; 
+        
+        let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+        Logger.debug(device, accessory.displayName);
+        
+        if(device && device.online && device.thermostat){
+        
+          state = device.thermostat.windowOpen || 0;
+        
+          accessory
+            .getService(service)
+            .getCharacteristic(characteristic)
+            .updateValue(state);
+        
+        }
+        
+        break;
+      
+      }
+      
       case 'smarthome-thermostat': {
       
         let currentState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;
-        //let targetState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;
+        let targetState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;
         let currentTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
         let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
-        //let units = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TemperatureDisplayUnits).value;
         
         let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
         Logger.debug(device, accessory.displayName);
@@ -111,6 +166,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           if(targetTemp === 'off'){
            
             currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
+            targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
+            
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
+              .updateValue(targetState);
            
           } else {
            
@@ -140,20 +201,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
           .updateValue(currentState);
           
-        /*accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
-          .updateValue(targetState);*/
-          
         accessory
           .getService(service)
           .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
           .updateValue(currentTemp);
-          
-        /*accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.TemperatureDisplayUnits)
-          .updateValue(units);*/
         
         break;
       
@@ -1753,6 +1804,48 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
       }
       
+      case 'smarthome-window': {
+        
+        if(value.newValue){
+        
+          accessory.context.timesOpened = accessory.context.timesOpened || 0;
+          accessory.context.timesOpened += 1;
+          
+          let lastActivation = moment().unix() - historyService.getInitialTime();
+          let closeDuration = moment().unix() - historyService.getInitialTime();
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.LastActivation)
+            .updateValue(lastActivation);
+            
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.TimesOpened)
+            .updateValue(accessory.context.timesOpened);
+          
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(closeDuration);
+        
+        } else {
+        
+          let openDuration = moment().unix() - historyService.getInitialTime();
+        
+          accessory
+            .getService(api.hap.Service.ContactSensor)
+            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+            .updateValue(openDuration);
+        
+        }
+          
+        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+      
+        break;
+      
+      }
+      
       case 'smarthome-temperature': {
       
         historyService.addEntry({time: moment().unix(), temp: value.newValue, humidity: 0, ppm: 0});
@@ -1763,7 +1856,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
       case 'smarthome-thermostat': {
       
-        let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
+        let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
         let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
         let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
           
@@ -1771,7 +1864,15 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         break;
       
-      }
+      } 
+      
+      case 'smarthome-switch': {
+          
+        historyService.addEntry({time: moment().unix(), power: value.newValue});
+      
+        break;
+      
+      }            
       
       case 'presence': {
       
@@ -2012,7 +2113,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
   }
   
-  async function refreshSmarthome(accessories){
+  async function refreshSmarthome(accessories, get){
   
     let poll;
   
@@ -2022,7 +2123,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       }
     }
     
-    if(poll){
+    if(poll || get){
     
       try {
       
@@ -2031,10 +2132,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         let uri = 'http://' + fritzboxMaster.url.hostname + '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' + sid;
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
-
-        //smarthomeList = smarthomes.devicelist.device;
+        let deviceList = smarthomes.devicelist.device;
         
-        smarthomeList = smarthomes.devicelist.device.map(device => {
+        if(!Array.isArray(deviceList))
+          deviceList = [deviceList];
+        
+        smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
             value = parseInt(value);
             if (value == 254)
@@ -2071,9 +2174,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                 : false,
               powermeter: device.powermeter
                 ? { 
-                  voltage: parseInt(device.powermeter.voltage)/1000 || 0, 
-                  power: parseInt(device.powermeter.power)/1000 || 0, 
-                  energy: parseInt(device.powermeter.energy) || 0
+                  voltage: parseInt(device.powermeter.voltage)/1000 || 0,  // >> voltage   = 0.001V = 1V
+                  power: parseInt(device.powermeter.power)/1000 || 0,      // >> power     = 0.001W = 1W
+                  energy: parseInt(device.powermeter.energy)/1000 || 0     // >> energy    = 1.00Wh = 0.001 kWh
                 }
                 : false,
               switch: device.switch
@@ -2105,7 +2208,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             switch(device.subtype) {
             
               case 'smarthome-switch':
-                await get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
+                await get(accessory, device.energy ? api.hap.Service.Outlet : api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
                 break;
                 
               case 'smarthome-temperature':
@@ -2277,7 +2380,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     set: set,
     change: change,
     poll: poll,
-    refreshHosts: refreshHosts
+    refreshHosts: refreshHosts,
+    refreshSmarthome: refreshSmarthome
   };
 
 };

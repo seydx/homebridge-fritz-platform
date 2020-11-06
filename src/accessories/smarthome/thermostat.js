@@ -46,6 +46,11 @@ class extrasService {
         maxValue: 28,
         minStep: 0.5
       });
+      
+    service.getCharacteristic(this.api.hap.Characteristic.TemperatureDisplayUnits)
+      .setProps({
+        maxValue: 1
+      });
     
     this.historyService = new this.FakeGatoHistoryService('thermo', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
     
@@ -64,12 +69,6 @@ class extrasService {
       service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature)
         .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetTemperature, 'smarthome-thermostat', 'temperature'))
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
-        
-      service.getCharacteristic(this.api.hap.Characteristic.TemperatureDisplayUnits)
-        .on('set', (state, callback) => {
-          Logger.info('Set "TemperatureDisplayUnits" => ' + state, this.accessory.displayName);
-          callback(null);
-        });
  
     } else {
  
@@ -90,12 +89,6 @@ class extrasService {
         .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Thermostat, false, this.accessory.context.config.subtype, false))
         .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetTemperature, 'smarthome-thermostat', 'temperature'))
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
-        
-      service.getCharacteristic(this.api.hap.Characteristic.TemperatureDisplayUnits)
-        .on('set', (state, callback) => {
-          Logger.info('Set "TemperatureDisplayUnits" => ' + state, this.accessory.displayName);
-          callback(null);
-        });
  
     }
     
