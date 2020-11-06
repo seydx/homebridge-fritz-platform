@@ -52,21 +52,25 @@ class SmarthomeOutletAccessory {
   
     this.historyService = new this.FakeGatoHistoryService('custom', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
     
-    service.getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
+    service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
       .on('change', this.handler.change.bind(this, this.accessory, 'smarthome-switch', this.accessory.displayName, this.historyService));
-      
-    const now = Math.round(new Date().valueOf() / 1000); 
-    const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
     
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
-      .setValue(now - epoch)
       .on('set', (value,callback) => {
+       
         Logger.info('Resetting FakeGato..', this.accessory.displayName);
+        
+        const now = Math.round(new Date().valueOf() / 1000); 
+        const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
   
         service.getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
           .updateValue(0);
+          
+        service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
+          .updateValue(now - epoch);
       
         callback(null);
+    
       });
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){

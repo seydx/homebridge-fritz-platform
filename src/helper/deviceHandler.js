@@ -254,22 +254,17 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
              
               currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
               targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
-              
-              accessory
-                .getService(service)
-                .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
-                .updateValue(targetState);
              
             } else {
              
               if(currentTemp > targetTemp){
                  
-                //targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL
+                targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL;
                 currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
                  
               } else {
                
-                //targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT
+                targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT;
                 currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
                
               }
@@ -293,6 +288,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getService(service)
           .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
           .updateValue(currentState);
+    
+        accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
+          .updateValue(targetState);
           
         accessory
           .getService(service)
