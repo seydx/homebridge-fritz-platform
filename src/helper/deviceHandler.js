@@ -2349,9 +2349,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                     ? {
                       supported_modes: parseInt(device.colorcontrol.supported_modes),
                       current_mode: parseInt(device.colorcontrol.current_mode),
-                      hue: parseInt(device.colorcontrol.hue),                            // 0� - 359�
+                      hue: parseInt(device.colorcontrol.hue),                            // 0° - 359°
                       saturation: parseInt(device.colorcontrol.saturation),              // 0% - 100% (if current_mode === 1)
-                      temperature: parseInt(device.colorcontrol.temperature)             // 2700� - 6500� Kelvin
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700° - 6500° Kelvin
                     }
                     : false
                 }
@@ -2542,7 +2542,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         state = true;
       }
     } else if(err.message && err.message.includes('500')){
-      Logger.warn('FritzBox could not process the request', accessory.displayName);
+      Logger.warn('Could not process the request during ' + mode + ' state' + ' (' + target + ')', accessory.displayName);
     } else {
       Logger.error('An error occured during ' + mode + ' state' + ' (' + target + ')', accessory.displayName);
       Logger.error(err);
