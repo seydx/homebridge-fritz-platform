@@ -115,14 +115,16 @@
                 {
                     "name": "HAN FUN Sensor",
                     "ain": "119340107283",
-                    "accType": "contact"
+                    "accType": "contact",
+                    "battery": true
                 },
                 {
                     "name": "DECT 301",
                     "ain": "09995 0692315",
                     "temperature": true,
                     "window": true,
-                    "accType": "thermostat"
+                    "accType": "thermostat",
+                    "battery": true
                 }
             ],
             "network": [
@@ -189,7 +191,7 @@
                     "timer": 10,
                     "exclude": [
                         "router",
-                        "extras"
+                        "extra"
                     ]
                 }
             },
