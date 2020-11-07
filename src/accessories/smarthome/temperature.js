@@ -29,6 +29,20 @@ class SmarthomeTemperatureAccessory {
       service = this.accessory.addService(this.api.hap.Service.TemperatureSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
+    if(this.accessory.context.config.battery){
+      
+      let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
+      
+      if(!batteryService){
+        Logger.info('Adding Battery service', this.accessory.displayName);
+        batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
+      }
+      
+      batteryService
+        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE)
+      
+    }
+    
     this.historyService = new this.FakeGatoHistoryService('room', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
