@@ -45,7 +45,7 @@ class SmarthomeOutletAccessory {
       }
       
       batteryService
-        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE)
+        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE);
       
     }
     

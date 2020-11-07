@@ -333,6 +333,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             currentTemp = device.thermostat.current;
             targetTemp = device.thermostat.target;
+            
+            if(device.temperature)
+              currentTemp = device.temperature.value || currentTemp;
              
             if(targetTemp === 'off'){
              
@@ -2321,8 +2324,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         let uri = 'http://' + fritzboxMaster.url.hostname + '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' + sid;
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
-        let deviceList = smarthomes.devicelist.device;
+        let deviceList = smarthomes.devicelist.device; 
+        let groupList = smarthomes.devicelist.group; 
         
+        //console.log(deviceList)
+        //console.log(groupList)
+                
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
         

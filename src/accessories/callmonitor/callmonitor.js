@@ -137,7 +137,8 @@ class CallmonitorContactAccessory {
             let phonebook = false;
               
             try {
-              
+            
+              await fs.ensureFile(this.api.user.storagePath() + '/fritzbox/phonebook.json');
               phonebook = await fs.readJson(this.api.user.storagePath() + '/fritzbox/phonebook.json');
               
             } catch(err) {
@@ -167,6 +168,7 @@ class CallmonitorContactAccessory {
               
             try {
               
+              await fs.ensureFile(this.api.user.storagePath() + '/fritzbox/blackbook.json');
               blackbook = await fs.readJson(this.api.user.storagePath() + '/fritzbox/blackbook.json');
               
             } catch(err) {
@@ -238,6 +240,7 @@ class CallmonitorContactAccessory {
               
             try {
               
+              await fs.ensureFile(this.api.user.storagePath() + '/fritzbox/phonebook.json');
               phonebook = await fs.readJson(this.api.user.storagePath() + '/fritzbox/phonebook.json');
               
             } catch(err) {
@@ -267,6 +270,7 @@ class CallmonitorContactAccessory {
               
             try {
               
+              await fs.ensureFile(this.api.user.storagePath() + '/fritzbox/blackbook.json');
               blackbook = await fs.readJson(this.api.user.storagePath() + '/fritzbox/blackbook.json');
               
             } catch(err) {
