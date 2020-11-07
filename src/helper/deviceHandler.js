@@ -2159,9 +2159,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
         historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
         
-        
-        console.log(replacer);
-        
         if(Telegram && !replacer.denyCall){
         
           let dest;
