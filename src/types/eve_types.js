@@ -196,7 +196,50 @@ module.exports = {
     };
     inherits(Characteristic.Amperes, Characteristic);
     Characteristic.Amperes.UUID = 'E863F126-079E-48FF-8F27-9C2605A29F52';
+
+    /// /////////////////////////////////////////////////////////////////////////
+    // ValvePosition
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.ValvePosition = function() {
+      Characteristic.call(this, 'Valve Position', 'E863F12E-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.UINT8,
+        unit: Characteristic.Units.PERCENTAGE,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.ValvePosition, Characteristic);
+    Characteristic.ValvePosition.UUID = 'E863F12E-079E-48FF-8F27-9C2605A29F52';
     
+    /// /////////////////////////////////////////////////////////////////////////
+    // ProgramCommand
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.ProgramCommand = function() {
+      Characteristic.call(this, 'Program Command', 'E863F12C-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.DATA,
+        perms: [Characteristic.Perms.WRITE]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.ProgramCommand, Characteristic);
+    Characteristic.ProgramCommand.UUID = 'E863F12C-079E-48FF-8F27-9C2605A29F52';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // ProgramData
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.ProgramData = function() {
+      Characteristic.call(this, 'Program Data', 'E863F12F-079E-48FF-8F27-9C2605A29F52');
+      this.setProps({
+        format: Characteristic.Formats.DATA,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.ProgramData, Characteristic);
+    Characteristic.ProgramData.UUID = 'E863F12F-079E-48FF-8F27-9C2605A29F52';
+
     /// /////////////////////////////////////////////////////////////////////////
     // Outlet
     /// ///////////////////////////////////////////////////////////////////////// 
@@ -219,6 +262,33 @@ module.exports = {
     };
     inherits(Service.Outlet, Service);
     Service.Outlet.UUID = '00000047-0000-1000-8000-0026BB765291';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Thermostat
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Service.Thermostat = function(displayName, subtype) {
+      Service.call(this, displayName, '0000004A-0000-1000-8000-0026BB765291', subtype);
+      // Required Characteristics
+      this.addCharacteristic(Characteristic.CurrentHeatingCoolingState);
+      this.addCharacteristic(Characteristic.TargetHeatingCoolingState);
+      this.addCharacteristic(Characteristic.CurrentTemperature);
+      this.addCharacteristic(Characteristic.TargetTemperature);
+      this.addCharacteristic(Characteristic.TemperatureDisplayUnits);
+
+      // Optional Characteristics EVE
+      this.addOptionalCharacteristic(Characteristic.ValvePosition);
+      this.addOptionalCharacteristic(Characteristic.ProgramCommand);
+      this.addOptionalCharacteristic(Characteristic.ProgramData);
+
+      // Optional Characteristics
+      this.addOptionalCharacteristic(Characteristic.CurrentRelativeHumidity);
+      this.addOptionalCharacteristic(Characteristic.TargetRelativeHumidity);
+      this.addOptionalCharacteristic(Characteristic.CoolingThresholdTemperature);
+      this.addOptionalCharacteristic(Characteristic.HeatingThresholdTemperature);
+      this.addOptionalCharacteristic(Characteristic.Name);
+    };
+    inherits(Service.Thermostat, Service);
+    Service.Thermostat.UUID = '0000004A-0000-1000-8000-0026BB765291';
 
     /// /////////////////////////////////////////////////////////////////////////
     // ContactSensor

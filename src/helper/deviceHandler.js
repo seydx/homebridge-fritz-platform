@@ -388,6 +388,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
         }
         
+        let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
+          ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
+          : 0;
+        
         accessory
           .getService(service)
           .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
@@ -402,6 +406,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getService(service)
           .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
           .updateValue(currentTemp);
+          
+        accessory
+          .getService(service)
+          .getCharacteristic(api.hap.Characteristic.ValvePosition)
+          .updateValue(valvePos);
         
         break;
       
@@ -2050,11 +2059,16 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
       case 'smarthome-thermostat': {
       
+        let currentState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;  
+        let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
         let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
         let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
-        let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
           
-        historyService.addEntry({time: moment().unix(), currentTemp: currentTemp, setTemp: targetTemp, valvePosition: targetState});
+        let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
+          ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
+          : 0;
+          
+        historyService.addEntry({time: moment().unix(), currentTemp: currentTemp, setTemp: targetTemp, valvePosition: valvePos});
       
         break;
       
@@ -2322,7 +2336,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
         let deviceList = smarthomes.devicelist.device; 
-        let groupList = smarthomes.devicelist.group; 
+        //let groupList = smarthomes.devicelist.group; 
         
         //console.log(deviceList)
         //console.log(groupList)
@@ -2397,9 +2411,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                     ? {
                       supported_modes: parseInt(device.colorcontrol.supported_modes),
                       current_mode: parseInt(device.colorcontrol.current_mode),
-                      hue: parseInt(device.colorcontrol.hue),                            // 0Â° - 359Â°
+                      hue: parseInt(device.colorcontrol.hue),                            // 0° - 359°
                       saturation: parseInt(device.colorcontrol.saturation),              // 0% - 100% (if current_mode === 1)
-                      temperature: parseInt(device.colorcontrol.temperature)             // 2700Â° - 6500Â° Kelvin
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700° - 6500° Kelvin
                     }
                     : false
                 }
