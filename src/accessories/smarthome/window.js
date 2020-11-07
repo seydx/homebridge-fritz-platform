@@ -29,6 +29,20 @@ class SmarthomeWindowAccessory {
       service = this.accessory.addService(this.api.hap.Service.ContactSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
+    if(this.accessory.context.config.battery){
+      
+      let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
+      
+      if(!batteryService){
+        Logger.info('Adding Battery service', this.accessory.displayName);
+        batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
+      }
+      
+      batteryService
+        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE)
+      
+    }
+    
     if (!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
       service.addCharacteristic(this.api.hap.Characteristic.LastActivation);
     
