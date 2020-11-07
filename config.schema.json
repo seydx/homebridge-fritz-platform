@@ -431,6 +431,11 @@
             "type": "boolean",
             "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit. (Only for Lightbulb accessory types)"
           },
+          "battery": {
+            "title": "Battery",
+            "type": "boolean",
+            "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
+          },
           "accType": {
             "title": "Accessory Type",
             "type": "string",
@@ -1190,7 +1195,8 @@
                 "smarthome[].energy",
                 "smarthome[].temperature",
                 "smarthome[].window",
-                "smarthome[].brightness"
+                "smarthome[].brightness",
+                "smarthome[].battery"
               ]
             }
           ]
