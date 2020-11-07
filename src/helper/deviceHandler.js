@@ -47,6 +47,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             brightness = device.light.brightness ? device.light.brightness.levelpercentage : 0;
           
           }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
+          }
         
         } catch(err) {
         
@@ -120,6 +137,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             }
           
           }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
+          }
         
         } catch(err) {
         
@@ -152,6 +186,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             state = device.temperature.value || 0;
           
+          }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
           }
         
         } catch(err) {
@@ -186,6 +237,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             state = device.alert.state || 0;
           
           }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
+          }
         
         } catch(err) {
         
@@ -215,6 +283,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             state = device.thermostat.windowOpen || 0;
           
+          }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
           }
         
         } catch(err) {
@@ -275,6 +360,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
              
             }
           
+          }
+          
+          if(device && device.online && device.battery && accessory.context.config.battery){
+            
+            let batteryLevel = device.battery.value || 0;
+            let lowBattery = device.battery.low || 0;
+            
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
+              .updateValue(batteryLevel);
+              
+            accessory
+              .getService(api.hap.Service.BatteryService)
+              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
+              .updateValue(lowBattery);
+            
           }
         
         } catch(err) {
