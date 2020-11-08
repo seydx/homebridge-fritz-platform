@@ -100,7 +100,8 @@
             "title": "Master Device",
             "type": "boolean",
             "description": "Enables this device as master device. Only ONE device can be checked as master device!",
-            "required": true
+            "required": true,
+            "default": false
           },
           "readOnly": {
             "title": "Read Only",
@@ -203,6 +204,9 @@
               "wps": {
                 "title": "WPS",
                 "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].master === true;"
+                },
                 "oneOf": [
                   {
                     "title": "Characteristic",
@@ -222,6 +226,9 @@
               "dect": {
                 "title": "DECT",
                 "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].master === true;"
+                },
                 "oneOf": [
                   {
                     "title": "Characteristic",
@@ -241,6 +248,9 @@
               "aw": {
                 "title": "Answering Machine",
                 "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].master === true;"
+                },
                 "oneOf": [
                   {
                     "title": "Characteristic",
@@ -260,6 +270,9 @@
               "deflection": {
                 "title": "Deflection",
                 "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].master === true;"
+                },
                 "oneOf": [
                   {
                     "title": "Characteristic",
@@ -360,11 +373,15 @@
           "ping": {
             "title": "Ping",
             "type": "boolean",
+            "default": false,
             "description": "Enable this, to additionally ping the device if the status is not recognized correctly by the FritzBox."
           },
           "threshold": {
             "title": "Threshold",
             "type": "integer",
+            "condition": {
+              "functionBody": "return model.presence[arrayIndices[0]].ping === true;"
+            },
             "description": "Some devices deliberately disconnect from the network once the screen is turned off to save power. Ping works by keeping track of the last time a device was seen, and comparing that to a threshold value (in minutes). (Default: 15min)"
           }
         }
@@ -414,6 +431,9 @@
           "energy": {
             "title": "Power Meter",
             "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch';"
+            },
             "description": "Enable this, if the device has a built in power meter. The switch will be exposed as an outlet accessory instead of a switch accessory with FakeGato functionality to HomeKit. (Only for Switch accessory types)"
           },
           "temperature": {
@@ -424,11 +444,17 @@
           "window": {
             "title": "Window Sensor",
             "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat';"
+            },
             "description": "Enable this, if the device has a built in window open function. This exposes an additional window (contact) as an accessory to HomeKit. (Only for Thermostat accessory types)"
           },
           "brightness": {
             "title": "Brightness",
             "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb';"
+            },
             "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit. (Only for Lightbulb accessory types)"
           },
           "battery": {
@@ -439,6 +465,7 @@
           "accType": {
             "title": "Accessory Type",
             "type": "string",
+            "default": false,
             "oneOf": [
               {
                 "title": "Switch",
@@ -517,18 +544,25 @@
           "title": "Active",
           "description": "Activates Callmonitor.",
           "type": "boolean",
-          "required": true
+          "required": true,
+          "default": false
         },
         "group": {
           "title": "Group",
           "description": "Groups incoming and outgoing sensor to one.",
-          "type": "boolean"
+          "type": "boolean",
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          }
         },
         "ip": {
           "title": "IP Address",
           "type": "string",
           "placeholder": "192.168.178.1",
           "required": true,
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
           "description": "FritzBox IP Address. (Master Device)"
         },
         "port": {
@@ -536,12 +570,18 @@
           "type": "integer",
           "placeholder": 1012,
           "default": 1012,
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
           "description": "The port to listen on for Callmonitor.",
           "required": true
         },
         "incomingTo": {
           "title": "Incoming To",
           "type": "array",
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
           "items": {
             "title": "Number",
             "type": "string",
@@ -551,6 +591,9 @@
         "outgoingFrom": {
           "title": "Outgoing To",
           "type": "array",
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
           "items": {
             "title": "Number",
             "type": "string",
@@ -571,22 +614,32 @@
               "title": "Active",
               "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "required": true
+              "required": true,
+              "default": false
             },
             "duration": {
               "title": "Duration",
               "type": "integer",
               "placeholder": 30,
+              "condition": {
+                "functionBody": "return model.extras.alarm.active === true;"
+              },
               "description": "Duration of the call."
             },
             "telNr": {
               "title": "Telephone Number",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.alarm.active === true;"
+              },
               "description": "Telephone number to call if alarm is enabled.",
               "required": true
             },
             "accType": {
               "title": "Accessory Type",
+              "condition": {
+                "functionBody": "return model.extras.alarm.active === true;"
+              },
               "type": "string",
               "oneOf": [
                 {
@@ -615,10 +668,14 @@
               "title": "Active",
               "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "required": true
+              "required": true,
+              "default": false
             },
             "duration": {
               "title": "Duration",
+              "condition": {
+                "functionBody": "return model.extras.wakeup.active === true;"
+              },
               "type": "integer",
               "placeholder": 30,
               "description": "Duration of the call."
@@ -626,11 +683,17 @@
             "internNr": {
               "title": "Intern Phone Number",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.wakeup.active === true;"
+              },
               "description": "The intern phone number to call on WakeUp. (e.g **620)",
               "required": true
             },
             "accType": {
               "title": "Accessory Type",
+              "condition": {
+                "functionBody": "return model.extras.wakeup.active === true;"
+              },
               "type": "string",
               "oneOf": [
                 {
@@ -659,27 +722,40 @@
               "title": "Active",
               "description": "If enabled, a RingLock switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "required": true
+              "required": true,
+              "default": false
             },
             "DECTphones": {
               "title": "DECT phones",
               "type": "integer",
+              "condition": {
+                "functionBody": "return model.extras.ringlock.active === true;"
+              },
               "description": "Amount of DECT phones.",
               "required": true
             },
             "start": {
               "title": "Start Time",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.ringlock.active === true;"
+              },
               "description": "The time to start ring lock. (eg 14:00)"
             },
             "end": {
               "title": "End Time",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.ringlock.active === true;"
+              },
               "description": "The time to end ring lock. (eg 22:00)"
             },
             "accType": {
               "title": "Accessory Type",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.ringlock.active === true;"
+              },
               "oneOf": [
                 {
                   "title": "Switch",
@@ -707,17 +783,15 @@
               "title": "Active",
               "description": "If enabled, a PhoneBook switch/characteristic will be exposed to Apple Home.",
               "type": "boolean",
-              "required": true
-            },
-            "duration": {
-              "title": "Duration",
-              "type": "integer",
-              "placeholder": 30,
-              "description": "Duration of the call."
+              "required": true,
+              "default": false
             },
             "blacklists": {
               "title": "Blacklists",
               "type": "array",
+              "condition": {
+                "functionBody": "return model.extras.phoneBook.active === true;"
+              },
               "items": {
                 "title": "Name",
                 "type": "string",
@@ -727,6 +801,9 @@
             "accType": {
               "title": "Accessory Type",
               "type": "string",
+              "condition": {
+                "functionBody": "return model.extras.phoneBook.active === true;"
+              },
               "oneOf": [
                 {
                   "title": "Switch",
@@ -844,22 +921,32 @@
           "title": "Active",
           "description": "Activates Telegram.",
           "type": "boolean",
-          "required": true
+          "required": true,
+          "default": false
         },
         "token": {
           "title": "Token",
           "type": "string",
           "description": "Telegram Bot Token.",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
           "required": true
         },
         "chatID": {
           "title": "Chat ID",
           "type": "string",
           "description": "Telegram Chat ID.",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
           "required": true
         },
         "messages": {
           "title": "Messages",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
           "type": "object",
           "properties": {
             "presence": {
@@ -1331,6 +1418,9 @@
         {
           "type": "section",
           "title": "Messages",
+          "condition": {
+            "functionBody": "return model.telegram.active === true;"
+          },
           "orderable": false,
           "expandable": true,
           "expanded": false,
