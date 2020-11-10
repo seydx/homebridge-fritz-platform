@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.3 - 2020-11-10
+- Fixed phoneBook readJson function
+
 ## v5.0.2 - 2020-11-10
 - Fixed wol switch
 
