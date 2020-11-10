@@ -121,8 +121,10 @@ class CallmonitorContactAccessory {
             called: data[4]
           };
           
+          let caller = message.caller.replace(/\D/g,''); 
+          
           text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
-          this.callerNr = message.caller;
+          this.callerNr = caller;
           this.callerName = false;
           this.denyCall = false;  
           this.inbound = true;
@@ -155,9 +157,8 @@ class CallmonitorContactAccessory {
                 let callerToNr = entry.number.find(nr => nr === message.caller);
           
                 if(callerToNr){
-                  text = 'Incoming call from: ' + entry.name + ' ( '+ entry.number + ' ) to ' + message.called;
                   this.callerName = entry.name;
-                  this.callerNr = entry.number;
+                  text = 'Incoming call from: ' + this.callerName + ' ( '+ this.callerNr + ' ) to ' + message.called;
                 }
             
               }
@@ -265,11 +266,8 @@ class CallmonitorContactAccessory {
                 let callerToNr = entry.number.find(nr => nr === message.called);
             
                 if(callerToNr){
-              
-                  text = 'Calling ' + entry.name + ' ( '+ entry.number + ' )';
                   this.callerName = entry.name;
-                  this.callerNr = entry.number;
-              
+                  text = 'Calling ' + this.callerName + ' ( '+ this.callerNr + ' )';
                 }
             
               }
