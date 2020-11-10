@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.0.5 - 2020-11-10
+- Fixed callmonitor outgoing call
+
+## v5.0.4 - 2020-11-10
+- Fixed phonebook fetching numbers
+- Updated fritzbox dep to allow special chars
+- Fixed config.schema.json copy&paste
 
 ## v5.0.3 - 2020-11-10
 - Fixed phoneBook readJson function
