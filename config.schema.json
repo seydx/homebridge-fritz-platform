@@ -985,12 +985,12 @@
                   "description": "Message for incoming call. (Hint: @ will be replaced with caller name/number)"
                 },
                 "outgoing": {
-                  "title": "User Not Detected",
+                  "title": "Outgoing Call",
                   "type": "string",
                   "description": "Message for outgoing call. (Hint: @ will be replaced with caller name/number)"
                 },
                 "disconnected": {
-                  "title": "Anyone Detected",
+                  "title": "Call disconnected",
                   "type": "string",
                   "description": "Message if call disconnected. (Hint: @ will be replaced with caller name/number)"
                 }
