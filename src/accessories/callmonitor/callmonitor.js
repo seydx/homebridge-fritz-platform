@@ -151,13 +151,13 @@ class CallmonitorContactAccessory {
             if(phonebook){
               
               for(const entry of phonebook){
-            
-                if(message.caller === entry.number){
-              
+           
+                let callerToNr = entry.number.find(nr => nr === message.caller);
+          
+                if(callerToNr){
                   text = 'Incoming call from: ' + entry.name + ' ( '+ entry.number + ' ) to ' + message.called;
                   this.callerName = entry.name;
                   this.callerNr = entry.number;
-              
                 }
             
               }
@@ -178,11 +178,19 @@ class CallmonitorContactAccessory {
               
             }
               
-            if(blackbook)
-              for(const entry of blackbook)
-                if(message.caller === entry.number)
+            if(blackbook){
+              
+              for(const entry of blackbook){
+         
+                let callerToNr = entry.number.find(nr => nr === message.caller);
+                
+                if(callerToNr)
                   this.denyCall = true;
-            
+          
+              }
+              
+            } 
+         
             Logger.info(text, this.accessory.displayName);
             
             if(this.denyCall)
@@ -253,8 +261,10 @@ class CallmonitorContactAccessory {
             if(phonebook){
               
               for(const entry of phonebook){
+                
+                let callerToNr = entry.number.find(nr => nr === message.caller);
             
-                if(called === entry.number){
+                if(callerToNr){
               
                   text = 'Calling ' + entry.name + ' ( '+ entry.number + ' )';
                   this.callerName = entry.name;
@@ -280,10 +290,18 @@ class CallmonitorContactAccessory {
               
             }
               
-            if(blackbook)
-              for(const entry of blackbook)
-                if(message.caller === entry.number)
+            if(blackbook){
+              
+              for(const entry of blackbook){
+                
+                let callerToNr = entry.number.find(nr => nr === message.caller);
+                
+                if(callerToNr)
                   this.denyCall = true;
+                  
+              }
+                
+            }
           
             Logger.info(text, this.accessory.displayName);
               
