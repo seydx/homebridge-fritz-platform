@@ -41,8 +41,7 @@ That is not an issue by the plugin, it means only it can not find the, in config
 ## Device state error (Invalid Action / 401)
 
 ```
-[ERROR] An error occured by getting device state!
-[ERROR] {
+{
 "error": "No message",
 "errorCode": "No code",
 "tr064": "Invalid Action",
@@ -54,13 +53,13 @@ That is not an issue by the plugin, it means only it can not find the, in config
 }
 ```
 
-**Fix:** You need to set the right router type in your config.json. If you are using a cable router, please put "type":"cable" in your config.json otherwise it is by default "type":"dsl"
+**Fix:** You need to set the right router type in your config.json. If you are using a cable router, please put "connection":"cable" in your config.json otherwise it is by default "connection":"repeater"
 
 
 ## Wakeup error / Alarm error Error 501
 
 ```
-[FritzPlatform] [ERROR] {
+{
  "error": "No message",
  "errorCode": "No code",
  "tr064": "Action Failed",

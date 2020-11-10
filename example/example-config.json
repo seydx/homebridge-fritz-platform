@@ -1,243 +1,231 @@
 {
-  "bridge": {
-    ...
-  },
-  "accessories": [
-    ...
-  ],
-  "platforms": [
-    {
-      "platform": "FritzPlatform",
-      "devices": {
-        "FRITZ!Box 7590": {
-          "active": false,
-          "host": "192.168.178.1",
-          "port": 49000,
-          "username": "Username123",
-          "password": "pw3456",
-          "type": "dsl",
-          "master": true,
-          "mesh": true,
-          "readOnly": false,
-          "options": {
-            "wifi2": [
-              true,
-              false
-            ],
-            "wifi5": [
-              true,
-              false
-            ],
-            "wifiGuest": [
-              true,
-              false
-            ],
-            "reconnect": true,
-            "wps": [
-              true,
-              false
-            ],
-            "aw": [
-              true,
-              false
-            ],
-            "deflection": [
-              true,
-              false
-            ],
-            "led": [
-              true,
-              false
-            ],
-            "lock": [
-              true,
-              false
-            ]
-          }
-        },
-        "FRITZ!Box 7430 BU": {
-          "active": false,
-          "host": "192.168.178.82",
-          "port": 49000,
-          "username": "Username123",
-          "password": "pw3456",
-          "type": "dsl",
-          "readOnly": false,
-          "options": {
-            "wifi2": [
-              true,
-              false
-            ],
-            "wifi5": [
-              true,
-              false
-            ],
-            "wifiGuest": [
-              true,
-              false
-            ],
-            "wps": [
-              true,
-              false
-            ],
-            "led": [
-              true,
-              false
-            ]
-          }
-        },
-        "FRITZ!WLAN Repeater 310": {
-          "active": false,
-          "host": "192.168.178.66",
-          "port": 49000,
-          "username": "Test123",
-          "password": "pw3456",
-          "type": "repeater",
-          "readOnly": false,
-          "options": {
-            "wifi2": [
-              true,
-              false
-            ],
-            "wifi5": [
-              true,
-              false
-            ],
-            "wifiGuest": [
-              true,
-              false
-            ],
-            "wps": [
-              true,
-              false
-            ],
-            "led": [
-              true,
-              false
-            ]
-          }
-        }
-      },
-      "smarthome": {
-        "HAN-FUN Sensor": {
-          "active": true,
-          "ain": "01234567890",
-          "devType": "contact"
-        },
-        "DECT 301": {
-          "active": true,
-          "ain": "01234567890",
-          "heatValue": 5,
-          "coolValue": 5,
-          "windowSensor": true,
-          "devType": "thermostat"
-        },
-        "DECT 200": {
-          "active": true,
-          "ain": "01234567890",
-          "tempSensor": true,
-          "devType": "switch"
-        }
-      },
-      "callmonitor": {
-        "active": true,
-        "ip": "192.168.178.1",
-        "port": 1012,
-        "country": "DE",
-        "incomingTo": [
-          "8845668",
-          "5497854"
-        ],
-        "outgoingFrom": [
-          "8845668",
-          "5497854"
-        ]
-      },
-      "presence": {
-        "user": [
-          {
-            "active": true,
-            "name": "SeydX",
-            "address": "192.168.178.59"
-          },
-          {
-            "active": true,
-            "name": "Test",
-            "address": "192.168.178.91"
-          }
-        ],
-        "anyone": true,
-        "offDelay": 90,
-        "onDelay": 15,
-        "ping": false
-      },
-      "wol": [
+    "bridge": {
+        ...
+    },
+    "plugins": [
+        ...
+    ],
+    "accessories": [
+        ...
+    ],
+    "platforms": [
         {
-          "active": true,
-          "name": "Fernseher",
-          "address": "04:5D:4B:0C:E3:47"
+            "name": "FritzPlatform",
+            "debug": true,
+            "devices": [
+                {
+                    "name": "FritzBox 7590",
+                    "host": "192.168.178.1",
+                    "port": 49000,
+                    "username": "Test",
+                    "password": "Test123",
+                    "manufacturer": "Fritz Box",
+                    "model": "7590",
+                    "serialNumber": "12345",
+                    "master": true,
+                    "ssl": true,
+                    "tr064": true,
+                    "igd": true,
+                    "readOnly": false,
+                    "hide": true,
+                    "connection": "dsl",
+                    "options": {
+                        "wifi_2ghz": "switch",
+                        "wifi_5ghz": "switch",
+                        "wifi_guest": "switch",
+                        "wps": "characteristic",
+                        "aw": "characteristic",
+                        "led": "switch",
+                        "lock": "switch",
+                        "dect": "switch"
+                    }
+                },
+                {
+                    "name": "FritzBox 7430 BU",
+                    "host": "192.168.178.28",
+                    "port": 49000,
+                    "username": "Test",
+                    "password": "Test123",
+                    "manufacturer": "Fritz Box",
+                    "model": "7430 BU",
+                    "serialNumber": "12345",
+                    "readOnly": false,
+                    "connection": "dsl",
+                    "hide": false,
+                    "ssl": true,
+                    "tr064": true,
+                    "igd": true,
+                    "options": {
+                        "wifi_2ghz": "characteristic",
+                        "wifi_guest": "switch",
+                        "led": "switch",
+                        "lock": "characteristic",
+                    }
+                },
+                {
+                    "name": "FritzRepeater",
+                    "host": "192.168.178.66",
+                    "port": 49000,
+                    "username": "Test",
+                    "password": "Test123",
+                    "ssl": true,
+                    "tr064": true,
+                    "igd": false,
+                    "manufacturer": "FritzBox",
+                    "model": "Repeater",
+                    "serialNumber": "123456",
+                    "readOnly": false,
+                    "oldFW": true,
+                    "connection": "repeater",
+                    "hide": false,
+                    "options": {
+                        "led": "characteristic",
+                        "lock": "characteristic"
+                    }
+                }
+            ],
+            "presence": [
+                {
+                    "name": "Seyit",
+                    "address": "11:1A:25:22:88:33",
+                    "accType": "occupancy",
+                    "ping": true,
+                    "threshold": 15
+                },
+                {
+                    "name": "Test",
+                    "address": "06:64:F0:49:63:F8",
+                    "accType": "motion"
+                }
+            ],
+            "wol": [
+                {
+                    "name": "Computer",
+                    "address": "30:9C:23:A8:7B:23"
+                }
+            ],
+            "smarthome": [
+                {
+                    "name": "DECT 200",
+                    "ain": "11630 0190819",
+                    "energy": true,
+                    "temperature": true,
+                    "accType": "switch"
+                },
+                {
+                    "name": "HAN FUN Sensor",
+                    "ain": "119340107283",
+                    "accType": "contact",
+                    "battery": true
+                },
+                {
+                    "name": "DECT 301",
+                    "ain": "09995 0692315",
+                    "temperature": true,
+                    "window": true,
+                    "accType": "thermostat",
+                    "battery": true
+                }
+            ],
+            "network": [
+                {
+                    "name": "Camera",
+                    "address": "B0:D5:9D:B5:A7:C1",
+                    "polling": 60,                    
+                    "offDelay": 20,
+                    "onDelay": 0                                        
+                }
+            ],
+            "callmonitor": {
+                "active": true,
+                "group": true,
+                "ip": "192.168.178.1",
+                "port": 1012,
+                "incomingTo": [
+                    "8923846"
+                ],
+                "outgoingFrom": [
+                    "8923846"
+                ]
+            },
+            "extras": {
+                "alarm": {
+                    "active": true,
+                    "duration": 30,
+                    "telNr": "01765487925",
+                    "accType": "switch"
+                },
+                "wakeup": {
+                    "active": true,
+                    "duration": 30,
+                    "internNr": "**620",
+                    "accType": "characteristic"
+                },
+                "ringlock": {
+                    "active": false,
+                    "DECTphones": 1,
+                    "start": "11:00",
+                    "end": "22:00",
+                    "accType": "characteristic"
+                },
+                "phoneBook": {
+                    "active": true,
+                    "duration": 30,
+                    "accType": "characteristic",
+                    "blacklists": [
+                        "Blacklist"
+                    ]
+                }
+            },
+            "options": {
+                "presence": {
+                    "anyone": true,
+                    "onDelay": 30,
+                    "offDelay": 90
+                },
+                "reboot": {
+                    "on": "/var/lib/homebridgee/rebootOn.sh",
+                    "off": "/var/lib/homebridge/rebootOff.sh"
+                },
+                "polling": {
+                    "timer": 10,
+                    "exclude": [
+                        "router",
+                        "extra"
+                    ]
+                }
+            },
+            "telegram": {
+                "active": true,
+                "token": "464245222:AAECj0KFkxl0sdfsdf8kdFpNZpRR_dH2OA11",
+                "chatID": "-29645235123",
+                "messages": {
+                    "presence": {
+                        "user_in": "Welcome at home @",
+                        "user_out": "Bye Bye @",
+                        "anyone_in": "Someone is at home!",
+                        "anyone_out": "Nobody at home!"
+                    },
+                    "callmonitor": {
+                        "incoming": "Incoming call from @",
+                        "outgoing": "Outgoing call to @",
+                        "disconnected": "Call with @ disconnected"
+                    },
+                    "alarm": {
+                        "activated": "Alarm activated",
+                        "deactivated": "Alarm deactivated"
+                    },
+                    "reboot": {
+                        "start": "@: Offline!",
+                        "finish": "@: Online!"
+                    },
+                    "network": {
+                        "on": "@ is in network!",
+                        "off": "@ not in network!"
+                    }
+                }
+            },
+            "platform": "FritzPlatform"
         }
-      ],
-      "alarm": {
-        "active": false,
-        "telNr": "012514587",
-        "duration": 30
-      },
-      "wakeup": {
-        "active": false,
-        "internNr": "**620",
-        "duration": 30
-      },
-      "ringlock": {
-        "active": false,
-        "DECTphones": 1,
-        "start": "11:00",
-        "end": "22:00"
-      },
-      "broadband": {
-        "active": false,
-        "measureTime": 5,
-        "polling": 30
-      },
-      "extReboot": {
-        "active": false,
-        "cmdOn": "sh /PATH/TO/SCRIPT/on.sh",
-        "cmdOff": "sh /PATH/TO/SCRIPT/off.sh"
-      },
-      "phoneBook": {
-        "active": true,
-        "blacklists": [
-          "Blacklist"
-        ]
-      },
-      "telegram": {
-        "active": true,
-        "token": "TOKENHERE",
-        "chatID": "-CHATIDHERE",
-        "presence": {
-          "in": "Welcome at home @",
-          "out": "Bye Bye @",
-          "anyoneIn": "Someone is at home!",
-          "anyoneOut": "Nobody at home!"
-        },
-        "callmonitor": {
-          "incoming": "Incoming call - @",
-          "disconnected": "Call with @ disconnected"
-        },
-        "alarm": {
-          "activated": "Alarm activated! Calling @!",
-          "deactivated": "Alarm deactivated!"
-        },
-        "extReboot": {
-          "start": "Network reboot started!",
-          "finish": "Network reboot completed!"
-        }
-      },
-      "polling": 10,
-      "timeout": 10,
-      "clearCache": false,
-      "debug":true,
-      "disableAutoSearch": false
-    }
-  ]
+    ]
 }

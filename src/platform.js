@@ -1,37 +1,45 @@
 'use strict';
 
-const api = require('../lib/TR064.js');
+const Logger = require('./helper/logger.js');
 const packageFile = require('../package.json');
-const LogUtil = require('../lib/LogUtil.js');
 
-const debug = require('debug')('FritzPlatform');
-const store = require('json-fs-store');
+const { Fritzbox } = require('@seydx/fritzbox');
+const fs = require('fs-extra');
 
-//Handler
-const Hosts = require('../handler/HostsHandler.js');
-const Smarthome = require('../handler/SmarthomeHandler.js');
-const Config = require('../handler/ConfigHandler.js');
+const Telegram = require('./helper/telegram');
+const Callmonitor = require('./helper/callmonitor');
+const DeviceHandler = require('./helper/deviceHandler.js');
 
 //Accessories
-const PresenceAccessory = require('./accessories/presence.js');
-const DeviceAccessory = require('./accessories/device.js');
-const WolAccessory = require('./accessories/wol.js');
-const CallmonitorAccessory = require('./accessories/callmonitor.js');
-const SmarthomeAccessory = require('./accessories/smarthome.js');
-const ExtrasAccessory = require('./accessories/extras.js');
+const RouterAccessory = require('./accessories/router/router.js');
+const WolAccessory = require('./accessories/wol/wol.js');
+const CallmonitorAccessory = require('./accessories/callmonitor/callmonitor.js');
+const ExtrasAccessory = require('./accessories/extras/extras.js');
+const WatchNetwork = require('./accessories/network/network.js');
 
-const pluginName = 'homebridge-fritz-platform';
-const platformName = 'FritzPlatform';
+const PresenceMotionAccessory = require('./accessories/presence/motion.js');
+const PresenceOccupancyAccessory = require('./accessories/presence/occupancy.js');
 
-var Accessory, Service, Characteristic, UUIDGen;
+const SmarthomeSwitchAccessory = require('./accessories/smarthome/switch.js');
+const SmarthomeOutletAccessory = require('./accessories/smarthome/outlet.js');
+const SmarthomeLightbulbAccessory = require('./accessories/smarthome/lightbulb.js');
+const SmarthomeTemperatureAccessory = require('./accessories/smarthome/temperature.js');
+const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat.js');
+const SmarthomeContactAccessory = require('./accessories/smarthome/contact.js');
+const SmarthomeWindowAccessory = require('./accessories/smarthome/window.js');
 
-const timeout = ms => new Promise(res => setTimeout(res, ms));
+//Custom Types
+const RouterTypes = require('./types/custom_types.js');
+const EveTypes = require('./types/eve_types.js');
+
+const PLUGIN_NAME = 'homebridge-fritz-platform';
+const PLATFORM_NAME = 'FritzPlatform';
+
+var Accessory, UUIDGen, FakeGatoHistoryService;
 
 module.exports = function (homebridge) {
 
   Accessory = homebridge.platformAccessory;
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
   
   return FritzPlatform;
@@ -39,648 +47,734 @@ module.exports = function (homebridge) {
 
 function FritzPlatform (log, config, api) {
   
-  if (!api||!config) return;
+  if (!api||!config) 
+    return;
 
-  // BASE
+  Logger.init(log, config.debug);
+  
+  RouterTypes.registerWith(api.hap);
+  EveTypes.registerWith(api.hap);
+  FakeGatoHistoryService = require('fakegato-history')(api);
+
+  this.api = api;
   this.log = log;
-  this.logger = new LogUtil(null, log);    
   this.accessories = [];
-  this._accessories = new Map();
+  this.config = config;
   
-  this.Config = new Config(this, config);
-  this.configJson = config;
+  this.devices = new Map();
+  this.network = new Map(); 
+  this.presence = new Map();
+  this.smarthome = new Map();
   
-  this.configPath = api.user.storagePath();
-  this.HBpath = api.user.storagePath()+'/accessories';
-  
-  this.debugEnabled = config.debug||false; 
-  debug.enabled = this.debugEnabled;  
-  this.debug = debug;
+  this.masterDevice = false;
+  this.presenceOptions = false;
   
   this.validIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  
-  if (api) {
-  
-    if (api.version < 2.2) {
+  this.validMAC = /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/;
     
-      throw new Error('Unexpected API version. Please update your homebridge!');
+  if(this.config.devices) {
+  
+    this.master = [];
     
+    this.config.devices.map(device => {
+      if(device.master && device.host && device.username && device.password){
+        this.masterDevice = device;
+        this.masterDevice.fritzbox = new Fritzbox({ username: device.username, password: device.password, url: 'http://' + device.host + ':' + (device.port||49000), tr064: device.tr064, igd: device.igd, autoSsl: device.ssl });
+        this.master.push(device);
+      }
+    });
+    
+    if(!this.masterDevice){
+      Logger.warn('WARNING: There is no master router defined!');
+      Logger.warn('WARNING: Please define ONE master router to proceed!');
+      return;
     }
-  
-    this.logger.info('**************************************************************');
-    this.logger.info('FritzPlatform v'+packageFile.version+' by SeydX');
-    this.logger.info('GitHub: https://github.com/SeydX/'+pluginName);
-    this.logger.info('Email: seyd55@outlook.de');
-    this.logger.info('**************************************************************');
-    this.logger.info('start success...');
     
-    this.api = api;
-    
-    this.api.on('didFinishLaunching', this._checkConfig.bind(this));
+    if(this.master.length > 1){
+      Logger.warn('WARNING: More than ONE router are configured as master router!');
+      Logger.warn('WARNING: Please define only ONE master router to proceed!');
+      return;
+    }    
   
+    this.config.devices.forEach(router => {
+    
+      let error = false;
+      
+      let validTypes = ['dsl', 'cable', 'repeater'];
+
+      if (!router.name) {
+        Logger.warn('One of the router has no name configured. This router will be skipped.');
+        error = true;
+      } else if (!router.host) {
+        Logger.warn('There is no host configured for this router. This router will be skipped.', router.name);
+        error = true;
+      } else if (!router.username) {
+        Logger.warn('There is no username configured for this router. This router will be skipped.', router.name);
+        error = true;
+      } else if (!router.password) {
+        Logger.warn('There is no password configured for this router. This router will be skipped.', router.name);
+        error = true;
+      } else if(!router.connection || !validTypes.includes(router.connection)) {
+        Logger.warn('There is no or no valid connection type configured for this router. Setting it to default: "dsl"', router.name);
+        router.connection = 'dsl';
+      }
+
+      if (!error) {
+        router.type = 'router';
+        router.subtype = router.connection;
+        const uuid = UUIDGen.generate(router.name);
+        if (this.devices.has(uuid)) {
+          Logger.warn('Multiple devices are configured with this name. Duplicate router will be skipped.', router.name);
+        } else {
+          
+          let options = {
+            host: router.host,
+            port: router.port || 49000,
+            username: router.username,
+            password: router.password,
+            tr064: router.tr064,
+            igd: router.igd,
+            ssl: router.ssl
+          };
+          
+          router.fritzbox = new Fritzbox({ 
+            username: options.username,
+            password: options.password, 
+            url: 'http://' + options.host + ':' + options.port, 
+            tr064: options.tr064, 
+            igd: options.igd, 
+            autoSsl: options.ssl
+          });
+        
+          if(router.master)
+            this.fritzbox = router.fritzbox;
+        
+          if(!router.hide)
+            this.devices.set(uuid, router);
+          
+          if(router.options){
+          
+            let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock'];
+          
+            const switches = Object.keys(router.options).filter(extra => validChars.includes(extra) && router.options[extra] === 'switch');
+            
+            switches.forEach(name => {
+            
+              let subtype = name;
+              name = name.includes('_') ? name.replace('_', ' ') : name;
+              let accName = router.name + ' ' + (name[0].toUpperCase() + name.substring(1));
+            
+              let extraSwitch = {
+                name: accName,
+                type: 'extra',
+                subtype: subtype,
+                parent: router.name,
+                fritzbox: router.fritzbox,
+                options: false,
+                oldFW: router.oldFW
+              };
+              const switchUUID = UUIDGen.generate(extraSwitch.name);
+              if (this.devices.has(switchUUID)) {
+                Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', extraSwitch.name);
+              } else {
+                this.devices.set(switchUUID, extraSwitch);
+              }
+            }); 
+          
+          } 
+            
+        }
+      }
+      
+    });
+    
   }
+    
+  if(this.config.smarthome) {
+  
+    this.config.smarthome.forEach(device => {
+    
+      let error = false;
+      let validTypes = ['switch', 'contact', 'thermostat', 'lightbulb'];
+
+      if (!device.name) {
+        Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
+        error = true;
+      } else if (!device.ain) {
+        Logger.warn('There is no AIN configured for this smarthome device. This device will be skipped.', device.name);
+        error = true;
+      } else if (!device.accType || !validTypes.includes(device.accType)) {
+        Logger.warn('There is no or no valid type configured for this smarthome device. This device will be skipped.', device.name);
+        error = true;
+      }
+
+      if (!error) {
+        device.ain = device.ain.replace(/\s/g,'');
+        device.type = 'smarthome';
+        device.subtype = 'smarthome-' + device.accType;
+        const uuid = UUIDGen.generate(device.name);
+        if (this.devices.has(uuid)) {
+          Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
+        } else {
+          this.devices.set(uuid, device);
+          this.smarthome.set(uuid, device);
+        }
+        
+        if(device.temperature){
+        
+          let tempDevice = {
+            name: device.name + ' Temperature',
+            type: 'smarthome',
+            subtype: 'smarthome-temperature',
+            ain: device.ain
+          };
+
+          const uuidTemp = UUIDGen.generate(tempDevice.name);
+          if (this.devices.has(uuidTemp)) {
+            Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', tempDevice.name);
+          } else {
+            this.devices.set(uuidTemp, tempDevice);
+            this.smarthome.set(uuidTemp, tempDevice);
+          }
+        
+        }
+        
+        if(device.window){
+        
+          let windowDevice = {
+            name: device.name + ' Window',
+            type: 'smarthome',
+            subtype: 'smarthome-window',
+            ain: device.ain
+          };
+
+          const uuidWindow = UUIDGen.generate(windowDevice.name);
+          if (this.devices.has(uuidWindow)) {
+            Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', windowDevice.name);
+          } else {
+            this.devices.set(uuidWindow, windowDevice);
+            this.smarthome.set(uuidWindow, windowDevice);
+          }
+        
+        }
+        
+      }
+      
+    });
+    
+  }
+  
+  if(this.config.presence) {
+  
+    this.config.presence.forEach(user => {
+    
+      let error = false;
+      
+      if (!user.name) {
+        Logger.warn('One of the user has no name configured. This user will be skipped.');
+        error = true;
+      } else if(user.name === 'Anonym') {
+        Logger.warn('One of the user is called "Anonym". Please change name of this user! This user will be skipped.');
+        error = true;
+      } else if (!user.address) {
+        Logger.warn('There is no address configured for this user. This user will be skipped.', user.name);
+        error = true;
+      } else if (!this.validIP.test(user.address) && !this.validMAC.test(user.address)) {
+        Logger.warn('The address for this user is not a valid IP/MAC address. This user will be skipped.', user.name);
+        error = true;
+      }
+      
+      let validTypes = ['occupancy', 'motion'];
+      
+      if(!validTypes.includes(user.accType)){
+        Logger.warn('No or wrong accessory type setted up for this user. Setting it to "occupancy".', user.name);
+        user.accType = 'occupancy';
+      }
+
+      if (!error) {
+        user.type = 'presence';
+        user.subtype = 'presence-' + user.accType;
+        const uuid = UUIDGen.generate(user.name);
+        if (this.devices.has(uuid)) {
+          Logger.warn('Multiple devices are configured with this name. Duplicate user will be skipped.', user.name);
+        } else {
+          user.fritzbox = this.fritzbox;
+          this.devices.set(uuid, user);
+          this.presence.set(uuid, user);
+        }
+      }
+      
+    });
+    
+  }
+  
+  if(this.config.wol) {
+  
+    this.config.wol.forEach(device => {
+    
+      let error = false;
+      
+      if (!device.name) {
+        Logger.warn('One of the WOL devices has no name configured. This device will be skipped.');
+        error = true;
+      } else if (!device.address) {
+        Logger.warn('There is no address configured for this WOL device. This device will be skipped.', device.name);
+        error = true;
+      } else if (!this.validMAC.test(device.address)) {
+        Logger.warn('The address for this WOL device is not a valid MAC address. This device will be skipped.', device.name);
+        error = true;
+      }
+
+      if (!error) {
+        device.type = 'wol';
+        device.subtype = 'wol';
+        const uuid = UUIDGen.generate(device.name);
+        if (this.devices.has(uuid)) {
+          Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
+        } else {
+          device.fritzbox = this.fritzbox;
+          this.devices.set(uuid, device);
+        }
+      }
+      
+    });
+    
+  }
+  
+  if(this.config.network) {
+  
+    this.config.network.forEach(device => {
+    
+      let error = false;
+      
+      if (!device.name) {
+        Logger.warn('One of the Network devices has no name configured. This device will be skipped.');
+        error = true;
+      } else if (!device.address) {
+        Logger.warn('There is no address configured for this Network device. This device will be skipped.', device.name);
+        error = true;
+      } else if (!this.validMAC.test(device.address) && !this.validIP.test(device.address)) {
+        Logger.warn('The address for this WOL device is not a valid IP/MAC address. This device will be skipped.', device.name);
+        error = true;
+      }
+
+      if (!error) {
+        device.type = 'network';
+        device.subtype = 'network';
+        const uuid = UUIDGen.generate(device.name);
+        if (this.network.has(uuid)) {
+          Logger.warn('Multiple network devices are configured with this name. Duplicate devices will be skipped.', device.name);
+        } else {
+          Logger.info('Configuring network device', device.name);
+          device.fritzbox = this.fritzbox;
+          this.network.set(uuid, device);
+        }
+      }
+      
+    });
+    
+  }
+  
+  if(config.extras && Object.keys(config.extras).length){
+  
+    this.extrasAsCharacteristics = {};
+    
+    Object.keys(config.extras)
+      .filter( device => Object.keys(config.extras[device]).length && config.extras[device].active && config.extras[device].accType === 'characteristic')
+      .map( device => {
+        this.extrasAsCharacteristics[device] = {
+          ...config.extras[device]
+        };
+      });
+    
+    let extras = Object.keys(config.extras)
+      .filter( device => Object.keys(config.extras[device]).length && config.extras[device].active && config.extras[device].accType === 'switch');
+      
+    extras.forEach(device => {
+    
+      let dev = {
+        name: null,
+        type: 'extra',
+        subtype: device,
+        options: config.extras[device],
+        oldFW: this.masterDevice.oldFW
+      };
+  
+      switch (device){
+        case 'alarm':
+          if(config.extras[device].telNr){
+            dev.name = this.masterDevice.name + ' Alarm';
+          }
+          break;
+        case 'wakeup':
+          if(config.extras[device].internNr){
+            dev.name = this.masterDevice.name + ' WakeUp';
+          }
+          break;
+        case 'ringlock':
+          if(config.extras[device].DECTphones){
+            dev.name = this.masterDevice.name + ' RingLock';
+          }
+          break;
+        case 'phoneBook':
+          dev.name = this.masterDevice.name + ' PhoneBook';
+          break;
+        default:
+          //fall through
+          break;
+      }
+      
+      if(dev.name){
+        const uuid = UUIDGen.generate(dev.name);
+        if (this.devices.has(uuid)) {
+          Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', dev.name);
+        } else {
+          dev.fritzbox = this.fritzbox;
+          this.devices.set(uuid, dev);
+        }
+      }
+    
+    }); 
+    
+    this.extrasAsCharacteristics = Object.keys(this.extrasAsCharacteristics).length ? this.extrasAsCharacteristics : false;
+    
+  }
+  
+  if(config.options && Object.keys(config.options).length){
+    if(this.presence.size){
+      if(config.options.presence){
+        this.presenceOptions = true;
+      }
+    }
+    this.polling = {
+      timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : 10000,
+      exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
+        ?  config.options.polling.exclude
+        :  ['wakeup', 'alarm', 'phoneBook']
+    };
+    this.reboot = {
+      on: config.options.reboot && config.options.reboot.on ? config.options.reboot.on : false,
+      off: config.options.reboot && config.options.reboot.on ? config.options.reboot.on : false 
+    };
+  } else {
+    this.polling = {
+      timer: 10000,
+      exclude: ['wakeup', 'alarm', 'phoneBook']
+    };
+    this.reboot = {
+      on: false,
+      off: false
+    };
+  }
+    
+  if(!this.polling.exclude.includes('wakeup'))
+    this.polling.exclude.push('wakeup');
+    
+  if(!this.polling.exclude.includes('alarm'))
+    this.polling.exclude.push('alarm');
+    
+  if(!this.polling.exclude.includes('phoneBook'))
+    this.polling.exclude.push('phoneBook');
+  
+  if(this.presence.size){
+    if(this.presenceOptions){
+      let accType = config.options.presence.accType;
+      let validTypes = ['occupancy', 'motion'];
+      if(!validTypes.includes(accType)){
+        Logger.warn('No or wrong accessory type setted up for the anyone sensor. Setting it to "occupancy".');
+        accType = 'occupancy';
+      }
+      this.presenceOptions = {};
+      this.presenceOptions = {
+        'anyone': config.options.presence.anyone || false,
+        'accType': accType,
+        'offDelay': !isNaN(parseInt(config.options.presence.offDelay)) ? config.options.presence.offDelay : 90,
+        'onDelay': !isNaN(parseInt(config.options.presence.onDelay)) ? config.options.presence.onDelay : 30
+      };
+    } else {
+      Logger.debug('Setting default options for presence.');
+      this.presenceOptions = {};
+      this.presenceOptions = {
+        'anyone': false,
+        'accType': 'occupancy',
+        'offDelay': 90,
+        'onDelay': 30
+      };
+    }
+    
+    if(this.presenceOptions.anyone){
+      let presence = {
+        name: 'Anyone',
+        type: 'presence',
+        subtype: 'presence-' + this.presenceOptions.accType,
+        accType: this.presenceOptions.accType 
+      };
+      const uuid = UUIDGen.generate(presence.name);
+      if (this.devices.has(uuid)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', presence.name);
+      } else {
+        this.devices.set(uuid, presence);
+      }
+    }
+    
+  }
+  
+  if(config.callmonitor && config.callmonitor.active && config.callmonitor.ip && this.validIP.test(config.callmonitor.ip)){
+   
+    this.config.callmonitor = config.callmonitor;
+    this.config.callmonitor.port = this.config.callmonitor.port || 1012;
+
+    this.config.callmonitor.incomingTo = this.config.callmonitor.incomingTo && this.config.callmonitor.incomingTo.length
+      ? this.config.callmonitor.incomingTo
+      : [];
+                                         
+    this.config.callmonitor.outgoingFrom = this.config.callmonitor.outgoingFrom && this.config.callmonitor.outgoingFrom.length
+      ? this.config.callmonitor.outgoingFrom
+      : [];
+
+    this.config.callmonitor.type = 'callmonitor';
+    
+    this.Callmonitor = new Callmonitor(this.config.callmonitor);  
+    this.Callmonitor.connect();
+    
+    if(this.config.callmonitor.group){
+      const uuid_group = UUIDGen.generate('Callmonitor');
+      
+      if (this.devices.has(uuid_group)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', 'Callmonitor');
+      } else {
+        let callmonitor = {
+          name: 'Callmonitor',
+          subtype: 'group',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_group, callmonitor);
+      }
+    } else {
+      const uuid_incoming = UUIDGen.generate('Callmonitor Incoming');
+      const uuid_outgoing = UUIDGen.generate('Callmonitor Outgoing');
+      
+      if (this.devices.has(uuid_incoming)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', 'Callmonitor Incoming');
+      } else {
+        let callmonitor = {
+          name: 'Callmonitor Incoming',
+          subtype: 'incoming',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_incoming, callmonitor);
+      }
+      
+      if (this.devices.has(uuid_outgoing)) {
+        Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', 'Callmonitor Outgoing');
+      } else {
+        let callmonitor = {
+          name: 'Callmonitor Outgoing',
+          subtype: 'outgoing',
+          ...this.config.callmonitor
+        };
+        this.devices.set(uuid_outgoing, callmonitor);
+      }
+    }
+    
+  } else {
+    Logger.debug('Callmonitor is not or not correctly set up. Skip.');
+    this.config.callmonitor = false;
+  }
+  
+  if(config.telegram && config.telegram.active && config.telegram.token && config.telegram.chatID){
+    this.config.telegram = config.telegram;
+    this.config.telegram.messages = this.config.telegram.messages || {};
+    this.messages = {};
+    Object.keys(this.config.telegram.messages)
+      .filter( msg => Object.keys(this.config.telegram.messages[msg]).length )
+      .map(msg => {
+        this.messages[msg] = {
+          ...this.config.telegram.messages[msg]
+        };
+      });
+      
+    this.Telegram = new Telegram(this.config.telegram, this.messages);  
+    this.Telegram.start();
+    
+  } else {
+    Logger.debug('Telegram is not or not correctly set up. Skip.');
+    this.config.telegram = false;
+    this.messages = false;
+  }  
+  
+  this.handler = DeviceHandler(this.api, this.fritzbox, this.devices, this.presence, this.smarthome, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
+  
+  if(this.network.size)
+    new WatchNetwork(this.network, this.Telegram, this.polling);
+    
+  //listener to close the callmonitor
+  this.api.on('shutdown', () => {
+    if(this.Callmonitor)
+      this.Callmonitor.stop();
+  });
+  
+  this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
+  
 }
 
 FritzPlatform.prototype = {
 
-  _checkConfig: async function(){
-
+  didFinishLaunching: async function(){
+  
     try {
-    
-      let foundDevices = [];    
-      
-      if(!this.configJson.disableAutoSearch){
-      
-        this.logger.info('Auto Device Search is enabled, searching for devices in network...');
-        
-        let tr064 = new api.TR064();
-        foundDevices = await tr064.searchDevices();
-      
-      } else {
-
-        this.logger.info('Auto Device Search is disabled, looking for devices in config.json..');
-
-        if(!this.configJson.devices||(this.configJson.devices && !Object.keys(this.configJson.devices).length))
-          throw 'Auto Device Search is disabled and NO devices setted up in config.json!';
-
-        for(const dev of Object.keys(this.configJson.devices)){
-          
-          if(this.validIP.test(this.configJson.devices[dev].host))
-            foundDevices.push({
-              name: dev,
-              address: this.configJson.devices[dev].host,
-              port: this.configJson.devices[dev].port||49000,
-              location: 'http://' + this.configJson.devices[dev].host + ':' + this.configJson.devices[dev].port + '/tr64desc.xml',
-              serial: 'FB-' + this.configJson.devices[dev].host.replace(/\./g, '')
-            });
-        }
-
-      }
-      
-      debug('Found following devices:');
-      debug(foundDevices);
-      
-      this.logger.info('Initializing config...');
-      this.config = await this.Config.generateConfig(foundDevices);
-      
-      if(!this.config && this.accessories.length)
-        return this._initPlatform();
-        
-      if(!this.config && !this.accessories.length)
-        return 'Nothing to do..';
-
-      this.deviceArray = await this.Config.getDevices();
-      
-      this.masterDevice = await this.Config.getMasterDevice();
-      
-      debug('Initializing extra accessories...');
-      this.extraAccessories = await this.Config.getExtraAccessories();
-      
-      debug('Initializing extras...');
-      this.extras = await this.Config.getExtras();
-      
-      debug('Initializing telegram...');
-      this.telegram = await this.Config.initTelegram();
-      
-      debug('Initializing callmonitor...');
-      this.cm = await this.Config.initCallmonitor();
-
-      let config = {
-        devices: this.config.devices,
-        smarthome: this.config.smarthome,
-        callmonitor: this.config.callmonitor,
-        presence: this.config.presence,
-        wol: this.config.wol,
-        phoneBook: this.config.phoneBook,
-        alarm: this.config.alarm,
-        wakeup: this.config.wakeup,
-        ringlock: this.config.ringlock,
-        broadband: this.config.broadband,
-        extReboot: this.config.extReboot,
-        telegram: this.config.telegram,
-        polling: this.config.polling,
-        timeout: this.config.timeout,
-        clearCache: this.config.clearCache,
-        debug: this.config.debug,
-        disableAutoSearch: this.config.disableAutoSearch,
-        disableAutoConfig: this.config.disableAutoConfig
-      };
-      
-      if(!this.config.disableAutoConfig){
-      
-        debug('Generating config...');
-      
-        let newConfig = await this._refreshConfig(config);      
-        debug(JSON.stringify(newConfig,null,4));
-     
-        if(this.firstLaunch){
-      
-          this.logger.info('First launch completed!');
-          this.logger.info('Please open your config.json and set up your credentials for the devices and restart homebridge to complete the auto config generator!');
-      
-          return;
-     
-        }
-      
-      } else {
-      
-        this.logger.info('Auto config generator disabled.');
-      
-      }
-      
-      this.logger.info('Found ' + this.deviceArray.length + ' active devices...');
-      
-      if(!this.deviceArray.length){
-      
-        this.logger.info('Please check your config.json and activate the device(s) you want to see in HomeKit.');
-        this.logger.info('Please also set up username, password, type and master for your \'device(s)\' and restart homebridge!');
-    
-        if(this.accessories.length){
-        
-          this.logger.warn('Removing all devices from HomeKit and cache!');
-          this.accessories.map( accessory => this.removeAccessory(accessory));
-    
-        }
-        
-        return;
-      
-      }
-      
-      if(!this.masterDevice.length){
-      
-        throw 'No master device defined!';
-          
-      } else if(this.masterDevice.length > 1) {
-        
-        throw 'Please define only ONE master device!';
-      
-      } else {
-      
-        debug('Checking master device...');
-        
-        let masterConfig = {
-          host: this.masterDevice[0].host,
-          port: this.masterDevice[0].port,
-          username: this.masterDevice[0].username,
-          password: this.masterDevice[0].password,
-          type: this.masterDevice[0].type,
-          mesh: this.masterDevice[0].mesh,
-          debug: this.config.debug,
-          timeout: this.config.timeout * 1000
-        };
-        
-        let tr064 = new api.TR064(masterConfig);            
-        
-        let TR064 = await tr064.initDevice();
-        this.device = await TR064.startEncryptedCommunication();
-        
-        debug('Master device successfully confirmed');
-           
-        if(this.Config.getHosts()){
-            
-          debug('Initializing host list');
-          this.hosts = new Hosts(this, masterConfig, this.device, this.config.devices, this.config);
-              
-          await timeout(1000);
-             
-        }
-            
-        if(this.Config.getSmartHome()){
-            
-          debug('Initializing smarthome list');
-          this.smarthome = new Smarthome(this, masterConfig, this.device);
-              
-          await timeout(1000);
-  
-        }
-          
-        this.masterConfig = masterConfig;
-      
-      }
-      
-      this._initPlatform();
-
+      await fs.ensureDir(this.api.user.storagePath() + '/fritzbox');
     } catch(err) {
-
-      this.logger.error('An error occured while checking config!');
-      debug(err);
-
+      Logger.warn('Can not create fritzbox directory into your homebridge directory. Please create it manually.');
     }
 
-  },
-  
-  _refreshConfig: function(object){
-  
-    return new Promise((resolve, reject) => {
-  
-      store(this.configPath).load('config', (err,obj) => {    
-          
-        if(obj){
-                  
-          if(!(obj.id === 'config')) { 
-            
-            this.firstLaunch = true;
-            this.logger.info('Initializing first launch');
-            
-          }
-            
-          debug('Config.json loaded!');
-      
-          obj.id = 'config';
-        
-          for(const i in obj.platforms){
-              
-            if(obj.platforms[i].platform === 'FritzPlatform'){
-              
-              for(const j in object){
-                  
-                obj.platforms[i][j] = object[j];
-                    
-              }
-                
-            }
-            
-          }
-          
-          debug('Writing new parameter into config.json...');
-        
-          store(this.configPath).add(obj, (err) => {
-              
-            if(err)reject(err);
-              
-            if(this.firstLaunch){
-              this.logger.info('Config.json refreshed');
-            }
-              
-            debug('Config.json refreshed!');
-              
-            resolve(obj.platforms[0]);
-            
-          });
-        
-        } else {
-         
-          reject(err);
-         
-        }
-        
-      });
-
-    });
-  
-  },
-  
-  _initPlatform: async function(){
-
-    this._devices = new Map();
+    for (const entry of this.devices.entries()) {
     
-    try {
-  
-      if(!this.config){
-  
-        this.logger.warn('\'clearCache\' is active! All accessories will be removed from HomeKit and cache!');
-        this.accessories.map( accessory => this.removeAccessory(accessory));
-    
-      } else {
+      let uuid = entry[0];
+      let device = entry[1];
       
-        if(this.extraAccessories.length)
-          this.deviceArray = this.deviceArray.concat(this.extraAccessories);
+      const cachedAccessory = this.accessories.find(curAcc => curAcc.UUID === uuid);
+      
+      if (!cachedAccessory) {
+      
+        const accessory = new Accessory(device.name, uuid);
+        accessory.context.config = device;
         
-        for(const dev of this.deviceArray)
-          this._devices.set(dev.name, dev);
-
-        debug('Device initialization finished');
-          
-        for(const confDev of this.deviceArray)
-          this._addOrRemoveDevice(confDev);
-      
+        Logger.info('Configuring accessory...', accessory.displayName);
+        this.setupAccessory(accessory, device);
+        this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        
+        this.accessories.push(accessory);
+        
       }
       
-    } catch(err) {
-    
-      this.logger.error('An error occured while fetching devices!');
-      debug(err);
-    
     }
+
+    this.accessories.forEach(accessory => {
     
+      const device = this.devices.get(accessory.UUID);
+      
+      try {
+      
+        if (!device)
+          this.removeAccessory(accessory);
+    
+      } catch(err) {
+
+        Logger.info('It looks like the accessory has already been removed. Skip removing.');
+        Logger.debug(err);
+     
+      }
+      
+    });
+    
+    if(this.polling.timer)
+      this.handler.poll(this.accessories);
+  
   },
   
-  _addOrRemoveDevice: function(object) {
-
-    const device = this._accessories.get(object.name);
-
-    if(!device){
-
-      this._accessories.set(object.name, object);
-      this.addAccessory(object);
-
-    }
-
-    this.accessories.map( accessory => {
-
-      if(!this._devices.has(accessory.displayName)){
-
-        this._accessories.delete(accessory.displayName);
-        this.removeAccessory(accessory);
-
-      }
-
+  setupAccessory: async function(accessory, device){
+  
+    var manufacturer, model, serialNumber;
+    
+    accessory.on('identify', () => {
+      Logger.info('Identify requested.', accessory.displayName);
     });
 
-  },
-  
-  _addOrConfigure: function(accessory, object, add){
-
-    this._refreshContext(accessory, object, add);    
-    this._addOrConfAccessoryInformation(accessory);
-
-    switch(accessory.context.type){
-
-      case 'dsl':
-      case 'cable':
-      case 'repeater':     
-
-        if(add)
-          accessory.addService(Service.Switch, object.name);
-        
-        new DeviceAccessory(this, accessory, accessory.context.master ? this.device : false);
-
-        break;
-        
-      case 'callmonitor':
-
-        if(add)
-          accessory.addService(Service.ContactSensor, object.name);
-        
-        new CallmonitorAccessory(this, accessory);
-
-        break;
-        
-      case 'smarthome':
-
-        if(add){
+    const AccessoryInformation = accessory.getService(this.api.hap.Service.AccessoryInformation);
     
-          if(accessory.context.devType === 'contact' || accessory.context.devType === 'window'){
-    
-            accessory.addService(Service.ContactSensor, object.name);
-      
-          } else if(accessory.context.devType === 'thermostat'){
-    
-            accessory.addService(Service.Thermostat, object.name);
-            accessory.addService(Service.BatteryService, object.name);
-      
-          } else if(accessory.context.devType === 'switch'){
-    
-            accessory.addService(Service.Outlet, object.name);
-      
-          } else {
-          
-            accessory.addService(Service.TemperatureSensor, object.name);
-          
-          }
-    
-        }
-        
-        new SmarthomeAccessory(this, accessory, this.device, this.smarthome);
-
-        break;
-        
-      case 'presence':
-
-        if(add)
-          accessory.addService(Service.OccupancySensor, object.name);
-        
-        new PresenceAccessory(this, accessory, this.hosts);
-
-        break;
-        
-      case 'wol':
-
-        if(add)
-          accessory.addService(Service.Switch, object.name);
-        
-        new WolAccessory(this, accessory, this.device);
-
-        break;
-        
-      case 'extras':
-      
-        if(add)
-          accessory.addService(Service.Switch, object.name);
-        
-        new ExtrasAccessory(this, accessory);
-      
-        break;
-        
-      default:
-        //
-
-    }
-
-  },
-  
-  _refreshContext: function(accessory, object, add){
-
-    accessory.reachable = true;
-    
-    accessory.context.polling = this.config.polling * 1000;
-    accessory.context.timeout = this.config.timeout * 1000;
-    accessory.context.debug = this.config.debug||false;
-
-    if(add){
-      accessory.context.serial = object.serial;
-      accessory.context.type = object.type;    
-    }
-    
-    switch(accessory.context.type){
-    
-      case 'dsl':
-      case 'cable':
-      case 'repeater':
-    
-        if(this.config.devices[accessory.displayName]){
-      
-          accessory.context = {
-            ...accessory.context,
-            ...this.config.devices[accessory.displayName],
-            masterConfig: this.masterConfig
-          };
-          
-          if(accessory.context.master)
-            accessory.context.extras = this.extras;
-          
-        }
-  
-        break; 
-    
-      case 'presence':
-  
-        for(const user of this.config.presence.user)
-          if(user.name === accessory.displayName)
-            accessory.context = {
-              ...accessory.context,
-              ...user,
-              masterConfig: this.masterConfig,
-              offDelay: this.config.presence.offDelay * 1000,
-              ondelay: this.config.presence.onDelay * 1000,
-              ping: this.config.presence.ping
-            };
-  
-        break; 
-    
-      case 'wol':
-  
-        for(const wol of this.config.wol)
-          if(wol.name === accessory.displayName)
-            accessory.context = {
-              ...accessory.context,
-              ...wol,
-              masterConfig: this.masterConfig
-            };
-  
-        break; 
-    
-      case 'callmonitor':
-      
-        accessory.context = {
-          ...accessory.context,
-          ...this.config.callmonitor,
-          masterConfig: this.masterConfig
-        };
-  
-        break; 
-    
-      case 'smarthome':
-  
-        if(this.config.smarthome[accessory.displayName])
-          accessory.context = {
-            ...accessory.context,
-            ...this.config.smarthome[accessory.displayName],
-            masterConfig: this.masterConfig
-          };
-          
-        if(this.config.smarthome[accessory.displayName] + ' Window')
-          accessory.context = {
-            ...accessory.context,
-            masterConfig: this.masterConfig,
-            devType: object ? object.devType : accessory.context.devType,
-            ain: object ? object.ain : accessory.context.ain 
-          };
-          
-        if(this.config.smarthome[accessory.displayName] + ' Temperature')
-          accessory.context = {
-            ...accessory.context,
-            masterConfig: this.masterConfig,
-            devType: object ? object.devType : accessory.context.devType,
-            ain: object ? object.ain : accessory.context.ain 
-          };
-  
-        break; 
-        
-      case 'extras':
-  
-        accessory.context = {
-          ...accessory.context,
-          device: (object && object.device) ? object.device : accessory.context.device
-        };
-  
-        break; 
-    
-      default:
-        //
-    
-    }
-
-    
-  },
-  
-  _addOrConfAccessoryInformation(accessory){
-  
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Name, accessory.displayName)
-      .setCharacteristic(Characteristic.Identify, accessory.displayName)
-      .setCharacteristic(Characteristic.Manufacturer, 'SeydX')
-      .setCharacteristic(Characteristic.Model, accessory.context.type)
-      .setCharacteristic(Characteristic.SerialNumber, accessory.context.serial)
-      .setCharacteristic(Characteristic.FirmwareRevision, packageFile.version);
-      
-    accessory.on('identify', (paired, callback) => {
-      this.logger.info(accessory.displayName + ': Hi!');
-      callback();
-    });
-  
-  },
-
-  addAccessory: function(object){
-
-    this.logger.info('Adding new accessory: ' + object.name);
-
-    let uuid = UUIDGen.generate(object.name);
-    let accessory = new Accessory(object.name, uuid);
-
-    accessory.context = {};
-
-    this._addOrConfigure(accessory, object, true);
-
-    this.accessories.push(accessory);
-    
-    this.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
-
-  },
-
-  configureAccessory: function(accessory){
-
-    this._accessories.set(accessory.displayName, accessory);
-    
-    if(!this.accessories.includes(accessory))
-      this.accessories.push(accessory);
-
-    if(this.masterConfig) {
-
-      if(this._devices.get(accessory.displayName)){
-        
-        this.logger.info('Configuring accessory from cache: ' + accessory.displayName);
-        
-        this._addOrConfigure(accessory, null, false);
-      
-      }
-
+    if(device.type === 'router'){
+      manufacturer = device.manufacturer && device.manufacturer !== '' ? device.manufacturer : 'Homebridge';
+      model = device.model && device.model !== '' ? device.model : device.type;
+      serialNumber = device.serialNumber && device.serialNumber !== '' ? device.serialNumber : accessory.displayName;
     } else {
-      
-      if(this.masterConfig === undefined)
-        setTimeout(this.configureAccessory.bind(this,accessory),1000);
-
+      manufacturer = this.masterDevice.manufacturer && this.masterDevice.manufacturer !== '' ? this.masterDevice.manufacturer : 'Homebridge';
+      model = this.masterDevice.model && this.masterDevice.model !== '' ? this.masterDevice.model : device.type;
+      serialNumber = accessory.displayName; //needs to be unique for fakegato
+    }
+    
+    if (AccessoryInformation) {
+      AccessoryInformation.setCharacteristic(this.api.hap.Characteristic.Manufacturer, manufacturer);
+      AccessoryInformation.setCharacteristic(this.api.hap.Characteristic.Model, model);
+      AccessoryInformation.setCharacteristic(this.api.hap.Characteristic.SerialNumber, serialNumber);
+      AccessoryInformation.setCharacteristic(this.api.hap.Characteristic.FirmwareRevision, packageFile.version);
+    }
+    
+    accessory.context.polling = this.polling;
+    
+    switch (device.type) {
+      case 'router':
+        new RouterAccessory(this.api, accessory, this.extrasAsCharacteristics, this.handler);
+        break;
+      case 'smarthome':
+        if(device.subtype === 'smarthome-switch' && device.energy)
+          new SmarthomeOutletAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-switch' && !device.energy)
+          new SmarthomeSwitchAccessory(this.api, accessory, this.handler);
+        if(device.subtype === 'smarthome-temperature')
+          new SmarthomeTemperatureAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-thermostat')
+          new SmarthomeThermostatAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-contact')
+          new SmarthomeContactAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-window')
+          new SmarthomeWindowAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-lightbulb')
+          new SmarthomeLightbulbAccessory(this.api, accessory, this.handler);
+        break;
+      case 'presence':
+        if(device.subtype === 'presence-motion')
+          new PresenceMotionAccessory(this.api, accessory, this.handler, this.accessories, FakeGatoHistoryService);
+        if(device.subtype === 'presence-occupancy')
+          new PresenceOccupancyAccessory(this.api, accessory, this.handler, this.accessories, FakeGatoHistoryService);
+        break;
+      case 'wol':
+        new WolAccessory(this.api, accessory, this.handler);
+        break;
+      case 'callmonitor':
+        new CallmonitorAccessory(this.api, this.log, accessory, this.handler, this.Callmonitor, FakeGatoHistoryService);
+        break;
+      case 'extra':
+        new ExtrasAccessory(this.api, accessory, this.handler);
+        break;
+      default:
+        // fall through
+        break;
     }
 
   },
 
-  removeAccessory: function (accessory) {
-  
-    if (accessory) {
+  configureAccessory: async function(accessory){
 
-      this.logger.warn('Removing accessory: ' + accessory.displayName + '. No longer configured.');
+    const device = this.devices.get(accessory.UUID);
 
-      for(const i in this.accessories){
-        if(this.accessories[i].displayName === accessory.displayName){
-          this.accessories[i].context.remove = true;
-        }
-      }
-
-      let newAccessories = this.accessories.map( acc => {
-        if(acc.displayName !== accessory.displayName){
-          return acc;
-        }
-      });
-
-      let filteredAccessories = newAccessories.filter(function (el) {
-        return el != null;
-      });
-
-      this.api.unregisterPlatformAccessories(pluginName, platformName, [accessory]); 
-
-      this.accessories = filteredAccessories;
-
+    if (device && this.masterDevice){
+       
+      Logger.info('Configuring accessory...', accessory.displayName);
+                                                                                                      
+      accessory.context.config = device; 
+      this.setupAccessory(accessory, device);
     }
+    
+    this.accessories.push(accessory);
+  
+  },
+  
+  removeAccessory: function(accessory) {
+  
+    Logger.info('Removing accessory...', accessory.displayName);
+    
+    let accessories = this.accessories.map( cachedAccessory => {
+      if(cachedAccessory.displayName !== accessory.displayName){
+        return cachedAccessory;
+      }
+    });
+    
+    this.accessories = accessories.filter(function (el) {
+      return el != null;
+    });
+
+    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
   
   }
 

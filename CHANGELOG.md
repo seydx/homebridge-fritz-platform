@@ -1,38 +1,61 @@
 # Changelog
 
 
-## 4.1.0 - 2019-06-16
+## v5.0.0 - 2020-11-10
+- Completely rewritten
+- New: Homebridge (latest/beta) Support
+- New: Config UI X Integration
+- New: Polling with additional functions (exclude accessories)
+- New: Possibility to display all 'Extras' like Wifi, Alarm, Led etc etc as Characteristic or as a separate switch in Apple Home
+- New: Network Watch
+- New: Configurable Callmonitor names
+- New: Group Callmonitor sensors
+- New: DECT station
+- New: Ability to hide devices (router)
+- New: Additional ping for presence
+- New: Ability to change accessory typ for presence and anyone sensor, with FakeGato support
+- New: Smarthome devices with FakeGato Support
+- New: Smarthome Outlet Accessory with Fakegato for powermeter
+- New: Smarthome Window Accessory with Fakegato for devices with built in windowOpen function
+- New: Support for SmartHome Lights (only on/off and brightness)
+- Removed: Broadband for compatibility reasons
+
+**BREAKING CHANGES**
+
+The new version is not compatible with version < 5! If you use version < 5 of this plugin, please remove it from Homekit/Homebridge before updating!
+
+## v4.1.0 - 2019-06-16
 - "Ping" feature was added as an extra check (if enabled in config.json)
 - Phonebook Bugfix
 
-## 4.0.9 - 2019-05-25
+## v4.0.9 - 2019-05-25
 - Refactored Broadband measurement
 
-## 4.0.8 - 2019-05-25
+## v4.0.8 - 2019-05-25
 - Bugfixes (generating SID)
 
-## 4.0.7 - 2019-05-24
+## v4.0.7 - 2019-05-24
 - Bugfixes (callmonitor)
 - Better debug (smarthome)
 
-## 4.0.6 - 2019-05-22
+## v4.0.6 - 2019-05-22
 - Refactored phoneBook
 - Added "Blacklists" to Phonebook
 
-## 4.0.4 - 2019-05-20
+## v4.0.4 - 2019-05-20
 - Added better state detection for repeater
 
-## 4.0.3 - 2019-05-20
+## v4.0.3 - 2019-05-20
 - Bugfixes (SID)
 
-## 4.0.2 - 2019-05-20
+## v4.0.2 - 2019-05-20
 - Added option to disable auto search
 
-## 4.0.1 - 2019-05-20
+## v4.0.1 - 2019-05-20
 - Bugfixes
 - Cleanup code
 
-## 4.0.0 - 2019-05-19
+## v4.0.0 - 2019-05-19
 - Refactored code
 - Refactored API
 - Support async/await
@@ -42,53 +65,53 @@
 - Bugfixes
 
 
-## 3.2.4 - 2019-04-26
+## v3.2.4 - 2019-04-26
 - Bugfix
 
 
-## 3.2.3 - 2019-04-24
+## v3.2.3 - 2019-04-24
 - Bugfix (extReboot Telegram)
 
 
-## 3.2.2 - 2019-04-24
+## v3.2.2 - 2019-04-24
 - [NEW] Markdown Support for telegram notifications
 
 
-## 3.2.1 - 2019-03-22
+## v3.2.1 - 2019-03-22
 - Bugfixes
 - Code cleanup
 
-## 3.2 - 2019-03-21
+## v3.2 - 2019-03-21
 - [NEW] Presence: new function 'onDelay'
 - [NEW] Smarthome: New accessory (contact sensor) for **window open active** function (thermo)
 - Code cleanup
 
-## 3.1.5 - 2019-03-19
+## v3.1.5 - 2019-03-19
 - Bump dependencies
 - Code cleanup
 
-## 3.1.4 - 2019-03-18
+## v3.1.4 - 2019-03-18
 - [NEW] It is now possible to add multiple numbers to "incomingTo" and "outgoingFrom" (Callmonitor)
 - Code cleanup
 - Bugfixes
 
-## 3.1.3 - 2019-03-18
+## v3.1.3 - 2019-03-18
 - Rewrite smarthome (fixed a bug with 404 not found error)
 
-## 3.1.2 - 2019-03-17
+## v3.1.2 - 2019-03-17
 - Bugfixes
 
-## 3.1.1 - 2019-03-17
+## v3.1.1 - 2019-03-17
 - Bugfixes (Smarthome, presence)
 
-## 3.1.0 - 2019-03-17
+## v3.1.0 - 2019-03-17
 - Smarthome: Changed "switch" accessory to "outlet" accessory
 - Smarthome: Better "present" detection for smarthome devices
 - PhoneBook: Auto refresh phonebook (polling: 1h)
 
 Info: If you have Smarthome devices of type "switch" please REMOVE it first from HomeKit and config.json, restart homebridge and be sure that the accessory is removed from HomeKit! Re-add it again to config.json with the same parameter as before! This time it will expose as "outlet" to HomeKit, otherwise it can break your setup!
 
-## v3.0.7 - 2019-03-16
+## vv3.0.7 - 2019-03-16
 - Fixed a bug with smarthome
 
 ## v3.0.6 - 2019-03-16
