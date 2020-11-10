@@ -89,6 +89,7 @@ See the [changelog](https://github.com/SeydX/homebridge-fritz-platform/blob/mast
 - [Supported HomeKit Apps](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Apps.md)
 - [Tested Devices](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Supported.md)
 - [Installation instruction](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Installation.md)
+- [First Start](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/FirtStart.md)
 - [Configuring Callmonitor](https://github.com/SeydX/homebridge-fritz-platform/blob/master/docs/Callmonitor.md)
 - <u>Examples</u>
    * [Example config.json](https://github.com/SeydX/homebridge-fritz-platform/blob/master/example/example-config.json)
