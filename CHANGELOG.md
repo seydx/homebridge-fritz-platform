@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.0.6 - 2020-11-10
+- Fixed callmonitor caller/called nr
+
 ## v5.0.5 - 2020-11-10
 - Fixed callmonitor outgoing call
 
