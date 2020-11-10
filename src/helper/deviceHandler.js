@@ -1800,9 +1800,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             okz = okz['NewX_AVM-DE_OKZPrefix'] + okz['NewX_AVM-DE_OKZ'];
             okz = parseInt(okz);  //05341 */
             
-            let lkz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+            let lkz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+            
             lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49      
             
+            let nr = '+' + lkz; 
+            let nr2 = '00' + lkz;
             
             let blacklists = config.blacklists && config.blacklists.length
               ? config.blacklists
@@ -1839,55 +1842,76 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                   if(numbers){
                    
                     if(numbers.length){
+                      
+                      let telNumbers = [];
                      
                       for(const number of numbers){
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '');    
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                         
-                        let nr = '+' + lkz;
-                        let nr2 = '00' + lkz;
-                      
+                        telNumbers.push(telnr);
+                        
                         if(telnr.includes(nr) || telnr.includes(nr2)){
-                      
-                          telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                   
+                        
+                          if(telnr.includes(nr)){                             //  +49
+                            telNumbers.push(telnr.replace(nr, '0'));          //    0
+                            telNumbers.push(telnr.replace(nr, '00' + lkz));   // 0049
+                          }
+                          
+                          if(telnr.includes(nr2)){                            // 0049
+                            telNumbers.push(telnr.replace(nr2, '0'));         //    0
+                            telNumbers.push(telnr.replace(nr2, '+' + lkz));   //  +49
+                          }
+                        
                         } else {
-                       
-                          telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                    
+                          
+                          if(telnr.includes('+'))                             //   +1
+                            telNumbers.push(telnr.replace('+', '00'));        //  001
+                          
                         }
-                      
-                        telBook.push({name: contact.person.realName,number:telnr});
-      
-                        if(blacklists.includes(bookName))
-                          blackBook.push({name: contact.person.realName,number:telnr});
       
                       }
+                      
+                      telBook.push({name: contact.person.realName, number: telNumbers});
+      
+                      if(blacklists.includes(bookName))
+                        blackBook.push({name: contact.person.realName, number: telNumbers});
                      
                     } else {
                      
-                      let nr = '+' + lkz;
-                      let nr2 = '00' + lkz;
                       let telnr = numbers._;
-                   
-                      telnr = telnr.replace(/\s/g, '');
-                           
+                    
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      
+                      let telNumbers = [];
+                      
+                      telNumbers.push(telnr);
+                      
                       if(telnr.includes(nr) || telnr.includes(nr2)){
                       
-                        telnr = telnr.replace(nr, '0').replace(nr2, '0').replace(/[^a-zA-Z0-9]/g,'');
-                    
-                      } else {
+                        if(telnr.includes(nr)){                             //  +49
+                          telNumbers.push(telnr.replace(nr, '0'));          //    0
+                          telNumbers.push(telnr.replace(nr, '00' + lkz));   // 0049
+                        }
+                        
+                        if(telnr.includes(nr2)){                            // 0049
+                          telNumbers.push(telnr.replace(nr2, '0'));         //    0
+                          telNumbers.push(telnr.replace(nr2, '+' + lkz));   //  +49
+                        }
                       
-                        telnr = telnr.replace('+', '00').replace(/[^a-zA-Z0-9]/g,'');
-                    
+                      } else {
+                        
+                        if(telnr.includes('+'))                             //   +1
+                          telNumbers.push(telnr.replace('+', '00'));        //  001
+                        
                       }
                     
-                      telBook.push({name: contact.person.realName,number:telnr});
+                      telBook.push({name: contact.person.realName, number: telNumbers});
                   
                       if(blacklists.includes(bookName))
-                        blackBook.push({name: contact.person.realName,number:telnr});
+                        blackBook.push({name: contact.person.realName, number: telNumbers});
                      
                     }
                    
