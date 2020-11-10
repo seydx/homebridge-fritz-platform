@@ -7,7 +7,7 @@ This plugin has been tested on **iOS 14** with the following HomeKit apps:
 
 Compatible **Homebridge** version:
 
-- [Homebridge v1.2.3+](https://github.com/nfarina/homebridge)
+- [Homebridge v1.0.0+](https://github.com/nfarina/homebridge)
 
 **Note:** Apple's Home app does not support custom services/characteristics extensions - as such not all functionality is available there. You can still use the Home app with limitations and use other apps to set up the rules and scenes for you.
 
