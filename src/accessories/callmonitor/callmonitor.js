@@ -262,7 +262,7 @@ class CallmonitorContactAccessory {
               
               for(const entry of phonebook){
                 
-                let callerToNr = entry.number.find(nr => nr === message.caller);
+                let callerToNr = entry.number.find(nr => nr === message.called);
             
                 if(callerToNr){
               
