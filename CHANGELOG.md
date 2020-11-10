@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.2 - 2020-11-10
+- Fixed wol switch
+
 ## v5.0.1 - 2020-11-10
 - Support for homebridge v1.3.0
 
