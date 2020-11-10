@@ -1963,243 +1963,245 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
   async function change(accessory, target, replacer, historyService, value){
   
-    switch (target) {
+    if(value.oldValue !== value.newValue){
     
-      case 'smarthome-contact': {
-        
-        if(value.newValue){
-        
-          accessory.context.timesOpened = accessory.context.timesOpened || 0;
-          accessory.context.timesOpened += 1;
+      switch (target) {
+      
+        case 'smarthome-contact': {
           
-          let lastActivation = moment().unix() - historyService.getInitialTime();
-          let closeDuration = moment().unix() - historyService.getInitialTime();
+          if(value.newValue){
           
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
+            accessory.context.timesOpened = accessory.context.timesOpened || 0;
+            accessory.context.timesOpened += 1;
             
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.TimesOpened)
-            .updateValue(accessory.context.timesOpened);
-          
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(closeDuration);
-        
-        } else {
-        
-          let openDuration = moment().unix() - historyService.getInitialTime();
-        
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(openDuration);
-        
-        }
-          
-        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
-      
-        break;
-      
-      }
-      
-      case 'smarthome-window': {
-        
-        if(value.newValue){
-        
-          accessory.context.timesOpened = accessory.context.timesOpened || 0;
-          accessory.context.timesOpened += 1;
-          
-          let lastActivation = moment().unix() - historyService.getInitialTime();
-          let closeDuration = moment().unix() - historyService.getInitialTime();
-          
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
+            let lastActivation = moment().unix() - historyService.getInitialTime();
+            let closeDuration = moment().unix() - historyService.getInitialTime();
             
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.TimesOpened)
-            .updateValue(accessory.context.timesOpened);
-          
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(closeDuration);
-        
-        } else {
-        
-          let openDuration = moment().unix() - historyService.getInitialTime();
-        
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(openDuration);
-        
-        }
-          
-        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
-      
-        break;
-      
-      }
-      
-      case 'smarthome-temperature': {
-      
-        historyService.addEntry({time: moment().unix(), temp: value.newValue, humidity: 0, ppm: 0});
-      
-        break;
-      
-      }
-      
-      case 'smarthome-thermostat': {
-      
-        let currentState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;  
-        let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
-        let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
-        let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
-          
-        let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
-          ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
-          : 0;
-          
-        historyService.addEntry({time: moment().unix(), currentTemp: currentTemp, setTemp: targetTemp, valvePosition: valvePos});
-      
-        break;
-      
-      } 
-      
-      case 'smarthome-switch': {
-          
-        historyService.addEntry({time: moment().unix(), power: value.newValue});
-      
-        break;
-      
-      }            
-      
-      case 'presence': {
-      
-        if(historyService){
-          let lastActivation = moment().unix() - historyService.getInitialTime();
-          accessory
-            .getService(api.hap.Service.MotionSensor)
-            .getCharacteristic(api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
-          historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
-        }
-      
-        let dest = false;
-        
-        if(value.newValue){
-          dest = accessory.displayName === 'Anyone' ? 'anyone_in' : 'user_in';
-        } else {
-          dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
-        }
-        
-        if(Telegram)
-          Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
-      
-        break;
-      
-      }  
-      
-      case 'network': {
-        
-        if(Telegram) 
-          Telegram.send('network',  value.newValue ? 'on' : 'off', replacer);
-      
-        break;
-        
-      }  
-        
-      case 'alarm': {
-
-        if(Telegram)
-          Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
-      
-        break;
-        
-      }
-        
-      case 'router': {
-
-        if(!accessory.context.config.readOnly && Telegram)
-          Telegram.send('reboot', value.newValue ? 'finish' : 'start', accessory.displayName);
-      
-        break;
-        
-      }  
-      
-      case 'callmonitor': {
-        
-        if(value.newValue){
-        
-          accessory.context.timesOpened = accessory.context.timesOpened || 0;
-          accessory.context.timesOpened += 1;
-          
-          let lastActivation = moment().unix() - historyService.getInitialTime();
-          let closeDuration = moment().unix() - historyService.getInitialTime();
-          
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.LastActivation)
-            .updateValue(lastActivation);
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.LastActivation)
+              .updateValue(lastActivation);
+              
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.TimesOpened)
+              .updateValue(accessory.context.timesOpened);
             
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.TimesOpened)
-            .updateValue(accessory.context.timesOpened);
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(closeDuration);
           
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(closeDuration);
-        
-        } else {
-        
-          let openDuration = moment().unix() - historyService.getInitialTime();
-        
-          accessory
-            .getService(api.hap.Service.ContactSensor)
-            .getCharacteristic(api.hap.Characteristic.ClosedDuration)
-            .updateValue(openDuration);
-        
-        }
-          
-        historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
-        
-        if(Telegram && !replacer.denyCall){
-        
-          let dest;
-        
-          if(value.newValue) {
-            dest = replacer.inbound ? 'incoming' : 'outgoing';
           } else {
-            dest  = 'disconnected';
+          
+            let openDuration = moment().unix() - historyService.getInitialTime();
+          
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(openDuration);
+          
+          }
+            
+          historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+        
+          break;
+        
+        }
+        
+        case 'smarthome-window': {
+          
+          if(value.newValue){
+          
+            accessory.context.timesOpened = accessory.context.timesOpened || 0;
+            accessory.context.timesOpened += 1;
+            
+            let lastActivation = moment().unix() - historyService.getInitialTime();
+            let closeDuration = moment().unix() - historyService.getInitialTime();
+            
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.LastActivation)
+              .updateValue(lastActivation);
+              
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.TimesOpened)
+              .updateValue(accessory.context.timesOpened);
+            
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(closeDuration);
+          
+          } else {
+          
+            let openDuration = moment().unix() - historyService.getInitialTime();
+          
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(openDuration);
+          
+          }
+            
+          historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+        
+          break;
+        
+        }
+        
+        case 'smarthome-temperature': {
+        
+          historyService.addEntry({time: moment().unix(), temp: value.newValue, humidity: 0, ppm: 0});
+        
+          break;
+        
+        }
+        
+        case 'smarthome-thermostat': {
+        
+          let currentState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;  
+          let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
+          let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
+          let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
+            
+          let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
+            ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
+            : 0;
+            
+          historyService.addEntry({time: moment().unix(), currentTemp: currentTemp, setTemp: targetTemp, valvePosition: valvePos});
+        
+          break;
+        
+        } 
+        
+        case 'smarthome-switch': {
+            
+          historyService.addEntry({time: moment().unix(), power: value.newValue});
+        
+          break;
+        
+        }            
+        
+        case 'presence': {
+        
+          if(historyService){
+            let lastActivation = moment().unix() - historyService.getInitialTime();
+            accessory
+              .getService(api.hap.Service.MotionSensor)
+              .getCharacteristic(api.hap.Characteristic.LastActivation)
+              .updateValue(lastActivation);
+            historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
           }
         
-          Telegram.send('callmonitor', dest, replacer.text);
+          let dest = false;
+          
+          if(value.newValue){
+            dest = accessory.displayName === 'Anyone' ? 'anyone_in' : 'user_in';
+          } else {
+            dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
+          }
+          
+          if(Telegram)
+            Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
+        
+          break;
+        
+        }  
+        
+        case 'network': {
+          
+          if(Telegram) 
+            Telegram.send('network',  value.newValue ? 'on' : 'off', replacer);
+        
+          break;
+          
+        }  
+          
+        case 'alarm': {
+  
+          if(Telegram)
+            Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
+        
+          break;
+          
         }
+          
+        case 'router': {
+  
+          if(!accessory.context.config.readOnly && Telegram)
+            Telegram.send('reboot', value.newValue ? 'finish' : 'start', accessory.displayName);
         
-        break;
+          break;
+          
+        }  
+        
+        case 'callmonitor': {
+          
+          if(value.newValue){
+          
+            accessory.context.timesOpened = accessory.context.timesOpened || 0;
+            accessory.context.timesOpened += 1;
+            
+            let lastActivation = moment().unix() - historyService.getInitialTime();
+            let closeDuration = moment().unix() - historyService.getInitialTime();
+            
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.LastActivation)
+              .updateValue(lastActivation);
+              
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.TimesOpened)
+              .updateValue(accessory.context.timesOpened);
+            
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(closeDuration);
+          
+          } else {
+          
+            let openDuration = moment().unix() - historyService.getInitialTime();
+          
+            accessory
+              .getService(api.hap.Service.ContactSensor)
+              .getCharacteristic(api.hap.Characteristic.ClosedDuration)
+              .updateValue(openDuration);
+          
+          }
+            
+          historyService.addEntry({time: moment().unix(), status: value.newValue ? 1 : 0});
+          
+          if(Telegram && !replacer.denyCall){
+          
+            let dest;
+          
+            if(value.newValue) {
+              dest = replacer.inbound ? 'incoming' : 'outgoing';
+            } else {
+              dest  = 'disconnected';
+            }
+          
+            Telegram.send('callmonitor', dest, replacer.text);
+          }
+          
+          break;
+        
+        }
+          
+        default: {
+        
+          //fall through
+          break;
+          
+        }
       
-      }
-        
-      default: {
-      
-        //fall through
-        break;
-        
       }
     
     }
-    
-    return;
   
   }
   
@@ -2411,9 +2413,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                     ? {
                       supported_modes: parseInt(device.colorcontrol.supported_modes),
                       current_mode: parseInt(device.colorcontrol.current_mode),
-                      hue: parseInt(device.colorcontrol.hue),                            // 0� - 359�
+                      hue: parseInt(device.colorcontrol.hue),                            // 0째 - 359째
                       saturation: parseInt(device.colorcontrol.saturation),              // 0% - 100% (if current_mode === 1)
-                      temperature: parseInt(device.colorcontrol.temperature)             // 2700� - 6500� Kelvin
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700째 - 6500째 Kelvin
                     }
                     : false
                 }
