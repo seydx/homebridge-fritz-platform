@@ -6,57 +6,18 @@
 
 # homebridge-fritz-platform
 
-This plugin allows almost full control of **AVM** hardware like:
 
-- **Fritz!Box**
-  - Router status and switch functionality,
-  - WLAN 2.4Ghz,
-  - WLAN 5Ghz, 
-  - WLAN Guest,
-  - WPS,
-  - DECT,
-  - Answering Machine,
-  - Deflection,
-  - Device LED,
-  - Device Lock,
-  - Ring Lock,
-  - Phonebook,
-  - Alarm,
-  - Wakeup
-- **Fritz!Repeater**
-  - Repeater status and switch functionality,
-  - WLAN 2.4Ghz,
-  - WLAN 5Ghz,
-  - WLAN Guest,
-  - WPS,
-  - Device LED,
-  - Device Lock
-- **Fritz!Fon**
-  - Callmonitor,
-  - FakeGato support
-- **Fritz!DECT Outlets, Fritz!Powerline Outlets**
-  - Switch/Outlet status and switch functionality,
-  - Power meter,
-  - Temperature sensor with FakeGato,
-  - FakeGato support
-- **Fritz!DECT Lights**
-  - Light status and switch functionality,
-  - Brightness adjustment
-- **Fritz!DECT Thermostats, Comet!DECT Thermostats**
-  - Thermostat current state, target state, current temperature and target temperature state and switch functionality,
-  - Temperature sensor,
-  - Window sensor (for window open functionality)
-  - FakeGato support
-- **HAN-FUN sensors (e.g. Deutsche Telekom)**
-  - Contact state,
-  - FakeGato support
-- **Presence**
-  - Detect occupancy through wifi,
-  - Fakegato support
-- **Watch Network**
-  - Control devices if connected or disconnected from network
-- **Telegram**
-  - Receive custom messages for occupancy detection (presence), device detection (watch network), incoming/outgoing calls (callmonitor), alarm and router state 
+This dynamic platform plugin allows almost full control of **AVM** hardware like:
+
+- Fritz!Box, 
+- Fritz!Fon,
+- Fritz!WLAN Repeater,
+- Fritz!DECT Repeater,
+- Fritz!DECT Outlets,
+- Fritz!DECT Thermostats,
+- Comet!DECT Thermostats,
+- Fritz!Powerline Outlets (510, 540),
+- HAN-FUN sensors (e.g. Deutsche Telekom)
 
 Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run **homebridge-fritz-platform**. The only need is network access to the device or program in question.
 
