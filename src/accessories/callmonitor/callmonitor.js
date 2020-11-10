@@ -158,7 +158,7 @@ class CallmonitorContactAccessory {
           
                 if(callerToNr){
                   this.callerName = entry.name;
-                  text = 'Incoming call from: ' + this.callerName + ' ( '+ this.callerNr + ' ) to ' + message.called;
+                  text = 'Incoming call from: ' + this.callerName + ' ('+ this.callerNr + ') to ' + message.called;
                 }
             
               }
@@ -267,7 +267,7 @@ class CallmonitorContactAccessory {
             
                 if(callerToNr){
                   this.callerName = entry.name;
-                  text = 'Calling ' + this.callerName + ' ( '+ this.callerNr + ' )';
+                  text = 'Calling ' + this.callerName + ' ('+ this.callerNr + ')';
                 }
             
               }
