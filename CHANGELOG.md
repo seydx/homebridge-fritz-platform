@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.0.7 - 2020-11-11
+- Added new smarthome types (window/temperature)
+- Fixed smarthom lightbulb
+- readOnly for smarthome switch
+- Added broadband again to masterdevice as characteristic (API)
+- Bump fritzbox dep to fix username/passwords with special chars
+
 ## v5.0.6 - 2020-11-10
 - Fixed callmonitor caller/called nr
 
