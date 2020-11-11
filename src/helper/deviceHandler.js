@@ -1150,19 +1150,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
          
           }, 1000);
           
-        } else if(accessory.context.config.readOnly){
-        
-          Logger.info('Can not be switched OFF! "readOnly" is active!', accessory.displayName);
-        
-          setTimeout(() => {
-           
-            accessory
-              .getService(service)
-              .getCharacteristic(characteristic)
-              .updateValue(!state);
-           
-          }, 1000);
-        
         } else {
         
           Logger.info('OFF' + ' (' + target + ')', accessory.displayName);
