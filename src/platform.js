@@ -195,7 +195,7 @@ function FritzPlatform (log, config, api) {
     this.config.smarthome.forEach(device => {
     
       let error = false;
-      let validTypes = ['switch', 'contact', 'thermostat', 'lightbulb'];
+      let validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window'];
 
       if (!device.name) {
         Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
