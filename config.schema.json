@@ -326,6 +326,22 @@
                   }
                 ],
                 "description": "Enables Device Lock as Switch or Characteristic."
+              },
+              "broadband": {
+                "title": "Broadband",
+                "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].master === true;"
+                },
+                "oneOf": [
+                  {
+                    "title": "Characteristic",
+                    "enum": [
+                      "characteristic"
+                    ]
+                  }
+                ],
+                "description": "Enables Broadband as Characteristic. (Only for Master Device)"
               }
             }
           }
@@ -1149,7 +1165,8 @@
                 "devices[].options.aw",
                 "devices[].options.deflection",
                 "devices[].options.led",
-                "devices[].options.lock"
+                "devices[].options.lock",
+                "devices[].options.broadband"
               ]
             }
           ]

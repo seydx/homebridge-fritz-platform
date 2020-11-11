@@ -215,6 +215,40 @@ module.exports = {
     };
     inherits(Characteristic.Called, Characteristic);
     Characteristic.Called.UUID = 'cf42e4a1-ff61-4aa6-9cc5-55d3c09cfbbd';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Download Characteristic
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.Download = function() {
+      Characteristic.call(this, 'Download', '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        maxValue: 9999,
+        minValue: 0,
+        minStep: 0.1,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Download, Characteristic);
+    Characteristic.Download.UUID = '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9';
+    
+    /// /////////////////////////////////////////////////////////////////////////
+    // Upload Characteristic
+    /// ///////////////////////////////////////////////////////////////////////// 
+    Characteristic.Upload = function() {
+      Characteristic.call(this, 'Upload', '9b2e94f7-a665-4575-9efd-1b37474d758b');
+      this.setProps({
+        format: Characteristic.Formats.FLOAT,
+        maxValue: 9999,
+        minValue: 0,
+        minStep: 0.1,
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+      });
+      this.value = this.getDefaultValue();
+    };
+    inherits(Characteristic.Upload, Characteristic);
+    Characteristic.Upload.UUID = '9b2e94f7-a665-4575-9efd-1b37474d758b';
 
   }
 };

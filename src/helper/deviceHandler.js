@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const Logger = require('./logger.js');
 const lua = require('./lua.js');
@@ -955,6 +955,56 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         break;
         
       }
+      
+      case 'broadband': {
+      
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let ul;
+        
+        try {
+         
+          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+         
+          let body = await lua.request({
+            xhr: '1',
+            xhrId: 'first',
+            sid: sid,
+            page: 'overview',
+            noMenuRef: '1',
+            no_sidrenew: ''
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua');
+          
+          if(body && body.data && body.data.internet){
+          
+            Logger.debug(body.data.internet, accessory.displayName);
+          
+            state = parseFloat(body.data.internet.down.replace(',', '.').replace( /^\D+/g, '')).toString();
+            ul = parseFloat(body.data.internet.up.replace(',', '.').replace( /^\D+/g, '')).toString();
+          
+          }
+         
+        } catch(err) {
+        
+          handleError(accessory, false, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+       
+        }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+          
+        if(ul){
+          accessory
+            .getService(service)
+            .getCharacteristic(api.hap.Characteristic.Upload)
+            .updateValue(ul);
+        } 
+         
+        break;
+        
+      }
 
       default: {
        
@@ -1780,7 +1830,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
        
         break;
         
-      }
+      }  
       
       case 'phoneBook': {
           

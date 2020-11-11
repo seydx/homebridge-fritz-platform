@@ -31,7 +31,7 @@ class RouterSwitchAccessory {
     
     if(this.accessory.context.config.options){
     
-      let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock'];
+      let validChars = ['wifi_2ghz', 'wifi_5ghz', 'wifi_guest', 'wps', 'dect', 'aw', 'deflection', 'led', 'lock', 'broadband'];
       const characteristics = Object.keys(this.accessory.context.config.options).filter(extra => validChars.includes(extra) && this.accessory.context.config.options[extra] === 'characteristic');
       
       if(characteristics.includes('wifi_2ghz')){
@@ -211,6 +211,30 @@ class RouterSwitchAccessory {
         if(service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)){
           Logger.info('Removing DeviceLock characteristic', this.accessory.displayName);
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLock));
+        }
+      }
+      
+      if(characteristics.includes('broadband') && this.accessory.context.config.master){
+        if(!service.testCharacteristic(this.api.hap.Characteristic.Download)){
+          Logger.info('Adding Download characteristic', this.accessory.displayName);
+          service.addCharacteristic(this.api.hap.Characteristic.Download);
+        }
+        if(!service.testCharacteristic(this.api.hap.Characteristic.Upload)){
+          Logger.info('Adding Upload characteristic', this.accessory.displayName);
+          service.addCharacteristic(this.api.hap.Characteristic.Upload);
+        }
+        if(!(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('broadband') && !this.accessory.context.polling.exclude.includes('extra'))){
+          service.getCharacteristic(this.api.hap.Characteristic.Download)
+            .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.Download, 'broadband', 'dl'));
+        }
+      } else {
+        if(service.testCharacteristic(this.api.hap.Characteristic.Download)){
+          Logger.info('Removing Download characteristic', this.accessory.displayName);
+          service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Download));
+        }
+        if(service.testCharacteristic(this.api.hap.Characteristic.Upload)){
+          Logger.info('Removing Upload characteristic', this.accessory.displayName);
+          service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Upload));
         }
       }
 
