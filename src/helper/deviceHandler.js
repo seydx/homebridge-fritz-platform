@@ -41,6 +41,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
           
+          if(device)
+            accessory.context.config.ain = device.ain;
+          
           if(device && device.online && device.light){
           
             state = device.light.state || 0;
@@ -97,6 +100,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain));
           Logger.debug(device, accessory.displayName); 
+          
+          if(device)
+            accessory.context.config.ain = device.ain;
           
           if(device && device.online && device.switch){
           
@@ -182,6 +188,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
           
+          if(device)
+            accessory.context.config.ain = device.ain;
+          
           if(device && device.online && device.temperature){
           
             state = device.temperature.value || 0;
@@ -232,6 +241,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
           
+          if(device)
+            accessory.context.config.ain = device.ain;
+          
           if(device && device.online && device.alert){
           
             state = device.alert.state || 0;
@@ -278,6 +290,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
+          
+          if(device)
+            accessory.context.config.ain = device.ain;
           
           if(device && device.online && device.thermostat){
           
@@ -328,6 +343,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         
           let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
+          
+          if(device)
+            accessory.context.config.ain = device.ain;
           
           if(device && device.online && device.thermostat){
           
@@ -2363,9 +2381,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
         let deviceList = smarthomes.devicelist.device; 
         //let groupList = smarthomes.devicelist.group; 
-        
-        //console.log(deviceList)
-        //console.log(groupList)
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
@@ -2426,7 +2441,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                 : false,
               light: device.simpleonoff
                 ? {
-                  state: parseInt(device.simpleonoff) || 0,
+                  state: parseInt(device.simpleonoff.state) || 0,
                   brightness: device.levelcontrol
                     ? {
                       level: parseInt(device.levelcontrol.level),                        // 0 - 255
@@ -2435,11 +2450,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                     : false,
                   color: device.colorcontrol
                     ? {
-                      supported_modes: parseInt(device.colorcontrol.supported_modes),
-                      current_mode: parseInt(device.colorcontrol.current_mode),
-                      hue: parseInt(device.colorcontrol.hue),                            // 0° - 359°
-                      saturation: parseInt(device.colorcontrol.saturation),              // 0% - 100% (if current_mode === 1)
-                      temperature: parseInt(device.colorcontrol.temperature)             // 2700° - 6500° Kelvin
+                      supported_modes: parseInt(device.colorcontrol['$'].supported_modes),
+                      current_mode: parseInt(device.colorcontrol['$'].current_mode),
+                      hue: parseInt(device.colorcontrol.hue),                            // 0 - 359
+                      saturation: parseInt(device.colorcontrol.saturation),              // 0 - 100 (if current_mode === 1)
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700 - 6500 Kelvin
                     }
                     : false
                 }
