@@ -428,6 +428,14 @@
             "placeholder": "01234567890",
             "description": "The AIN of the device."
           },
+          "readOnly": {
+            "title": "Read Only",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch';"
+            },
+            "description": "If enabled, the device will not trigger on switching on/off."
+          },
           "energy": {
             "title": "Power Meter",
             "type": "boolean",
@@ -439,6 +447,9 @@
           "temperature": {
             "title": "Temperature Sensor",
             "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch';"
+            },
             "description": "Enable this, if the device has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
           },
           "window": {
@@ -460,6 +471,9 @@
           "battery": {
             "title": "Battery",
             "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact';"
+            },
             "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
           },
           "accType": {
@@ -489,6 +503,18 @@
                 "title": "Lightbulb",
                 "enum": [
                   "lightbulb"
+                ]
+              },
+              {
+                "title": "Temperature",
+                "enum": [
+                  "temperature"
+                ]
+              },
+              {
+                "title": "Window",
+                "enum": [
+                  "window"
                 ]
               }
             ],
@@ -1279,6 +1305,7 @@
               "expandable": true,
               "expanded": false,
               "items": [
+                "smarthome[].readOnly",
                 "smarthome[].energy",
                 "smarthome[].temperature",
                 "smarthome[].window",
