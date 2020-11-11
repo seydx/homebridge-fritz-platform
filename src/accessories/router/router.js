@@ -356,14 +356,67 @@ class RouterSwitchAccessory {
     
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
-      service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false))
-        .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false));
+   
+      if(!this.accessory.context.config.readOnly){
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false))
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false));
+  
+      } else {
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false))
+          .on('set', (state, callback) => {
+          
+            Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);
+          
+            setTimeout(() => {
+            
+              service
+                .getCharacteristic(this.api.hap.Characteristic.On)
+                .updateValue(!state);
+            
+            }, 1000);
+            
+            callback(null);
+          
+          });
+  
+      }
+   
     } else {
-      service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false))
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false))
-        .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false));
+    
+      if(!this.accessory.context.config.readOnly){
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false))
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false))
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false));
+  
+      } else {
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('change', this.handler.change.bind(this, this.accessory, 'router', this.accessory.displayName, false))
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'router', false))
+          .on('set', (state, callback) => {
+          
+            Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);
+          
+            setTimeout(() => {
+            
+              service
+                .getCharacteristic(this.api.hap.Characteristic.On)
+                .updateValue(!state);
+            
+            }, 1000);
+            
+            callback(null);
+          
+          });
+  
+      }
+  
     }
     
   }
