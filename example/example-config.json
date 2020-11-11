@@ -37,7 +37,8 @@
                         "aw": "characteristic",
                         "led": "switch",
                         "lock": "switch",
-                        "dect": "switch"
+                        "dect": "switch",
+                        "broadband": "characteristic"
                     }
                 },
                 {
@@ -113,6 +114,11 @@
                     "accType": "switch"
                 },
                 {
+                    "name": "DECT 200 Temperature",
+                    "ain": "11630 0190819",
+                    "accType": "temperature"
+                },
+                {
                     "name": "HAN FUN Sensor",
                     "ain": "119340107283",
                     "accType": "contact",
@@ -124,6 +130,18 @@
                     "temperature": true,
                     "window": true,
                     "accType": "thermostat",
+                    "battery": true
+                },
+                {
+                    "name": "DECT 301",
+                    "ain": "09995 0692315",
+                    "accType": "window",
+                    "battery": true
+                },
+                {
+                    "name": "DECT 301",
+                    "ain": "09995 0692315",
+                    "accType": "temperature",
                     "battery": true
                 }
             ],
