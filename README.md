@@ -24,7 +24,8 @@ This plugin allows almost full control of **AVM** hardware like:
   - Ring Lock,
   - Phonebook,
   - Alarm,
-  - Wakeup
+  - Wakeup,
+  - Broadband
 - **Fritz!Repeater**
   - Repeater status and switch functionality,
   - WLAN 2.4Ghz,
