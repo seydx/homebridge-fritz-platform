@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "Homebridge Plugin to control FritzBox router, smarthome devices and more.",
   "main": "index.js",
   "devDependencies": {},
@@ -47,6 +47,6 @@
     "ping": "0.3.0",
     "rxjs": "^6.6.3",
     "telegraf": "^3.38.0",
-    "@seydx/fritzbox": "^1.0.9"
+    "@seydx/fritzbox": "^1.0.10"
   }
 }
