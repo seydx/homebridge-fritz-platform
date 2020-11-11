@@ -59,7 +59,7 @@
                         "wifi_2ghz": "characteristic",
                         "wifi_guest": "switch",
                         "led": "switch",
-                        "lock": "characteristic",
+                        "lock": "characteristic"
                     }
                 },
                 {
