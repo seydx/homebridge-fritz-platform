@@ -44,7 +44,9 @@ This plugin allows almost full control of **AVM** hardware like:
   - FakeGato support
 - **Fritz!DECT Lights**
   - Light status and switch functionality,
-  - Brightness adjustment
+  - Brightness adjustment,
+  - Color adjustment,
+  - Ambientlight support
 - **Fritz!DECT Thermostats, Comet!DECT Thermostats**
   - Thermostat current state, target state, current temperature and target temperature state and switch functionality,
   - Temperature sensor,
