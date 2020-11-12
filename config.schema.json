@@ -30,7 +30,6 @@
           "host": {
             "title": "Host",
             "type": "string",
-            "placeholder": "192.168.178.1",
             "required": true,
             "description": "FritzBox IP Address."
           },
