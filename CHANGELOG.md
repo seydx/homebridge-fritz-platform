@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.0.8 - 2020-11-12
+- Added support for color lightbulbs (eg DECT500)
+- Bugfixes
+
 ## v5.0.7 - 2020-11-11
 - Added new smarthome types (window/temperature)
 - Fixed smarthom lightbulb
