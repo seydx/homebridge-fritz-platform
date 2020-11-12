@@ -28,31 +28,35 @@ class SmarthomeLightbulbAccessory {
       service = this.accessory.addService(this.api.hap.Service.Lightbulb, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
-    if(this.accessory.context.config.battery){
-      
-      let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
-      
-      if(!batteryService){
-        Logger.info('Adding Battery service', this.accessory.displayName);
-        batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
-      }
-      
-      batteryService
-        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE);
-      
-    }
-    
     if(this.accessory.context.config.brightness && !service.testCharacteristic(this.api.hap.Characteristic.Brightness))
       service.addCharacteristic(this.api.hap.Characteristic.Brightness);  
     
-    if(this.accessory.context.config.color){    
+    if(this.accessory.context.config.color){
+    
+      if(!service.testCharacteristic(this.api.hap.Characteristic.Brightness))
+        service.addCharacteristic(this.api.hap.Characteristic.Brightness);  
+   
       if(!service.testCharacteristic(this.api.hap.Characteristic.Hue))
         service.addCharacteristic(this.api.hap.Characteristic.Hue); 
+   
       if(!service.testCharacteristic(this.api.hap.Characteristic.Saturation))
         service.addCharacteristic(this.api.hap.Characteristic.Saturation); 
+   
       if(!service.testCharacteristic(this.api.hap.Characteristic.ColorTemperature))
         service.addCharacteristic(this.api.hap.Characteristic.ColorTemperature);                  
-    }                                                                                               
+      
+      if(this.api.versionGreaterOrEqual('v1.3.0-beta.22')){
+    
+        this.ambientLightningController = new this.api.hap.AmbientLightningController(service, {
+          controllerMode: this.api.hap.AmbientLightningControllerMode.AUTOMATIC,
+        });
+        
+        this.accessory.configureController(this.ambientLightningController);
+        this.accessory.ambientLightningController = this.ambientLightningController;
+      
+      }
+    
+    }                                                                                             
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
  

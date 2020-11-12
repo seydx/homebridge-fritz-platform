@@ -31,7 +31,12 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
         let brightness, temp, hue, sat;
         
         if(accessory.context.config.brightness)
-          brightness = accessory.getService(service).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+          accessory.context.config.brightnessValue = accessory.getService(service).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+        
+        if(accessory.context.config.color){
+          accessory.context.config.brightnessValue = accessory.getService(service).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+          accessory.context.config.tempValue = accessory.getService(service).getCharacteristic(api.hap.Characteristic.ColorTemperature).value; 
+        }
         
         try {
         
@@ -53,28 +58,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             }
             
             if(device.light.color){
-              temp = !isNaN(device.light.color.temperature) ? device.light.color.temperature : null;
+              temp = !isNaN(device.light.color.temperature) ? Math.round(1000000/device.light.color.temperature) : null;
               hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
-              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation : null;
+              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation/2.55 : null;
             }
           
-          }
-          
-          if(device && device.online && device.battery && accessory.context.config.battery){
-            
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
-            
-            accessory
-              .getService(api.hap.Service.BatteryService)
-              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
-              
-            accessory
-              .getService(api.hap.Service.BatteryService)
-              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
-            
           }
         
         } catch(err) {
@@ -88,37 +76,56 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getCharacteristic(characteristic)
           .updateValue(state);
           
-        if(accessory.context.config.brightness && brightness !== null && brightness !== undefined)
+        if(accessory.context.config.brightness && brightness !== null && brightness !== undefined && brightness !== accessory.context.config.brightnessValue){
+      
           accessory
             .getService(service)
             .getCharacteristic(api.hap.Characteristic.Brightness)
             .updateValue(brightness);
+        
+        }
             
         if(accessory.context.config.color){
          
           if(temp !== null && temp !== undefined){
-         
-            let colorTemperatureMired = Math.round(1000000/temp); 
-            let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
-                      
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.ColorTemperature)
-              .updateValue(colorTemperatureMired);
-              
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.Hue)
-              .updateValue(color.hue);
           
-            accessory
-              .getService(service)
-              .getCharacteristic(api.hap.Characteristic.Saturation)
-              .updateValue(color.saturation);
+            let changed = Math.abs(accessory.context.config.tempValue - temp) > 5;
+          
+            if(changed){
+            
+              //Logger.debug('Color temperature changed from outside. Disabling Ambientlight.', accessory.displayName);
+            
+              if(api.versionGreaterOrEqual('v1.3.0-beta.22'))
+                accessory.ambientLightningController.disableAmbientLightning(true);
+                
+              let colorTemperatureMired = temp; 
+              let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
+                        
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.ColorTemperature)
+                .updateValue(colorTemperatureMired);
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Hue)
+                .updateValue(color.hue);
+            
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Saturation)
+                .updateValue(color.saturation);
+           
+            }
          
           }
          
           if(hue !== null && hue !== undefined && sat !== null && sat !== undefined){
+          
+            //Logger.debug('Color changed from outside. Disabling Ambientlight.', accessory.displayName);
+          
+            if(api.versionGreaterOrEqual('v1.3.0-beta.22'))
+              accessory.ambientLightningController.disableAmbientLightning(true);
        
             accessory
               .getService(service)
@@ -128,7 +135,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             accessory
               .getService(service)
               .getCharacteristic(api.hap.Characteristic.Saturation)
-              .updateValue(sat/2.55);
+              .updateValue(sat);
    
           }
          
@@ -191,23 +198,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             
             }
           
-          }
-          
-          if(device && device.online && device.battery && accessory.context.config.battery){
-            
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
-            
-            accessory
-              .getService(api.hap.Service.BatteryService)
-              .getCharacteristic(api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
-              
-            accessory
-              .getService(api.hap.Service.BatteryService)
-              .getCharacteristic(api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
-            
           }
         
         } catch(err) {
@@ -1084,6 +1074,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     
       case 'smarthome-lightbulb': {
       
+        let bulbState = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.On).value;
+      
         try {
         
           let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
@@ -1093,23 +1085,23 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           if(config === 'on'){
           
             cmd = state ? 'setsimpleonoff&onoff=1' : 'setsimpleonoff&onoff=0';
-            text = (state ? 'ON': 'OFF') + ' (' + target + ')';
+            text = (state ? 'ON': 'OFF');
              
             await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
               
             Logger.info(text, accessory.displayName);
           
           } else if(config === 'brightness'){
-          
+
             cmd = 'setlevelpercentage&level=' + state;
-            text = ('Setting brightness to ' + state) + ' (' + target + ')';
-          
-            if(accessory.context.waitForEndValueBrightness){
-              clearTimeout(accessory.context.waitForEndValueBrightness);
-              accessory.context.waitForEndValueBrightness = false;
+            text = ('Setting brightness to ' + state);
+            
+            if(accessory.waitForEndBrightness){
+              clearTimeout(accessory.waitForEndBrightness);
+              accessory.waitForEndBrightness = false;
             }
-             
-            accessory.context.waitForEndValueBrightness = setTimeout(async () => {
+            
+            accessory.waitForEndValueBrightness = setTimeout(async () => {
             
               try {
               
@@ -1122,7 +1114,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
               }
             
-            }, 1000);
+            }, 500);
           
           } else if(config === 'temperature'){
           
@@ -1136,59 +1128,67 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
            
             let hue = color.hue;
             let saturation = color.saturation;
+          
+            cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=100';
+            text = ('Setting color temperature to ' + validColorTemperatureKelvin + ' Kelvin');
             
-            accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
-            accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
-          
-            cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=0';
-            text = ('Setting color temperature to ' + Math.round((1000000/state)) + ' Kelvin') + ' (' + target + ')';
-          
-            if(accessory.context.waitForEndValueColorTemp){
-              clearTimeout(accessory.context.waitForEndValueColorTemp);
-              accessory.context.waitForEndValueColorTemp = false;
+            if(accessory.waitForEndColorTemp){
+              clearTimeout(accessory.waitForEndColorTemp);
+              accessory.waitForEndColorTemp = false;
             }
-             
-            accessory.context.waitForEndValueColorTemp = setTimeout(async () => {
+          
+            if(bulbState){
             
-              try {
+              accessory.waitForEndColorTemp = setTimeout(async () => {
               
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
-                Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
-              
-              }
+                try {
             
-            }, 1000);
+                  await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                  Logger.info(text + ' (' + target + ')', accessory.displayName);
+                  
+                  accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
+                  accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
+                
+                } catch(err) {
+                
+                  handleError(accessory, false, target, err, {set: true});
+                
+                }
+              
+              }, 500);
+            
+            }
           
           } else {  //color
           
             let validHueSat = getValidColor(accessory, false, state);
           
-            cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=0';
-            text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat) + ' (' + target + ')';
-          
-            if(accessory.context.waitForEndValueColor){
-              clearTimeout(accessory.context.waitForEndValueColor);
-              accessory.context.waitForEndValueColor = false;
+            cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=100';
+            text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat);
+            
+            if(accessory.waitForEndColor){
+              clearTimeout(accessory.waitForEndColor);
+              accessory.waitForEndColor = false;
             }
-             
-            accessory.context.waitForEndValueColor = setTimeout(async () => {
             
-              try {
-              
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
-                Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
-              
-              }
+            if(bulbState){
             
-            }, 1000);
+              accessory.waitForEndColor = setTimeout(async () => {
+              
+                try {
+            
+                  await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                  Logger.info(text + ' (' + target + ')', accessory.displayName);
+                
+                } catch(err) {
+                
+                  handleError(accessory, false, target, err, {set: true});
+                
+                }
+              
+              }, 500);
+            
+            }
           
           }
         
@@ -1238,26 +1238,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             cmd = 'sethkrtsoll&param='+temp;
             text = ('Setting temperature to ' + state) + ' (' + target + ')';
-            
-            if(accessory.context.waitForEndValue){
-              clearTimeout(accessory.context.waitForEndValue);
-              accessory.context.waitForEndValue = false;
-            }
         
-            accessory.context.waitForEndValue = setTimeout(async () => {
-            
-              try {
-              
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
-                Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
-              
-              }
-            
-            }, 1000);
+            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+            Logger.info(text + ' (' + target + ')', accessory.displayName);
         
           } else {
          
@@ -1268,25 +1251,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
             text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
             
-            if(accessory.context.waitForEndState){
-              clearTimeout(accessory.context.waitForEndState);
-              accessory.context.waitForEndState = false;
-            }
-        
-            accessory.context.waitForEndState = setTimeout(async () => {
-            
-              try {
-              
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
-                Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
-              
-              }
-            
-            }, 1000);
+            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+            Logger.info(text + ' (' + target + ')', accessory.displayName);
         
           }
         
@@ -2631,8 +2597,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
                 case 'smarthome-lightbulb':
                   await get(accessory, api.hap.Service.Lightbulb, api.hap.Characteristic.On, device.subtype);
-                  if(device.brightness)
-                    await get(accessory, api.hap.Service.Lightbulb, api.hap.Characteristic.Brightness, device.subtype);
                   break;
               
                 case 'smarthome-switch':
