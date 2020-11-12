@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const Logger = require('./logger.js');
 const lua = require('./lua.js');
@@ -28,7 +28,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       case 'smarthome-lightbulb': {
 
         let state = accessory.getService(service).getCharacteristic(characteristic).value; 
-        let brightness;
+        let brightness, temp, hue, sat;
         
         if(accessory.context.config.brightness)
           brightness = accessory.getService(service).getCharacteristic(api.hap.Characteristic.Brightness).value; 
@@ -47,7 +47,16 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           if(device && device.online && device.light){
           
             state = device.light.state || 0;
-            brightness = device.light.brightness ? device.light.brightness.levelpercentage : 0;
+            
+            if(device.light.brightness){
+              brightness = !isNaN(device.light.brightness.levelpercentage) ? device.light.brightness.levelpercentage : null;
+            }
+            
+            if(device.light.color){
+              temp = !isNaN(device.light.color.temperature) ? device.light.color.temperature : null;
+              hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
+              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation : null;
+            }
           
           }
           
@@ -79,11 +88,51 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           .getCharacteristic(characteristic)
           .updateValue(state);
           
-        if(accessory.context.config.brightness)
+        if(accessory.context.config.brightness && brightness !== null && brightness !== undefined)
           accessory
             .getService(service)
             .getCharacteristic(api.hap.Characteristic.Brightness)
             .updateValue(brightness);
+            
+        if(accessory.context.config.color){
+         
+          if(temp !== null && temp !== undefined){
+         
+            let colorTemperatureMired = Math.round(1000000/temp); 
+            let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
+                      
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.ColorTemperature)
+              .updateValue(colorTemperatureMired);
+              
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Hue)
+              .updateValue(color.hue);
+          
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Saturation)
+              .updateValue(color.saturation);
+         
+          }
+         
+          if(hue !== null && hue !== undefined && sat !== null && sat !== undefined){
+       
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Hue)
+              .updateValue(hue);
+          
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.Saturation)
+              .updateValue(sat/2.55);
+   
+          }
+         
+        }
       
         break;
       
@@ -113,7 +162,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               let currentPower = device.powermeter.power || 0;
               let totalPower = device.powermeter.energy || 0;
               let voltage = device.powermeter.voltage || 0;
-              let ampere = (currentPower/voltage || 0).toFixed(2);
+              let ampere = Math.round(((currentPower/voltage) + Number.EPSILON) * 100) / 100;
               
               accessory
                 .getService(service)
@@ -468,7 +517,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
 
             let threshold = !isNaN(accessory.context.config.threshold) ? accessory.context.config.threshold : 15;
 
-            let address = user.IPAddress;
+            let address = user.IPAddress || user.NewIPAddress;
 
             let res = await ping.promise.probe(address);
             res.alive = res.alive ? 1 : 0;
@@ -979,8 +1028,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             Logger.debug(body.data.internet, accessory.displayName);
           
-            state = parseFloat(body.data.internet.down.replace(',', '.').replace( /^\D+/g, '')).toString();
-            ul = parseFloat(body.data.internet.up.replace(',', '.').replace( /^\D+/g, '')).toString();
+            state = parseFloat(body.data.internet.down.replace(',', '.').replace( /^\D+/g, ''));
+            ul = parseFloat(body.data.internet.up.replace(',', '.').replace( /^\D+/g, ''));
           
           }
          
@@ -1029,7 +1078,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
     let fritzbox = accessory.context.config.fritzbox;
     
-    callback(null, state);
+    callback(null);
   
     switch (target) {
     
@@ -1050,17 +1099,83 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
             Logger.info(text, accessory.displayName);
           
-          } else {
+          } else if(config === 'brightness'){
           
             cmd = 'setlevelpercentage&level=' + state;
             text = ('Setting brightness to ' + state) + ' (' + target + ')';
           
-            if(accessory.context.waitForEndValue){
-              clearTimeout(accessory.context.waitForEndValue);
-              accessory.context.waitForEndValue = false;
+            if(accessory.context.waitForEndValueBrightness){
+              clearTimeout(accessory.context.waitForEndValueBrightness);
+              accessory.context.waitForEndValueBrightness = false;
             }
              
-            accessory.context.waitForEndValue = setTimeout(async () => {
+            accessory.context.waitForEndValueBrightness = setTimeout(async () => {
+            
+              try {
+              
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 1000);
+          
+          } else if(config === 'temperature'){
+          
+            let colorTemperatureMired = state;
+            let colorTemperatureKelvin = Math.round(1000000/colorTemperatureMired);
+            
+            let validColorTemperatureKelvin = colortemp2api(colorTemperatureKelvin);
+            let validColorTemperatureMired = Math.round(1000000/validColorTemperatureKelvin);
+            
+            let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
+           
+            let hue = color.hue;
+            let saturation = color.saturation;
+            
+            accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
+            accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
+          
+            cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=0';
+            text = ('Setting color temperature to ' + Math.round((1000000/state)) + ' Kelvin') + ' (' + target + ')';
+          
+            if(accessory.context.waitForEndValueColorTemp){
+              clearTimeout(accessory.context.waitForEndValueColorTemp);
+              accessory.context.waitForEndValueColorTemp = false;
+            }
+             
+            accessory.context.waitForEndValueColorTemp = setTimeout(async () => {
+            
+              try {
+              
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 1000);
+          
+          } else {  //color
+          
+            let validHueSat = getValidColor(accessory, false, state);
+          
+            cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=0';
+            text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat) + ' (' + target + ')';
+          
+            if(accessory.context.waitForEndValueColor){
+              clearTimeout(accessory.context.waitForEndValueColor);
+              accessory.context.waitForEndValueColor = false;
+            }
+             
+            accessory.context.waitForEndValueColor = setTimeout(async () => {
             
               try {
               
@@ -2663,6 +2778,45 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       }
     
     });
+  
+  }
+  
+  function colortemp2api(param){
+    if (param > 6200)
+      return 6500;
+    else if (param > 5600)
+      return 5900;
+    else if (param > 5000)
+      return 5300;
+    else if (param > 4500)
+      return 4700;
+    else if (param > 4000)
+      return 4200;
+    else if (param > 3600)
+      return 3800;
+    else if (param > 3200)
+      return 3400;
+    else if (param > 2850)
+      return 3000;
+    else
+      return 2700;
+  }
+  
+  function getValidColor(accessory, hue, sat){
+  
+    hue = hue || accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).value; 
+    sat = Math.round((sat || accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).value) * 2.55);
+  
+    //               orange        yellow       lime        green       turqoise       cyan        lightblue       blue          purple      magenta        pink           red
+    let hues = [       35,          52,          92,         120,         160,          195,          212,          225,          266,         296,          335,          358     ];
+    let sats = [ [72,140,214], [51,102,153], [38,79,123], [38,82,160], [41,84,145], [59,118,179], [56,110,169], [67,135,204], [54,110,169], [46,92,140], [51,107,180], [54,112,180] ];
+    
+    let validHue = hues.reduce((prev, curr) => Math.abs(curr - hue) < Math.abs(prev - hue) ? curr : prev);
+    let indexHue = hues.indexOf(validHue);
+    let satsByIndex = sats[indexHue];
+    let validSat = satsByIndex.reduce((prev, curr) => Math.abs(curr - sat) < Math.abs(prev - sat) ? curr : prev);
+    
+    return {hue: validHue, sat: validSat};
   
   }
   

@@ -30,6 +30,7 @@
           "host": {
             "title": "Host",
             "type": "string",
+            "placeholder": "192.168.178.1",
             "required": true,
             "description": "FritzBox IP Address."
           },
@@ -42,13 +43,11 @@
           "username": {
             "title": "Username",
             "type": "string",
-            "required": true,
             "description": "Username to log in to your FritzBox."
           },
           "password": {
             "title": "Password",
             "type": "string",
-            "required": true,
             "description": "Password to log in to your FritzBox."
           },
           "ssl": {
@@ -482,6 +481,14 @@
               "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb';"
             },
             "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit. (Only for Lightbulb accessory types)"
+          },
+          "color": {
+            "title": "Color",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb';"
+            },
+            "description": "Enable this, if the lightbulb has a color adjustment functionality. This will enable color adjustment through HomeKit. (Only for Lightbulb accessory types)"
           },
           "battery": {
             "title": "Battery",
@@ -1326,6 +1333,7 @@
                 "smarthome[].temperature",
                 "smarthome[].window",
                 "smarthome[].brightness",
+                "smarthome[].color",
                 "smarthome[].battery"
               ]
             }

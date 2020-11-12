@@ -77,7 +77,9 @@ function FritzPlatform (log, config, api) {
     this.master = [];
     
     this.config.devices.map(device => {
-      if(device.master && device.host && device.username && device.password){
+      if(device.master && device.host){
+        device.username = device.username || '';
+        device.password = device.password || '';
         this.masterDevice = device;
         this.masterDevice.fritzbox = new Fritzbox({ username: device.username, password: device.password, url: 'http://' + device.host + ':' + (device.port||49000), tr064: device.tr064, igd: device.igd, autoSsl: device.ssl });
         this.master.push(device);
@@ -85,8 +87,7 @@ function FritzPlatform (log, config, api) {
     });
     
     if(!this.masterDevice){
-      Logger.warn('WARNING: There is no master router defined!');
-      Logger.warn('WARNING: Please define ONE master router to proceed!');
+      Logger.warn('WARNING: There is no master router defined! Please check if "master" is enabled and "host" ist set in config.');
       return;
     }
     
@@ -108,16 +109,13 @@ function FritzPlatform (log, config, api) {
       } else if (!router.host) {
         Logger.warn('There is no host configured for this router. This router will be skipped.', router.name);
         error = true;
-      } else if (!router.username) {
-        Logger.warn('There is no username configured for this router. This router will be skipped.', router.name);
-        error = true;
-      } else if (!router.password) {
-        Logger.warn('There is no password configured for this router. This router will be skipped.', router.name);
-        error = true;
       } else if(!router.connection || !validTypes.includes(router.connection)) {
         Logger.warn('There is no or no valid connection type configured for this router. Setting it to default: "dsl"', router.name);
         router.connection = 'dsl';
       }
+      
+      router.username = router.username || '';
+      router.password = router.password || '';
 
       if (!error) {
         router.type = 'router';
