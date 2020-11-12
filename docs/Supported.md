@@ -2,6 +2,8 @@
 
 ## Fritz!OS
 - [x] Fritz!OS 7.2
+- [ ] Fritz!OS 7.1 (partial support)
+- [ ] Fritz!OS 7.0 (partial support)
 
 ## Fritz!Box
 - [x] Fritz!Box 7590
