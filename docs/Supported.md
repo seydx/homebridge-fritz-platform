@@ -12,11 +12,13 @@
 - [x] Fritz!Box 7360 WLAN
 - [x] Fritz!Box 6590 Cable
 - [x] Fritz!Box 6490 Cable
+- [x] Fritz!Box 6591 Cable
 
 ## Fritz!Repeater
 - [x] Fritz!Repeater 1750E
 - [x] Fritz!Wlan Repeater 450E
-- [x] Fritz!Wlan Repeater 310 (partial)
+- [x] Fritz!Wlan Repeater 310
+- [x] Fritz!Repeater 3000
 
 ## Fritz!DECT Smart Home
 - [x] Fritz!DECT Repeater 1000
