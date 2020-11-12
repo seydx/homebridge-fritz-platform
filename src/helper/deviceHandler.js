@@ -1237,10 +1237,27 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
           
             cmd = 'sethkrtsoll&param='+temp;
-            text = ('Setting temperature to ' + state) + ' (' + target + ')';
+            text = ('Setting temperature to ' + state);
         
-            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
-            Logger.info(text + ' (' + target + ')', accessory.displayName);
+            if(accessory.waitForEndTemp){
+              clearTimeout(accessory.waitForEndTemp);
+              accessory.waitForEndTemp = false;
+            }
+            
+            accessory.waitForEndTemp = setTimeout(async () => {
+            
+              try {
+          
+                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              } catch(err) {
+              
+                handleError(accessory, false, target, err, {set: true});
+              
+              }
+            
+            }, 500);
         
           } else {
          
