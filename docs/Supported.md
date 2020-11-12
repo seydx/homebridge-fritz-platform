@@ -1,7 +1,7 @@
 # Tested devices & OS version
 
 ## Fritz!OS
-- [x] Fritz!OS 7.x
+- [x] Fritz!OS 7.2
 
 ## Fritz!Box
 - [x] Fritz!Box 7590
