@@ -143,6 +143,13 @@
                     "ain": "09995 0692315",
                     "accType": "temperature",
                     "battery": true
+                },
+                {
+                    "name": "DECT 500",
+                    "ain": "09995 0692315",
+                    "accType": "lightbulb",
+                    "brightness": true,
+                    "color": true
                 }
             ],
             "network": [
