@@ -68,7 +68,7 @@
             "type": "boolean",
             "description": "Enables IGD endpoint on requests. Please disable if device seems to be offline in Apple Home.",
             "required": true,
-            "default": true
+            "default": false
           },
           "manufacturer": {
             "name": "Manufacturer",
@@ -500,12 +500,17 @@
           "accType": {
             "title": "Accessory Type",
             "type": "string",
-            "default": false,
             "oneOf": [
               {
                 "title": "Switch",
                 "enum": [
                   "switch"
+                ]
+              },
+              {
+                "title": "Button",
+                "enum": [
+                  "button"
                 ]
               },
               {

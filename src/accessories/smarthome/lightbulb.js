@@ -45,14 +45,14 @@ class SmarthomeLightbulbAccessory {
       if(!service.testCharacteristic(this.api.hap.Characteristic.ColorTemperature))
         service.addCharacteristic(this.api.hap.Characteristic.ColorTemperature);                  
       
-      if(this.api.versionGreaterOrEqual('v1.3.0-beta.22')){
+      if(this.api.versionGreaterOrEqual('v1.3.0-beta.23')){
     
-        this.ambientLightningController = new this.api.hap.AmbientLightningController(service, {
-          controllerMode: this.api.hap.AmbientLightningControllerMode.AUTOMATIC,
+        this.adaptiveLightingController  = new this.api.hap.AdaptiveLightingController(service, {
+          controllerMode: this.api.hap.AdaptiveLightingControllerMode.AUTOMATIC,
         });
         
-        this.accessory.configureController(this.ambientLightningController);
-        this.accessory.ambientLightningController = this.ambientLightningController;
+        this.accessory.configureController(this.adaptiveLightingController);
+        this.accessory.adaptiveLightingController = this.adaptiveLightingController;
       
       }
     

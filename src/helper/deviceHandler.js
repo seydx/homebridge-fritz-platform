@@ -93,10 +93,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             if(changed){
             
-              //Logger.debug('Color temperature changed from outside. Disabling Ambientlight.', accessory.displayName);
+              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
             
-              if(api.versionGreaterOrEqual('v1.3.0-beta.22'))
-                accessory.ambientLightningController.disableAmbientLightning(true);
+              if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
+                accessory.adaptiveLightingController.disableAdaptiveLighting(true);
                 
               let colorTemperatureMired = temp; 
               let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
@@ -122,10 +122,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
          
           if(hue !== null && hue !== undefined && sat !== null && sat !== undefined){
           
-            //Logger.debug('Color changed from outside. Disabling Ambientlight.', accessory.displayName);
+            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
           
-            if(api.versionGreaterOrEqual('v1.3.0-beta.22'))
-              accessory.ambientLightningController.disableAmbientLightning(true);
+            if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
+              accessory.adaptiveLightingController.disableAdaptiveLighting(true);
        
             accessory
               .getService(service)
@@ -2002,7 +2002,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\â€“/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2036,7 +2036,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\â€“/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                       
                       let telNumbers = [];
                       
@@ -2457,8 +2457,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     
       try {
       
+        let ssl = fritzboxMaster.options.autoSsl;
+      
         const data = await fritzboxMaster.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
-        const uri = 'https://' + fritzboxMaster.url.hostname + ':49443' + data['NewX_AVM-DE_HostListPath'];
+        const uri = (ssl ? 'https://' : 'http://') + fritzboxMaster.url.hostname + ':' + (ssl ? '49443' : '49000') + data['NewX_AVM-DE_HostListPath'];
         
         const hosts = await requestXml({ uri, rejectUnauthorized: false });
       
@@ -2519,6 +2521,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
+          
+        console.log(JSON.stringify(deviceList, null, 2));
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
@@ -2566,6 +2570,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                 ? {
                   state: parseInt(device.switch.state) || 0
                 }
+                : false,
+              button: device.button
+                ? device.button
                 : false,    
               thermostat: device.hkr
                 ? {
