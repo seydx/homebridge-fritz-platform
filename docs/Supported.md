@@ -1,6 +1,7 @@
 # Tested devices & OS version
 
 ## Fritz!OS
+- [ ] Fritz!OS 7.24 Beta (partial support)
 - [x] Fritz!OS 7.2
 - [ ] Fritz!OS 7.1 (partial support)
 - [ ] Fritz!OS 7.0 (partial support)
