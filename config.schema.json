@@ -508,12 +508,6 @@
                 ]
               },
               {
-                "title": "Button",
-                "enum": [
-                  "button"
-                ]
-              },
-              {
                 "title": "Contact",
                 "enum": [
                   "contact"
