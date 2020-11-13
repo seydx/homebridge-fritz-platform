@@ -2002,7 +2002,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\â€“/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2036,7 +2036,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\â€“/g, '');
                       
                       let telNumbers = [];
                       
