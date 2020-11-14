@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.0.9 - 2020-11-14
+- Support for apple daptive lighting (coming with hb 1.3) for smarthome lightbulbs
+- Bugfixes
+
 ## v5.0.8 - 2020-11-12
 - Added support for color lightbulbs (eg DECT500)
 - Bugfixes
