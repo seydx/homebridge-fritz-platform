@@ -35,20 +35,6 @@ class SmarthomeOutletAccessory {
       service = this.accessory.addService(this.api.hap.Service.Outlet, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
-    if(this.accessory.context.config.battery){
-      
-      let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
-      
-      if(!batteryService){
-        Logger.info('Adding Battery service', this.accessory.displayName);
-        batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
-      }
-      
-      batteryService
-        .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE);
-      
-    }
-    
     if(!service.testCharacteristic(this.api.hap.Characteristic.CurrentConsumption))
       service.addCharacteristic(this.api.hap.Characteristic.CurrentConsumption);
         
@@ -89,15 +75,62 @@ class SmarthomeOutletAccessory {
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
  
-      service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
  
+      if(!this.accessory.context.config.readOnly){
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+  
+      } else {
+  
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('set', (state, callback) => {
+          
+            Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);
+          
+            setTimeout(() => {
+            
+              service
+                .getCharacteristic(this.api.hap.Characteristic.On)
+                .updateValue(!state);
+            
+            }, 1000);
+            
+            callback(null);
+          
+          });
+  
+      }
  
     } else {
- 
-      service.getCharacteristic(this.api.hap.Characteristic.On)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+    
+      if(!this.accessory.context.config.readOnly){
+   
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+   
+      } else {
+      
+        service.getCharacteristic(this.api.hap.Characteristic.On)
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
+          .on('set', (state, callback) => {
+          
+            Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);
+          
+            setTimeout(() => {
+            
+              service
+                .getCharacteristic(this.api.hap.Characteristic.On)
+                .updateValue(!state);
+            
+            }, 1000);
+            
+            callback(null);
+          
+          });
+   
+      }
  
     }
     
