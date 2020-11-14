@@ -46,7 +46,7 @@ This plugin allows almost full control of **AVM** hardware like:
   - Light status and switch functionality,
   - Brightness adjustment,
   - Color adjustment,
-  - Ambientlight support
+  - Apple adaptive lighting
 - **Fritz!DECT Thermostats, Comet!DECT Thermostats**
   - Thermostat current state, target state, current temperature and target temperature state and switch functionality,
   - Temperature sensor,
