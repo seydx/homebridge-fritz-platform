@@ -2521,8 +2521,6 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
-          
-        console.log(JSON.stringify(deviceList, null, 2));
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
