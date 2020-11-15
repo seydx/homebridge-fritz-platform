@@ -622,6 +622,14 @@
           "description": "The port to listen on for Callmonitor.",
           "required": true
         },
+        "countryPrefix": {
+          "title": "Country Prefix",
+          "type": "string",
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
+          "description": "If your FritzBox does not provide VOIP, please enter your country prefix (eg 49, 0049 or +49)."
+        },
         "incomingTo": {
           "title": "Incoming To",
           "type": "array",
@@ -631,11 +639,11 @@
           "items": {
             "title": "Number",
             "type": "string",
-            "description": "Number to filter for incoming calls."
+            "description": "Number to filter for incoming calls. (If a number is given, the accessory will only trigger if the number matches)"
           }
         },
         "outgoingFrom": {
-          "title": "Outgoing To",
+          "title": "Outgoing From",
           "type": "array",
           "condition": {
             "functionBody": "return model.callmonitor.active === true;"
@@ -643,7 +651,7 @@
           "items": {
             "title": "Number",
             "type": "string",
-            "description": "Number to filter for outgoing calls."
+            "description": "Number to filter for outgoing calls. (If a number is given, the accessory will only trigger if the number matches)"
           }
         }
       }
@@ -658,7 +666,7 @@
           "properties": {
             "active": {
               "title": "Active",
-              "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home.",
+              "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home. (Your FritzBox must support VOIP to use this function)",
               "type": "boolean",
               "required": true,
               "default": false
@@ -712,7 +720,7 @@
           "properties": {
             "active": {
               "title": "Active",
-              "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home.",
+              "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home. (Your FritzBox must support VOIP to use this function)",
               "type": "boolean",
               "required": true,
               "default": false
@@ -1351,6 +1359,7 @@
         "callmonitor.group",
         "callmonitor.ip",
         "callmonitor.port",
+        "callmonitor.countryPrefix",
         {
           "key": "callmonitor.incomingTo",
           "type": "section",
