@@ -144,9 +144,6 @@ function FritzPlatform (log, config, api) {
             autoSsl: options.ssl
           });
         
-          if(router.master)
-            this.fritzbox = router.fritzbox;
-        
           if(!router.hide)
             this.devices.set(uuid, router);
           
@@ -296,7 +293,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate user will be skipped.', user.name);
         } else {
-          user.fritzbox = this.fritzbox;
+          user.fritzbox = this.masterDevice.fritzbox;
           this.devices.set(uuid, user);
           this.presence.set(uuid, user);
         }
@@ -330,7 +327,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
         } else {
-          device.fritzbox = this.fritzbox;
+          device.fritzbox = this.masterDevice.fritzbox;
           this.devices.set(uuid, device);
         }
       }
@@ -364,7 +361,7 @@ function FritzPlatform (log, config, api) {
           Logger.warn('Multiple network devices are configured with this name. Duplicate devices will be skipped.', device.name);
         } else {
           Logger.info('Configuring network device', device.name);
-          device.fritzbox = this.fritzbox;
+          device.fritzbox = this.masterDevice.fritzbox;
           this.network.set(uuid, device);
         }
       }
@@ -427,7 +424,7 @@ function FritzPlatform (log, config, api) {
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', dev.name);
         } else {
-          dev.fritzbox = this.fritzbox;
+          dev.fritzbox = this.masterDevice.fritzbox;
           this.devices.set(uuid, dev);
         }
       }
@@ -518,6 +515,8 @@ function FritzPlatform (log, config, api) {
   }
   
   if(config.callmonitor && config.callmonitor.active && config.callmonitor.ip && this.validIP.test(config.callmonitor.ip)){
+    
+    this.masterDevice.countryPrefix = config.callmonitor.countryPrefix || false;
    
     this.config.callmonitor = config.callmonitor;
     this.config.callmonitor.port = this.config.callmonitor.port || 1012;
@@ -601,7 +600,7 @@ function FritzPlatform (log, config, api) {
     this.messages = false;
   }  
   
-  this.handler = DeviceHandler(this.api, this.fritzbox, this.devices, this.presence, this.smarthome, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
+  this.handler = DeviceHandler(this.api, this.masterDevice, this.devices, this.presence, this.smarthome, this.api.user.storagePath(), this.Telegram, this.presenceOptions, this.polling, this.reboot);
   
   if(this.network.size)
     new WatchNetwork(this.network, this.Telegram, this.polling);
