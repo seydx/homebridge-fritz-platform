@@ -41,6 +41,10 @@ class SmarthomeTemperatureAccessory {
       batteryService
         .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE);
       
+    } else {
+    
+      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.BatteryService));
+    
     }
     
     this.historyService = new this.FakeGatoHistoryService('room', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 

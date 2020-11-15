@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const Logger = require('./logger.js');
 const lua = require('./lua.js');

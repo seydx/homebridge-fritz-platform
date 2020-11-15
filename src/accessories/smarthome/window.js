@@ -41,6 +41,10 @@ class SmarthomeWindowAccessory {
       batteryService
         .setCharacteristic(this.api.hap.Characteristic.ChargingState, this.api.hap.Characteristic.ChargingState.NOT_CHARGEABLE);
       
+    } else {
+    
+      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.BatteryService));
+    
     }
     
     if (!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
