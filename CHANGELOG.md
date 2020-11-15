@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 5.0.12 - 2020-11-15
+- Fixed a bug with smarthome-window battery service
+- Added function to remove battery service
+- Bugfixes
+
 ## 5.0.11 - 2020-11-15
 - Added more information to callmonitor telegram (now % will be replaced with your home nr)
 - Replaced Telegraf with FormData
