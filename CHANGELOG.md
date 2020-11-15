@@ -1,5 +1,13 @@
 # Changelog
 
+
+## v5.0.10 - 2020-11-15
+- Added countryPrefix option to Callmonitor tu spport FritzBox devices without VOIP function
+- Disabled AdaptiveLighting (not supported with official homebridge release, coming back with homebridge v1.3)
+- Changed callmonitor incomingTo/outgoingFrom logic
+- Bugfixes
+- Bump FakeGato
+
 ## v5.0.9 - 2020-11-14
 - Support for apple daptive lighting (coming with hb 1.3) for smarthome lightbulbs
 - Bugfixes
