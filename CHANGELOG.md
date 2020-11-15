@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 5.0.11 - 2020-11-15
+- Added more information to callmonitor telegram (now % will be replaced with your home nr)
+- Replaced Telegraf with FormData
+- Bugfixes
+
 ## v5.0.10 - 2020-11-15
 - Added countryPrefix option to Callmonitor tu spport FritzBox devices without VOIP function
 - Disabled AdaptiveLighting (not supported with official homebridge release, coming back with homebridge v1.3)
