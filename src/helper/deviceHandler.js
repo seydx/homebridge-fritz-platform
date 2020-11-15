@@ -2532,6 +2532,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
+          
+        //Logger.debug(deviceList, 'SmartHome')
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
@@ -2646,6 +2648,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   
                 case 'smarthome-thermostat':
                   await get(accessory, api.hap.Service.Thermostat, false, device.subtype);
+                  break;
+                  
+                case 'smarthome-window':
+                  await get(accessory, api.hap.Service.ContactSensor, api.hap.Characteristic.ContactSensorState, device.subtype);
                   break;
                   
                 default:
