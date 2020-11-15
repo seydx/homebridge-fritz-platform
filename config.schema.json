@@ -1036,17 +1036,17 @@
                 "incoming": {
                   "title": "Incoming Call",
                   "type": "string",
-                  "description": "Message for incoming call. (Hint: @ will be replaced with caller name/number)"
+                  "description": "Message for incoming call. (Hint: @ will be replaced with caller name/number and % will be replaced with your home nr.)"
                 },
                 "outgoing": {
                   "title": "Outgoing Call",
                   "type": "string",
-                  "description": "Message for outgoing call. (Hint: @ will be replaced with caller name/number)"
+                  "description": "Message for outgoing call. (Hint: @ will be replaced with caller name/number and % will be replaced with your home nr.)"
                 },
                 "disconnected": {
                   "title": "Call disconnected",
                   "type": "string",
-                  "description": "Message if call disconnected. (Hint: @ will be replaced with caller name/number)"
+                  "description": "Message if call disconnected. (Hint: @ will be replaced with caller name/number and % will be replaced with your home nr.)"
                 }
               }
             },

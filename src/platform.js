@@ -592,7 +592,6 @@ function FritzPlatform (log, config, api) {
       });
       
     this.Telegram = new Telegram(this.config.telegram, this.messages);  
-    this.Telegram.start();
     
   } else {
     Logger.debug('Telegram is not or not correctly set up. Skip.');

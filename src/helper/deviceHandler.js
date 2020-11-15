@@ -2378,7 +2378,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               dest  = 'disconnected';
             }
           
-            Telegram.send('callmonitor', dest, replacer.text);
+            Telegram.send('callmonitor', dest, replacer.callerNr, replacer.homeNr);
           }
           
           break;

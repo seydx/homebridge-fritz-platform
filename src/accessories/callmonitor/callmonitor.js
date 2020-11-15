@@ -86,7 +86,8 @@ class CallmonitorContactAccessory {
       .on('change', value => {
         this.handler.change(this.accessory, 'callmonitor', { 
           denyCall: this.denyCall,
-          text: this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr,
+          callerNr: this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr,
+          homeNr: this.homeNr,
           inbound: this.inbound
         }, this.historyService, value);
       });
@@ -120,6 +121,7 @@ class CallmonitorContactAccessory {
             called: data[4]
           };
           
+          let called = message.called.replace(/\D/g,'');
           let caller = message.caller.replace(/\D/g,''); 
           
           text = 'Incoming call from: ' + message.caller + ' to ' + message.called;
@@ -128,6 +130,7 @@ class CallmonitorContactAccessory {
           this.denyCall = false;  
           this.inbound = true;
           this.outgoing = false;
+          this.homeNr = called;
           
           let phoneBook = await this.getPhonebook();
           let blackBook = await this.getBlackbook();
@@ -194,6 +197,7 @@ class CallmonitorContactAccessory {
             called: data[5]
           };
           
+          let caller = message.caller.replace(/\D/g,'');
           let called = message.called.replace(/\D/g,''); 
           
           text = 'Outgoing call from: ' + message.caller + ' to ' + message.called;
@@ -202,6 +206,7 @@ class CallmonitorContactAccessory {
           this.denyCall = false;  
           this.outgoing = true;
           this.inbound = false;
+          this.homeNr = caller;
           
           let phoneBook = await this.getPhonebook();
           let blackBook = await this.getBlackbook();
