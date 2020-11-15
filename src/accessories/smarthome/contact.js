@@ -43,7 +43,8 @@ class SmarthomeContactAccessory {
       
     } else {
     
-      this.accessory.removeService(this.accessory.getService(this.api.hap.Service.BatteryService));
+      if(this.accessory.getService(this.api.hap.Service.BatteryService))
+        this.accessory.removeService(this.accessory.getService(this.api.hap.Service.BatteryService));
     
     }
     
