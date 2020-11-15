@@ -12,7 +12,7 @@ const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
 let hostList, smarthomeList;
 
-module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath, Telegram, presenceOptions, polling, reboot) => {
+module.exports = (api, masterDevice, devices, presence, smarthome, configPath, Telegram, presenceOptions, polling, reboot) => {
 
   async function get(accessory, service, characteristic, target, config, callback){
     
@@ -95,8 +95,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             
               //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
             
-              if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
-                accessory.adaptiveLightingController.disableAdaptiveLighting(true);
+              /*if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
+                accessory.adaptiveLightingController.disableAdaptiveLighting(true);*/
                 
               let colorTemperatureMired = temp; 
               let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
@@ -124,8 +124,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
           
             //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
           
-            if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
-              accessory.adaptiveLightingController.disableAdaptiveLighting(true);
+            /*if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
+              accessory.adaptiveLightingController.disableAdaptiveLighting(true);*/
        
             accessory
               .getService(service)
@@ -1078,7 +1078,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         try {
         
-          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd, text;
           
@@ -1087,7 +1087,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             cmd = state ? 'setsimpleonoff&onoff=1' : 'setsimpleonoff&onoff=0';
             text = (state ? 'ON': 'OFF');
              
-            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               
             Logger.info(text, accessory.displayName);
           
@@ -1105,7 +1105,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             
               try {
               
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                 Logger.info(text + ' (' + target + ')', accessory.displayName);
               
               } catch(err) {
@@ -1143,7 +1143,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
                 try {
             
-                  await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                   Logger.info(text + ' (' + target + ')', accessory.displayName);
                   
                   accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
@@ -1177,7 +1177,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
                 try {
             
-                  await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                   Logger.info(text + ' (' + target + ')', accessory.displayName);
                 
                 } catch(err) {
@@ -1206,11 +1206,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         try {
         
-          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd = state ? 'setswitchon' : 'setswitchoff';
           
-          await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+          await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
           
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
         
@@ -1228,7 +1228,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
       
         try {
         
-          let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd, text;
           
@@ -1248,7 +1248,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             
               try {
           
-                await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                 Logger.info(text + ' (' + target + ')', accessory.displayName);
               
               } catch(err) {
@@ -1268,7 +1268,7 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
             text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
             
-            await aha.request( fritzboxMaster.url.hostname, accessory.context.config.ain, sid, cmd);
+            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
             Logger.info(text + ' (' + target + ')', accessory.displayName);
         
           }
@@ -1953,9 +1953,25 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
             okz = okz['NewX_AVM-DE_OKZPrefix'] + okz['NewX_AVM-DE_OKZ'];
             okz = parseInt(okz);  //05341 */
             
-            let lkz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+            let lkz;
             
-            lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49      
+            if(masterDevice.countryPrefix){
+              
+              let prefix = masterDevice.countryPrefix;
+              
+              if(prefix.includes('+'))
+                lkz = prefix.split('+')[1];
+                
+              if(prefix.includes('00'))
+                lkz = prefix.split('00')[1];
+                
+            } else {
+              
+              lkz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+              
+              lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49
+              
+            }      
             
             let nr = '+' + lkz; 
             let nr2 = '00' + lkz;
@@ -2384,10 +2400,22 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
   
   async function poll(accessories){
   
+    await refreshDevices(accessories);    
+    await refreshHosts(accessories);    
+    await refreshSmarthome(accessories);
+   
+    setTimeout(() => {
+      poll(accessories);
+    }, polling.timer);
+  
+  }
+  
+  async function refreshDevices(accessories){
+    
     if(devices.size){
-      
+    
       let allDevices = handleCharacteristics(accessories);
-       
+         
       for(const [uuid, device] of allDevices){
         
         if(!polling.exclude.includes(device.subtype) && !polling.exclude.includes(device.type) && !polling.exclude.includes(device.name)){
@@ -2396,13 +2424,11 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
          
           switch (device.type) {
             
-            case 'router': {
+            case 'router':
            
               await get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.type);
            
               break;
-              
-            }
            
             case 'extra': {
             
@@ -2414,12 +2440,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
               
             }
               
-            default: {
-            
+            default:
               // fall through
               break;
-           
-            }
          
           }
         
@@ -2427,20 +2450,8 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
        
       }
       
-      if(presence.size){
-        await refreshHosts(accessories);
-      }
-      
-      if(smarthome.size){
-        await refreshSmarthome(accessories);
-      }
-     
-      setTimeout(() => {
-        poll(accessories);
-      }, polling.timer);
-    
     }
-  
+    
   }
   
   async function refreshHosts(accessories){
@@ -2457,10 +2468,10 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     
       try {
       
-        let ssl = fritzboxMaster.options.autoSsl;
+        let ssl = masterDevice.fritzbox.options.autoSsl;
       
-        const data = await fritzboxMaster.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
-        const uri = (ssl ? 'https://' : 'http://') + fritzboxMaster.url.hostname + ':' + (ssl ? '49443' : '49000') + data['NewX_AVM-DE_HostListPath'];
+        const data = await masterDevice.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_GetHostListPath');
+        const uri = (ssl ? 'https://' : 'http://') + masterDevice.fritzbox.url.hostname + ':' + (ssl ? '49443' : '49000') + data['NewX_AVM-DE_HostListPath'];
         
         const hosts = await requestXml({ uri, rejectUnauthorized: false });
       
@@ -2511,9 +2522,9 @@ module.exports = (api, fritzboxMaster, devices, presence, smarthome, configPath,
     
       try {
       
-        let data = await fritzboxMaster.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+        let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
         let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
-        let uri = 'http://' + fritzboxMaster.url.hostname + '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' + sid;
+        let uri = 'http://' + masterDevice.fritzbox.url.hostname + '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' + sid;
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
         let deviceList = smarthomes.devicelist.device; 
