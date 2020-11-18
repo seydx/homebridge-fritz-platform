@@ -351,6 +351,16 @@
         "title": "Presence",
         "type": "object",
         "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "If enabled, the user will be exposed to HomeKit as motion/occupancy sensor."
+          },
+          "blockTelegram": {
+            "title": "Block Telegram",
+            "type": "boolean",
+            "description": "Enable this, if you don't want telegram notifications for this user."
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -629,6 +639,14 @@
             "functionBody": "return model.callmonitor.active === true;"
           },
           "description": "If your FritzBox does not provide VOIP, please enter your country prefix (eg 49, 0049 or +49)."
+        },
+        "cityPrefix": {
+          "title": "City Prefix",
+          "type": "string",
+          "condition": {
+            "functionBody": "return model.callmonitor.active === true;"
+          },
+          "description": "If your FritzBox does not provide VOIP, please enter your city prefix (eg 030)."
         },
         "incomingTo": {
           "title": "Incoming To",
@@ -1273,9 +1291,11 @@
           "orderable": false,
           "buttonText": "Add User",
           "items": [
+            "presence[].active",
             "presence[].name",
             "presence[].address",
             "presence[].accType",
+            "presence[].blockTelegram",
             {
               "key": "presence[]",
               "type": "section",
@@ -1360,6 +1380,7 @@
         "callmonitor.ip",
         "callmonitor.port",
         "callmonitor.countryPrefix",
+        "callmonitor.cityPrefix",
         {
           "key": "callmonitor.incomingTo",
           "type": "section",
