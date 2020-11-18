@@ -31,6 +31,7 @@ class Telegram {
       
       const form = new FormData();
       
+      this.request.headers = form.getHeaders();
       form.append('chat_id', this.chatID);
       form.append('parse_mode', 'Markdown');
       form.append('text', message);
