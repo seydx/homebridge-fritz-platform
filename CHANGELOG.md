@@ -1,12 +1,20 @@
 # Changelog
 
 
-## 5.0.12 - 2020-11-15
+## v5.0.13 - 2020-11-15
+- Added new option: "cityPrefix" for callmonitor for better call detection
+- Added new option: "active" for user (presence) to easily switch between enabled/disabled
+- Added new option: "blockTelegram" for user (presence) to block sending telegram notification
+- Phonebook improvements
+- Added custom FakeGato timer for all FakeGato enabled accessories to fix gaps is histories
+- Bugfixes
+
+## v5.0.12 - 2020-11-15
 - Fixed a bug with smarthome-window battery service
 - Added function to remove battery service
 - Bugfixes
 
-## 5.0.11 - 2020-11-15
+## v5.0.11 - 2020-11-15
 - Added more information to callmonitor telegram (now % will be replaced with your home nr)
 - Replaced Telegraf with FormData
 - Bugfixes
