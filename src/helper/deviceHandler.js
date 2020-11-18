@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const Logger = require('./logger.js');
 const lua = require('./lua.js');
@@ -1948,12 +1948,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         } else {
         
           try {
-          
-            /*let okz = fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonAreaCode');
-            okz = okz['NewX_AVM-DE_OKZPrefix'] + okz['NewX_AVM-DE_OKZ'];
-            okz = parseInt(okz);  //05341 */
             
-            let lkz;
+            let lkz, okz;
             
             if(masterDevice.countryPrefix){
               
@@ -1969,12 +1965,27 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               
               lkz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
               
-              lkz = parseInt(lkz['NewX_AVM-DE_LKZ']); //49 => 0049 => +49
+              lkz = lkz['NewX_AVM-DE_LKZ']; //49 => 0049 => +49
               
-            }      
+            }
             
-            let nr = '+' + lkz; 
-            let nr2 = '00' + lkz;
+            if(masterDevice.cityPrefix){
+              
+              if(masterDevice.cityPrefix.indexOf('0') === 0)
+                okz = masterDevice.cityPrefix.replace('0', '');
+            
+            } else {
+              
+              okz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonAreaCode');
+              
+              okz = okz['NewX_AVM-DE_OKZ']; //531
+              
+            }
+            
+            let lkz1 = '+' + lkz; 
+            let lkz2 = '00' + lkz;
+            
+            let okz1 = '0' + okz;
             
             let blacklists = config.blacklists && config.blacklists.length
               ? config.blacklists
@@ -2022,23 +2033,47 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                         
                         telNumbers.push(telnr);
                         
-                        if(telnr.includes(nr) || telnr.includes(nr2)){
+                        if(telnr.startsWith(lkz1) || telnr.startsWith(lkz2)){
                         
-                          if(telnr.includes(nr)){                             //  +49
-                            telNumbers.push(telnr.replace(nr, '0'));          //    0
-                            telNumbers.push(telnr.replace(nr, '00' + lkz));   // 0049
+                          if(telnr.startsWith(lkz1)){                             //  +49
+                            telNumbers.push(telnr.replace(lkz1, '0'));          //    0
+                            telNumbers.push(telnr.replace(lkz1, '00' + lkz));   // 0049
+                            if(telnr.includes(okz)){
+                              telNumbers.push('0' + telnr.split(lkz1)[1]);
+                              telNumbers.push(telnr.split(okz)[1]);
+                            } /*else {
+                              telNumbers.push(telnr.split(lkz1)[0] + okz + telnr.split(lkz1)[1]);
+                            }*/
                           }
                           
-                          if(telnr.includes(nr2)){                            // 0049
-                            telNumbers.push(telnr.replace(nr2, '0'));         //    0
-                            telNumbers.push(telnr.replace(nr2, '+' + lkz));   //  +49
+                          if(telnr.startsWith(lkz2)){                            // 0049
+                            telNumbers.push(telnr.replace(lkz2, '0'));         //    0
+                            telNumbers.push(telnr.replace(lkz2, '+' + lkz));   //  +49
+                            if(telnr.includes(okz)){
+                              telNumbers.push('0' + telnr.split(lkz2)[1]);
+                              telNumbers.push(telnr.split(okz)[1]);
+                            } /*else {
+                              telNumbers.push(telnr.split(lkz2)[0] + okz + telnr.split(lkz2)[1]);
+                            }*/
                           }
                         
                         } else {
                           
-                          if(telnr.includes('+'))                             //   +1
+                          if(telnr.startsWith('+'))                             //   +1
                             telNumbers.push(telnr.replace('+', '00'));        //  001
                           
+                          if(telnr.startsWith('00'))                            //   +1
+                            telNumbers.push(telnr.replace('00', '+'));        //  001
+                            
+                          if(telnr.startsWith(okz1))
+                            telNumbers.push(telnr.replace(okz1, ''));   
+                            
+                          /*if(!telnr.startsWith('+') && 
+                           !telnr.startsWith('00') && 
+                           !telnr.startsWith(okz1)){
+                            telNumbers.push(okz1 + telnr);
+                          }*/
+                            
                         }
       
                       }
@@ -2058,25 +2093,49 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                       
                       telNumbers.push(telnr);
                       
-                      if(telnr.includes(nr) || telnr.includes(nr2)){
+                      if(telnr.startsWith(lkz1) || telnr.startsWith(lkz2)){
                       
-                        if(telnr.includes(nr)){                             //  +49
-                          telNumbers.push(telnr.replace(nr, '0'));          //    0
-                          telNumbers.push(telnr.replace(nr, '00' + lkz));   // 0049
+                        if(telnr.startsWith(lkz1)){                           //  +49
+                          telNumbers.push(telnr.replace(lkz1, '0'));          //    0
+                          telNumbers.push(telnr.replace(lkz1, '00' + lkz));   // 0049
+                          if(telnr.includes(okz)){
+                            telNumbers.push('0' + telnr.split(lkz1)[1]);
+                            telNumbers.push(telnr.split(okz)[1]);
+                          } /*else {
+                            telNumbers.push(telnr.split(lkz1)[0] + okz + telnr.split(lkz1)[1]);
+                          }*/
                         }
                         
-                        if(telnr.includes(nr2)){                            // 0049
-                          telNumbers.push(telnr.replace(nr2, '0'));         //    0
-                          telNumbers.push(telnr.replace(nr2, '+' + lkz));   //  +49
+                        if(telnr.startsWith(lkz2)){                           // 0049
+                          telNumbers.push(telnr.replace(lkz2, '0'));          //    0
+                          telNumbers.push(telnr.replace(lkz2, '+' + lkz));    //  +49
+                          if(telnr.includes(okz)){
+                            telNumbers.push('0' + telnr.split(lkz2)[1]);
+                            telNumbers.push(telnr.split(okz)[1]);
+                          } /*else {
+                            telNumbers.push(telnr.split(lkz2)[0] + okz + telnr.split(lkz2)[1]);
+                          }*/
                         }
                       
                       } else {
                         
-                        if(telnr.includes('+'))                             //   +1
-                          telNumbers.push(telnr.replace('+', '00'));        //  001
+                        if(telnr.startsWith('+'))                             //   +1
+                          telNumbers.push(telnr.replace('+', '00'));          //  001
+                          
+                        if(telnr.startsWith('00'))                            //   +1
+                          telNumbers.push(telnr.replace('00', '+'));          //  001
+                          
+                        if(telnr.startsWith(okz1))
+                          telNumbers.push(telnr.replace(okz1, ''));
+                          
+                        /*if(!telnr.startsWith('+') && 
+                           !telnr.startsWith('00') && 
+                           !telnr.startsWith(okz1)){
+                            telNumbers.push(okz1 + telnr);
+                        }*/
                         
                       }
-                    
+                      
                       telBook.push({name: contact.person.realName, number: telNumbers});
                   
                       if(blacklists.includes(bookName))
@@ -2296,7 +2355,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
           }
           
-          if(Telegram)
+          if(Telegram && !accessory.context.config.blockTelegram)
             Telegram.send('presence', dest, replacer === 'Anyone' ? false : replacer);
         
           break;
