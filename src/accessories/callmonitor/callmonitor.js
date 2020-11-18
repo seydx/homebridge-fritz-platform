@@ -3,6 +3,9 @@
 const Logger = require('../../helper/logger.js');
 
 const fs = require('fs-extra');
+const moment = require('moment');
+
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
 
 class CallmonitorContactAccessory {
 
@@ -80,7 +83,7 @@ class CallmonitorContactAccessory {
         callback(null);
       });
     
-    this.historyService = new this.FakeGatoHistoryService('door', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'});
+    this.historyService = new this.FakeGatoHistoryService('door', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
       .on('change', value => {
@@ -93,6 +96,7 @@ class CallmonitorContactAccessory {
       });
     
     this.getState(service);
+    this.refreshHistory(service);
   
   }
   
@@ -327,16 +331,36 @@ class CallmonitorContactAccessory {
   
   updateAccessory(service, state, from){
     
-    service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
+    service
+      .getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
       .updateValue(state);
 
     if(from.caller)
-      service.getCharacteristic(this.api.hap.Characteristic.Caller)
+      service
+        .getCharacteristic(this.api.hap.Characteristic.Caller)
         .updateValue(from.caller);
         
     if(from.called)
-      service.getCharacteristic(this.api.hap.Characteristic.Called)
+      service
+        .getCharacteristic(this.api.hap.Characteristic.Called)
         .updateValue(from.called);
+    
+  }
+  
+  async refreshHistory(service){ 
+    
+    await timeout(5000);
+    
+    let state = service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState).value;
+    
+    this.historyService.addEntry({
+      time: moment().unix(), 
+      status: state ? 1 : 0
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
     
   }
   
