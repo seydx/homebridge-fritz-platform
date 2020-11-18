@@ -2,6 +2,10 @@
 
 const Logger = require('../../helper/logger.js');
 
+const moment = require('moment');
+
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 class PresenceMotionAccessory {
 
   constructor (api, accessory, handler, accessories, FakeGatoHistoryService) {
@@ -39,7 +43,7 @@ class PresenceMotionAccessory {
     if(!service.testCharacteristic(this.api.hap.Characteristic.LastActivation))
       service.addCharacteristic(this.api.hap.Characteristic.LastActivation);
     
-    this.historyService = new this.FakeGatoHistoryService('motion', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
+    this.historyService = new this.FakeGatoHistoryService('motion', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     this.accessory.context.lastSeen = false;
     
@@ -61,6 +65,8 @@ class PresenceMotionAccessory {
         .on('change', this.handler.change.bind(this, this.accessory, 'presence', this.accessory.displayName, this.historyService));
     
     }
+    
+    this.refreshHistory(service);
     
   }
   
@@ -92,6 +98,23 @@ class PresenceMotionAccessory {
       this.getState();
     }, 3000); 
   
+  }
+  
+  async refreshHistory(service){ 
+    
+    await timeout(5000);
+    
+    let state = service.getCharacteristic(this.api.hap.Characteristic.MotionDetected).value;
+    
+    this.historyService.addEntry({
+      time: moment().unix(), 
+      status: state ? 1 : 0
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
+    
   }
 
 }
