@@ -2,6 +2,10 @@
 
 const Logger = require('../../helper/logger.js');
 
+const moment = require('moment');
+
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 class SmarthomeThermostatAccessory {
 
   constructor (api, accessory, handler, FakeGatoHistoryService) {
@@ -80,7 +84,7 @@ class SmarthomeThermostatAccessory {
     if (!service.testCharacteristic(this.api.hap.Characteristic.ProgramData))
       service.addCharacteristic(this.api.hap.Characteristic.ProgramData);*/
     
-    this.historyService = new this.FakeGatoHistoryService('thermo', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
+    this.historyService = new this.FakeGatoHistoryService('thermo', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true}); 
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
 
@@ -119,6 +123,34 @@ class SmarthomeThermostatAccessory {
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
  
     }
+    
+    this.refreshHistory(service);
+    
+  }
+  
+  async refreshHistory(service){ 
+    
+    await timeout(5000);
+
+    let currentState = service.getCharacteristic(this.api.hap.Characteristic.CurrentHeatingCoolingState).value;  
+    let targetState = service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState).value;  
+    let currentTemp = service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature).value; 
+    let targetTemp = service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature).value; 
+      
+    let valvePos = currentTemp <= targetTemp && currentState !== this.api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== this.api.hap.Characteristic.TargetHeatingCoolingState.OFF
+      ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
+      : 0;
+      
+    this.historyService.addEntry({
+      time: moment().unix(), 
+      currentTemp: currentTemp, 
+      setTemp: targetTemp, 
+      valvePosition: valvePos
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
     
   }
 

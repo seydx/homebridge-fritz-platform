@@ -2,6 +2,10 @@
 
 const Logger = require('../../helper/logger.js');
 
+const moment = require('moment');
+
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 class SmarthomeOutletAccessory {
 
   constructor (api, accessory, handler, FakeGatoHistoryService) {
@@ -50,7 +54,7 @@ class SmarthomeOutletAccessory {
     if(!service.testCharacteristic(this.api.hap.Characteristic.ResetTotal))
       service.addCharacteristic(this.api.hap.Characteristic.ResetTotal);
   
-    this.historyService = new this.FakeGatoHistoryService('custom', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
+    this.historyService = new this.FakeGatoHistoryService('custom', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
       .on('change', this.handler.change.bind(this, this.accessory, 'smarthome-switch', this.accessory.displayName, this.historyService));
@@ -134,7 +138,26 @@ class SmarthomeOutletAccessory {
  
     }
     
-  }                 
+    this.refreshHistory(service);
+    
+  }
+  
+  async refreshHistory(service){ 
+    
+    await timeout(5000);
+    
+    let state = service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption).value;
+    
+    this.historyService.addEntry({
+      time: moment().unix(), 
+      power: state || 0
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
+    
+  }
 
 }
 

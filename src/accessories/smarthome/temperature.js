@@ -2,6 +2,10 @@
 
 const Logger = require('../../helper/logger.js');
 
+const moment = require('moment');
+
+const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+
 class SmarthomeTemperatureAccessory {
 
   constructor (api, accessory, handler, FakeGatoHistoryService) {
@@ -48,7 +52,7 @@ class SmarthomeTemperatureAccessory {
     
     }
     
-    this.historyService = new this.FakeGatoHistoryService('room', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/'}); 
+    this.historyService = new this.FakeGatoHistoryService('room', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
 
@@ -62,6 +66,27 @@ class SmarthomeTemperatureAccessory {
         .on('change', this.handler.change.bind(this, this.accessory, 'smarthome-temperature', this.accessory.displayName, this.historyService));
  
     }
+    
+    this.refreshHistory(service);
+    
+  }
+  
+  async refreshHistory(service){ 
+    
+    await timeout(5000);
+    
+    let state = service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature).value;
+    
+    this.historyService.addEntry({
+      time: moment().unix(), 
+      temp: state,
+      humidity: 0,
+      ppm: 0
+    });
+    
+    setTimeout(() => {
+      this.refreshHistory(service);
+    }, 10 * 60 * 1000);
     
   }
 
