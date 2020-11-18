@@ -277,6 +277,9 @@ function FritzPlatform (log, config, api) {
       } else if (!this.validIP.test(user.address) && !this.validMAC.test(user.address)) {
         Logger.warn('The address for this user is not a valid IP/MAC address. This user will be skipped.', user.name);
         error = true;
+      } else if(!user.active){
+        Logger.warn('The user is not marked as "active". This user will be skipped.');
+        error = true;
       }
       
       let validTypes = ['occupancy', 'motion'];
@@ -517,6 +520,7 @@ function FritzPlatform (log, config, api) {
   if(config.callmonitor && config.callmonitor.active && config.callmonitor.ip && this.validIP.test(config.callmonitor.ip)){
     
     this.masterDevice.countryPrefix = config.callmonitor.countryPrefix || false;
+    this.masterDevice.cityPrefix = config.callmonitor.cityPrefix || false;
    
     this.config.callmonitor = config.callmonitor;
     this.config.callmonitor.port = this.config.callmonitor.port || 1012;
