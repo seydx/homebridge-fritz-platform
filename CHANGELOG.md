@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v5.0.14 - 2020-11-22
+- Fixed ColorUtils for Smarthome Lightbulbs
+- Removed waitFor* timeout for LightBulbs and Thermostats
+
 ## v5.0.13 - 2020-11-15
 - Added new option: "cityPrefix" for callmonitor for better call detection
 - Added new option: "active" for user (presence) to easily switch between enabled/disabled
