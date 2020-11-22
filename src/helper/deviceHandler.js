@@ -4,6 +4,8 @@ const Logger = require('./logger.js');
 const lua = require('./lua.js');
 const aha = require('./aha.js');
 
+const ColorUtils = require('./color-utils'); //remove if hb v1.3 is out
+
 const fs = require('fs-extra');
 const moment = require('moment');
 const ping = require('ping');
@@ -99,7 +101,9 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 accessory.adaptiveLightingController.disableAdaptiveLighting(true);*/
                 
               let colorTemperatureMired = temp; 
-              let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
+              let color = ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
+               
+              //let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);  hb b1.3
                         
               accessory
                 .getService(service)
@@ -1096,7 +1100,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             cmd = 'setlevelpercentage&level=' + state;
             text = ('Setting brightness to ' + state);
             
-            if(accessory.waitForEndBrightness){
+            /*if(accessory.waitForEndBrightness){
               clearTimeout(accessory.waitForEndBrightness);
               accessory.waitForEndBrightness = false;
             }
@@ -1114,7 +1118,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               
               }
             
-            }, 500);
+            }, 500);*/
+            
+            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+            Logger.info(text + ' (' + target + ')', accessory.displayName);
           
           } else if(config === 'temperature'){
           
@@ -1124,7 +1131,9 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             let validColorTemperatureKelvin = colortemp2api(colorTemperatureKelvin);
             let validColorTemperatureMired = Math.round(1000000/validColorTemperatureKelvin);
             
-            let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
+            let color = ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
+            
+            //let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);  hb b1.3
            
             let hue = color.hue;
             let saturation = color.saturation;
@@ -1132,14 +1141,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=100';
             text = ('Setting color temperature to ' + validColorTemperatureKelvin + ' Kelvin');
             
-            if(accessory.waitForEndColorTemp){
+            /* if(accessory.waitForEndColorTemp){
               clearTimeout(accessory.waitForEndColorTemp);
               accessory.waitForEndColorTemp = false;
-            }
+            } */
           
             if(bulbState){
             
-              accessory.waitForEndColorTemp = setTimeout(async () => {
+              /*accessory.waitForEndColorTemp = setTimeout(async () => {
               
                 try {
             
@@ -1155,7 +1164,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 
                 }
               
-              }, 500);
+              }, 500);*/
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
+              accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
             
             }
           
@@ -1166,14 +1181,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=100';
             text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat);
             
-            if(accessory.waitForEndColor){
+            /*if(accessory.waitForEndColor){
               clearTimeout(accessory.waitForEndColor);
               accessory.waitForEndColor = false;
-            }
+            }*/
             
             if(bulbState){
             
-              accessory.waitForEndColor = setTimeout(async () => {
+              /*accessory.waitForEndColor = setTimeout(async () => {
               
                 try {
             
@@ -1186,7 +1201,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 
                 }
               
-              }, 500);
+              }, 500);*/
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
             
             }
           
@@ -1239,12 +1257,12 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             cmd = 'sethkrtsoll&param='+temp;
             text = ('Setting temperature to ' + state);
         
-            if(accessory.waitForEndTemp){
+            /*if(accessory.waitForEndTemp){
               clearTimeout(accessory.waitForEndTemp);
               accessory.waitForEndTemp = false;
-            }
+            }*/
             
-            accessory.waitForEndTemp = setTimeout(async () => {
+            /*accessory.waitForEndTemp = setTimeout(async () => {
             
               try {
           
@@ -1257,7 +1275,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               
               }
             
-            }, 500);
+            }, 500);*/
+            
+            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+            Logger.info(text + ' (' + target + ')', accessory.displayName);
         
           } else {
          
@@ -2035,7 +2056,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                         
                         if(telnr.startsWith(lkz1) || telnr.startsWith(lkz2)){
                         
-                          if(telnr.startsWith(lkz1)){                             //  +49
+                          if(telnr.startsWith(lkz1)){                           //  +49
                             telNumbers.push(telnr.replace(lkz1, '0'));          //    0
                             telNumbers.push(telnr.replace(lkz1, '00' + lkz));   // 0049
                             if(telnr.includes(okz)){
@@ -2046,9 +2067,9 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                             }*/
                           }
                           
-                          if(telnr.startsWith(lkz2)){                            // 0049
-                            telNumbers.push(telnr.replace(lkz2, '0'));         //    0
-                            telNumbers.push(telnr.replace(lkz2, '+' + lkz));   //  +49
+                          if(telnr.startsWith(lkz2)){                           // 0049
+                            telNumbers.push(telnr.replace(lkz2, '0'));          //    0
+                            telNumbers.push(telnr.replace(lkz2, '+' + lkz));    //  +49
                             if(telnr.includes(okz)){
                               telNumbers.push('0' + telnr.split(lkz2)[1]);
                               telNumbers.push(telnr.split(okz)[1]);
@@ -2060,10 +2081,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                         } else {
                           
                           if(telnr.startsWith('+'))                             //   +1
-                            telNumbers.push(telnr.replace('+', '00'));        //  001
+                            telNumbers.push(telnr.replace('+', '00'));          //  001
                           
                           if(telnr.startsWith('00'))                            //   +1
-                            telNumbers.push(telnr.replace('00', '+'));        //  001
+                            telNumbers.push(telnr.replace('00', '+'));          //  001
                             
                           if(telnr.startsWith(okz1))
                             telNumbers.push(telnr.replace(okz1, ''));   
