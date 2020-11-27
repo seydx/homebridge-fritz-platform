@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v5.0.15 - 2020-11-27
+- Added new option to expose grouped smarthome devices.
+- Adaptive Lighting
+- Bugfixes
+
+### Grouped Smarthome Devices
+Grouped Smarthome Devices can be exposed as Lightbulbs, Switches/Outlets or a combination of both. If the group has a lightbulb AND a switch, the accessory will get both services and additionally (if enabled and supported by the device) a temperature sensor. The grouped switches/outlets and switch-lightbulbs comes also with FakeGato support and "ReadOnly" possibility. Lightbulbs and Switch-Lightbulbs also supports adaptive lighting.
+
 ## v5.0.14 - 2020-11-22
 - Fixed ColorUtils for Smarthome Lightbulbs
 - Removed waitFor* timeout for LightBulbs and Thermostats
