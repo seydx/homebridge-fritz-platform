@@ -442,38 +442,46 @@
             "title": "Name",
             "type": "string",
             "required": true,
-            "description": "Set the device name for display in the Home app."
+            "description": "Set the device name for display in the Home app. If it is a grouped device, please enter the name of the group as defined in FritzBox."
           },
           "ain": {
             "title": "AIN",
             "type": "string",
             "required": true,
             "placeholder": "01234567890",
+            "condition": {
+              "functionBody": "return !model.smarthome[arrayIndices[0]].group;"
+            },
             "description": "The AIN of the device."
           },
           "readOnly": {
             "title": "Read Only",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "If enabled, the device will not trigger on switching on/off."
+            "description": "If enabled, the device/group will not trigger on switching on/off."
+          },
+          "group": {
+            "title": "Grouped Device",
+            "type": "boolean",
+            "description": "Enable this if you want to expose a group instead of a smarthome device."
           },
           "energy": {
             "title": "Power Meter",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "Enable this, if the device has a built in power meter. The switch will be exposed as an outlet accessory instead of a switch accessory with FakeGato functionality to HomeKit. (Only for Switch accessory types)"
+            "description": "Enable this, if the device(s) has a built in power meter. The switch will be exposed as an outlet accessory instead of a switch accessory with FakeGato functionality to HomeKit."
           },
           "temperature": {
             "title": "Temperature Sensor",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "Enable this, if the device has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
+            "description": "Enable this, if the device(s) has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
           },
           "window": {
             "title": "Window Sensor",
@@ -481,35 +489,73 @@
             "condition": {
               "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat';"
             },
-            "description": "Enable this, if the device has a built in window open function. This exposes an additional window (contact) as an accessory to HomeKit. (Only for Thermostat accessory types)"
+            "description": "Enable this, if the device has a built in window open function. This exposes an additional window (contact) as an accessory to HomeKit."
           },
           "brightness": {
             "title": "Brightness",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb' || model.smarthome[arrayIndices[0]].accTypeGroup === 'lightbulb' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit. (Only for Lightbulb accessory types)"
+            "description": "Enable this, if the lightbulb has a brightness adjustment functionality. This will enable brightness adjustment through HomeKit."
           },
           "color": {
             "title": "Color",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'lightbulb' || model.smarthome[arrayIndices[0]].accTypeGroup === 'lightbulb' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "Enable this, if the lightbulb has a color adjustment functionality. This will enable color adjustment through HomeKit. (Only for Lightbulb accessory types)"
+            "description": "Enable this, if the lightbulb has a color adjustment functionality. This will enable color adjustment through HomeKit."
           },
           "battery": {
             "title": "Battery",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact' || model.smarthome[arrayIndices[0]].accTypeGroup === 'thermostat';"
             },
             "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
+          },
+          "accTypeGroup": {
+            "title": "Accessory Types (Group)",
+            "type": "string",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].group === true;"
+            },
+            "oneOf": [
+              {
+                "title": "Switch",
+                "enum": [
+                  "switch"
+                ]
+              },
+              {
+                "title": "Lightbulb",
+                "enum": [
+                  "lightbulb"
+                ]
+              },
+              {
+                "title": "Thermostat",
+                "enum": [
+                  "thermostat"
+                ]
+              },
+              {
+                "title": "Switch & Lightbulb",
+                "enum": [
+                  "switch-lightbulb"
+                ]
+              }
+            ],
+            "required": true,
+            "description": "The accessory type of the device(s) in the group."
           },
           "accType": {
             "title": "Accessory Type",
             "type": "string",
+            "condition": {
+              "functionBody": "return !model.smarthome[arrayIndices[0]].group;"
+            },
             "oneOf": [
               {
                 "title": "Switch",
@@ -972,8 +1018,8 @@
               "description": "Timer to refresh data on background. (0 = off)",
               "required": true
             },
-            "exclude": {   
-              "title": "Exclude", 
+            "exclude": {
+              "title": "Exclude",
               "type": "array",
               "items": {
                 "title": "Name/Type/Catagory",
@@ -1122,10 +1168,17 @@
     }
   },
   "layout": [
-    "name",
-    "debug",
     {
-      "type": "section",
+      "title": "Log",
+      "expandable": true,
+      "expanded": true,
+      "orderable": false,
+      "items": [
+        "name",
+        "debug"
+      ]
+    },
+    {
       "title": "Devices",
       "expandable": true,
       "expanded": false,
@@ -1204,7 +1257,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Extras",
       "orderable": false,
       "expandable": true,
@@ -1279,7 +1331,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Presence",
       "expandable": true,
       "expanded": false,
@@ -1312,7 +1363,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Wake on LAN",
       "expandable": true,
       "expanded": false,
@@ -1331,7 +1381,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Smart Home",
       "expandable": true,
       "expanded": false,
@@ -1344,15 +1393,17 @@
           "buttonText": "Add Smarthome Device",
           "items": [
             "smarthome[].name",
+            "smarthome[].group",
             "smarthome[].ain",
             "smarthome[].accType",
+            "smarthome[].accTypeGroup",
             {
               "key": "smarthome[]",
               "title": "Advanced",
               "type": "section",
               "orderable": false,
               "expandable": true,
-              "expanded": false,
+              "expanded": false, 
               "items": [
                 "smarthome[].readOnly",
                 "smarthome[].energy",
@@ -1368,45 +1419,48 @@
       ]
     },
     {
-      "type": "object",
-      "key": "callmonitor",
       "title": "Callmonitor",
       "orderable": false,
       "expandable": true,
       "expanded": false,
       "items": [
-        "callmonitor.active",
-        "callmonitor.group",
-        "callmonitor.ip",
-        "callmonitor.port",
-        "callmonitor.countryPrefix",
-        "callmonitor.cityPrefix",
         {
-          "key": "callmonitor.incomingTo",
-          "type": "section",
-          "orderable": false,
-          "expandable": true,
-          "expanded": false,
-          "buttonText": "Add Number",
+          "key": "callmonitor",
+          "type": "object",
           "items": [
-            "callmonitor.incomingTo[]"
-          ]
-        },
-        {
-          "key": "callmonitor.outgoingFrom",
-          "type": "section",
-          "orderable": false,
-          "expandable": true,
-          "expanded": false,
-          "buttonText": "Add Number",
-          "items": [
-            "callmonitor.outgoingFrom[]"
+            "callmonitor.active",
+            "callmonitor.group",
+            "callmonitor.ip",
+            "callmonitor.port",
+            "callmonitor.countryPrefix",
+            "callmonitor.cityPrefix",
+            {
+              "key": "callmonitor.incomingTo",
+              "type": "section",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "buttonText": "Add Number",
+              "items": [
+                "callmonitor.incomingTo[]"
+              ]
+            },
+            {
+              "key": "callmonitor.outgoingFrom",
+              "type": "section",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "buttonText": "Add Number",
+              "items": [
+                "callmonitor.outgoingFrom[]"
+              ]
+            }
           ]
         }
       ]
     },
     {
-      "type": "section",
       "title": "Watch Network",
       "expandable": true,
       "expanded": false,
@@ -1428,7 +1482,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Options",
       "orderable": false,
       "expandable": true,
@@ -1485,7 +1538,6 @@
       ]
     },
     {
-      "type": "section",
       "title": "Telegram",
       "orderable": false,
       "expandable": true,

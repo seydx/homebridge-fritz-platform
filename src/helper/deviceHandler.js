@@ -12,7 +12,7 @@ const ping = require('ping');
 
 const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
 
-let hostList, smarthomeList;
+let hostList, smarthomeList, smarthomeGroupList;
 
 module.exports = (api, masterDevice, devices, presence, smarthome, configPath, Telegram, presenceOptions, polling, reboot) => {
 
@@ -26,6 +26,190 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
       callback(null, accessory.getService(service).getCharacteristic(characteristic).value);
   
     switch (target) {
+    
+      case 'smarthome-switch-lightbulb': {
+
+        let state = accessory.getService(service).getCharacteristic(characteristic).value;
+        let bulbState = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(characteristic).value; 
+        let brightness, temp, hue, sat, temperature;
+        
+        if(accessory.context.config.temperature)
+          temperature = accessory.getService(api.hap.Service.TemperatureSensor).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
+        
+        if(accessory.context.config.brightness)
+          accessory.context.config.brightnessValue = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+        
+        if(accessory.context.config.color){
+          accessory.context.config.brightnessValue = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Brightness).value; 
+          accessory.context.config.tempValue = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.ColorTemperature).value; 
+        }
+        
+        try {
+        
+          if(!smarthomeGroupList)
+            await this.refreshSmarthome(false, true);
+          
+          let device = smarthomeGroupList.find(device => device.name.includes(accessory.displayName));
+        
+          Logger.debug(device, accessory.displayName);
+          
+          if(device)
+            accessory.context.config.ain = device.ain;
+            
+          if(device && device.online && device.switch){
+          
+            state = device.switch.state ? true : false;
+            
+            if(accessory.context.config.energy && device.powermeter){
+              
+              let currentPower = device.powermeter.power || 0;
+              let totalPower = device.powermeter.energy || 0;
+              let voltage = device.powermeter.voltage || 0;
+              let ampere = Math.round(((currentPower/voltage) + Number.EPSILON) * 100) / 100;
+              
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.OutletInUse)
+                .updateValue(currentPower > 0 ? true : false);  
+              
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.CurrentConsumption)
+                .updateValue(currentPower);    
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.TotalConsumption)
+                .updateValue(totalPower);   
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Volts)
+                .updateValue(voltage);   
+                
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.Amperes)
+                .updateValue(ampere);                
+            
+            }
+          
+          }
+          
+          if(device && device.online && device.light){
+          
+            bulbState = device.light.state || 0;
+            
+            if(device.light.brightness){
+              brightness = !isNaN(device.light.brightness.levelpercentage) ? device.light.brightness.levelpercentage : null;
+            }
+            
+            if(device.light.color){
+              temp = device.light.color.temperature ? Math.round(1000000/device.light.color.temperature) : null;
+              hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
+              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation/2.55 : null;
+            }
+          
+          }
+          
+          if(device && device.online && device.temperature){
+          
+            temperature = device.temperature.value || 0;
+          
+          }
+        
+        } catch(err) {
+        
+          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+        
+        }
+        
+        accessory
+          .getService(service)
+          .getCharacteristic(characteristic)
+          .updateValue(state);
+          
+        accessory
+          .getService(api.hap.Service.Lightbulb)
+          .getCharacteristic(characteristic)
+          .updateValue(bulbState);
+          
+        if(accessory.context.config.temperature){
+          accessory
+            .getService(api.hap.Service.TemperatureSensor)
+            .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
+            .updateValue(temperature);
+        }
+          
+        if(accessory.context.config.brightness && brightness !== null && brightness !== undefined && brightness !== accessory.context.config.brightnessValue){
+      
+          accessory
+            .getService(api.hap.Service.Lightbulb)
+            .getCharacteristic(api.hap.Characteristic.Brightness)
+            .updateValue(brightness);
+        
+        }
+            
+        if(accessory.context.config.color){
+         
+          if(temp !== null && temp !== undefined){
+          
+            let changed = Math.abs(accessory.context.config.tempValue - temp) > 5;
+          
+            if(changed){
+            
+              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+            
+              if(api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23'))
+                accessory.adaptiveLightingController.disableAdaptiveLighting(true);
+                
+              let colorTemperatureMired = temp; 
+              let color = api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23')
+                ? api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired)
+                : ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
+                        
+              accessory
+                .getService(api.hap.Service.Lightbulb)
+                .getCharacteristic(api.hap.Characteristic.ColorTemperature)
+                .updateValue(colorTemperatureMired);
+                
+              accessory
+                .getService(api.hap.Service.Lightbulb)
+                .getCharacteristic(api.hap.Characteristic.Hue)
+                .updateValue(color.hue);
+            
+              accessory
+                .getService(api.hap.Service.Lightbulb)
+                .getCharacteristic(api.hap.Characteristic.Saturation)
+                .updateValue(color.saturation);
+           
+            }
+         
+          }
+         
+          if(hue !== null && hue !== undefined && sat !== null && sat !== undefined){
+          
+            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+          
+            if(api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23'))
+              accessory.adaptiveLightingController.disableAdaptiveLighting(true);
+       
+            accessory
+              .getService(api.hap.Service.Lightbulb)
+              .getCharacteristic(api.hap.Characteristic.Hue)
+              .updateValue(hue);
+          
+            accessory
+              .getService(api.hap.Service.Lightbulb)
+              .getCharacteristic(api.hap.Characteristic.Saturation)
+              .updateValue(sat);
+   
+          }
+         
+        }
+      
+        break;
+      }
     
       case 'smarthome-lightbulb': {
 
@@ -41,11 +225,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         }
         
         try {
-        
-          if(!smarthomeList)
+          
+          if((!accessory.context.config.group && !smarthomeList) || (accessory.context.config.group && !smarthomeGroupList))
             await this.refreshSmarthome(false, true);
+          
+          let device = !accessory.context.config.group
+            ? smarthomeList.find(device => device.ain.includes(accessory.context.config.ain))
+            : smarthomeGroupList.find(device => device.name.includes(accessory.displayName));
         
-          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
           Logger.debug(device, accessory.displayName);
           
           if(device)
@@ -60,7 +247,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             }
             
             if(device.light.color){
-              temp = !isNaN(device.light.color.temperature) ? Math.round(1000000/device.light.color.temperature) : null;
+              temp = device.light.color.temperature ? Math.round(1000000/device.light.color.temperature) : null;
               hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
               sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation/2.55 : null;
             }
@@ -97,13 +284,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             
               //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
             
-              /*if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
-                accessory.adaptiveLightingController.disableAdaptiveLighting(true);*/
+              if(api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23'))
+                accessory.adaptiveLightingController.disableAdaptiveLighting(true);
                 
               let colorTemperatureMired = temp; 
-              let color = ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
-               
-              //let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);  hb b1.3
+              let color = api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23')
+                ? api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired)
+                : ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);
                         
               accessory
                 .getService(service)
@@ -128,8 +315,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           
             //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
           
-            /*if(api.versionGreaterOrEqual('v1.3.0-beta.23'))
-              accessory.adaptiveLightingController.disableAdaptiveLighting(true);*/
+            if(api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23'))
+              accessory.adaptiveLightingController.disableAdaptiveLighting(true);
        
             accessory
               .getService(service)
@@ -155,11 +342,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
         try {
         
-          if(!smarthomeList)
+          if((!accessory.context.config.group && !smarthomeList) || (accessory.context.config.group && !smarthomeGroupList))
             await this.refreshSmarthome(false, true);
           
-          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain));
-          Logger.debug(device, accessory.displayName); 
+          let device = !accessory.context.config.group
+            ? smarthomeList.find(device => device.ain.includes(accessory.context.config.ain))
+            : smarthomeGroupList.find(device => device.name.includes(accessory.displayName));
+        
+          Logger.debug(device, accessory.displayName);
           
           if(device)
             accessory.context.config.ain = device.ain;
@@ -227,9 +417,11 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
           if(!smarthomeList)
             await this.refreshSmarthome(false, true);
-        
-          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
-          Logger.debug(device, accessory.displayName);
+          
+          let device = smarthomeList
+            .find(device => device.ain.includes(accessory.context.config.ain));
+          
+          Logger.debug(device, accessory.displayName); 
           
           if(device)
             accessory.context.config.ain = device.ain;
@@ -384,7 +576,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
         try {
         
-          let device = smarthomeList.find(device => device.ain.includes(accessory.context.config.ain)); 
+          if((!accessory.context.config.group && !smarthomeList) || (accessory.context.config.group && !smarthomeGroupList))
+            await this.refreshSmarthome(false, true);
+          
+          let device = !accessory.context.config.group
+            ? smarthomeList.find(device => device.ain.includes(accessory.context.config.ain))
+            : smarthomeGroupList.find(device => device.name.includes(accessory.displayName));
+
           Logger.debug(device, accessory.displayName);
           
           if(device)
@@ -1076,6 +1274,108 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
   
     switch (target) {
     
+      case 'smarthome-switch-lightbulb': {
+      
+        let bulbState = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.On).value;
+      
+        try {
+        
+          let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+          let cmd, text;
+          
+          if(accessory.context.config.group && !accessory.context.config.ain){
+          
+            if(!smarthomeGroupList)
+              await this.refreshSmarthome(false, true);
+            
+            let device = smarthomeList
+              .find(device => device.name.includes(accessory.displayName));
+            
+            if(device)
+              accessory.context.config.ain = device.ain;
+          
+          }
+          
+          if(accessory.context.config.ain){
+
+            if(config === 'on'){
+            
+              cmd = state ? 'setswitchon' : 'setswitchoff';
+              text = (state ? 'ON': 'OFF');
+               
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                
+              Logger.info(text, accessory.displayName);
+            
+            } else if(config === 'brightness'){
+  
+              cmd = 'setlevelpercentage&level=' + state;
+              text = ('Setting brightness to ' + state);
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
+            
+            } else if(config === 'temperature'){
+            
+              let colorTemperatureMired = state;
+              let colorTemperatureKelvin = Math.round(1000000/colorTemperatureMired);
+              
+              let validColorTemperatureKelvin = colortemp2api(colorTemperatureKelvin);
+              let validColorTemperatureMired = Math.round(1000000/validColorTemperatureKelvin);
+              
+              let color = api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23')
+                ? api.hap.ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired)
+                : ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
+             
+              let hue = color.hue;
+              let saturation = color.saturation;
+            
+              cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=100';
+              text = ('Setting color temperature to ' + validColorTemperatureKelvin + ' Kelvin');
+            
+              if(bulbState){
+                
+                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+                
+                accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
+                accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
+              
+              }
+            
+            } else {  //color
+            
+              let validHueSat = getValidColor(accessory, false, state);
+            
+              cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=100';
+              text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat);
+              
+              if(bulbState){
+                
+                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
+              
+              }
+            
+            }
+
+          } else {
+          
+            Logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+          
+          }
+        
+        } catch(err) {
+        
+          handleError(accessory, false, target, err, {set: true});
+        
+        }
+        
+        break;
+      
+      }
+    
       case 'smarthome-lightbulb': {
       
         let bulbState = accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.On).value;
@@ -1086,127 +1386,85 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd, text;
           
-          if(config === 'on'){
+          if(accessory.context.config.group && !accessory.context.config.ain){
           
-            cmd = state ? 'setsimpleonoff&onoff=1' : 'setsimpleonoff&onoff=0';
-            text = (state ? 'ON': 'OFF');
+            if(!smarthomeGroupList)
+              await this.refreshSmarthome(false, true);
+            
+            let device = smarthomeList
+              .find(device => device.name.includes(accessory.displayName));
+            
+            if(device)
+              accessory.context.config.ain = device.ain;
+          
+          }
+          
+          if(accessory.context.config.ain){
+          
+            if(config === 'on'){
+            
+              cmd = state ? 'setsimpleonoff&onoff=1' : 'setsimpleonoff&onoff=0';
+              text = (state ? 'ON': 'OFF');
+               
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                
+              Logger.info(text, accessory.displayName);
+            
+            } else if(config === 'brightness'){
+  
+              cmd = 'setlevelpercentage&level=' + state;
+              text = ('Setting brightness to ' + state);
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
+            
+            } else if(config === 'temperature'){
+            
+              let colorTemperatureMired = state;
+              let colorTemperatureKelvin = Math.round(1000000/colorTemperatureMired);
+              
+              let validColorTemperatureKelvin = colortemp2api(colorTemperatureKelvin);
+              let validColorTemperatureMired = Math.round(1000000/validColorTemperatureKelvin);
+              
+              let color = api.versionGreaterOrEqual && api.versionGreaterOrEqual('v1.3.0-beta.23')
+                ? api.hap.ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired)
+                : ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
              
-            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-              
-            Logger.info(text, accessory.displayName);
-          
-          } else if(config === 'brightness'){
-
-            cmd = 'setlevelpercentage&level=' + state;
-            text = ('Setting brightness to ' + state);
+              let hue = color.hue;
+              let saturation = color.saturation;
             
-            /*if(accessory.waitForEndBrightness){
-              clearTimeout(accessory.waitForEndBrightness);
-              accessory.waitForEndBrightness = false;
-            }
+              cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=100';
+              text = ('Setting color temperature to ' + validColorTemperatureKelvin + ' Kelvin');
             
-            accessory.waitForEndValueBrightness = setTimeout(async () => {
-            
-              try {
-              
+              if(bulbState){
+                
                 await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                 Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
+                
+                accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
+                accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
               
               }
             
-            }, 500);*/
+            } else {  //color
             
-            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-            Logger.info(text + ' (' + target + ')', accessory.displayName);
-          
-          } else if(config === 'temperature'){
-          
-            let colorTemperatureMired = state;
-            let colorTemperatureKelvin = Math.round(1000000/colorTemperatureMired);
+              let validHueSat = getValidColor(accessory, false, state);
             
-            let validColorTemperatureKelvin = colortemp2api(colorTemperatureKelvin);
-            let validColorTemperatureMired = Math.round(1000000/validColorTemperatureKelvin);
-            
-            let color = ColorUtils.colorTemperatureToHueAndSaturation(validColorTemperatureMired);
-            
-            //let color = api.hap.ColorUtils.colorTemperatureToHueAndSaturation(colorTemperatureMired);  hb b1.3
-           
-            let hue = color.hue;
-            let saturation = color.saturation;
-          
-            cmd = 'setcolortemperature&temperature=' + validColorTemperatureKelvin + '&duration=100';
-            text = ('Setting color temperature to ' + validColorTemperatureKelvin + ' Kelvin');
-            
-            /* if(accessory.waitForEndColorTemp){
-              clearTimeout(accessory.waitForEndColorTemp);
-              accessory.waitForEndColorTemp = false;
-            } */
-          
-            if(bulbState){
-            
-              /*accessory.waitForEndColorTemp = setTimeout(async () => {
+              cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=100';
+              text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat);
               
-                try {
-            
-                  await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-                  Logger.info(text + ' (' + target + ')', accessory.displayName);
-                  
-                  accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
-                  accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
+              if(bulbState){
                 
-                } catch(err) {
-                
-                  handleError(accessory, false, target, err, {set: true});
-                
-                }
+                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                Logger.info(text + ' (' + target + ')', accessory.displayName);
               
-              }, 500);*/
-              
-              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-              Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Hue).updateValue(hue);
-              accessory.getService(api.hap.Service.Lightbulb).getCharacteristic(api.hap.Characteristic.Saturation).updateValue(saturation);
+              }
             
-            }
+            }     
           
-          } else {  //color
+          } else {
           
-            let validHueSat = getValidColor(accessory, false, state);
-          
-            cmd = 'setcolor&hue=' + validHueSat.hue + '&saturation=' + validHueSat.sat + '&duration=100';
-            text = ('Setting hue to ' + validHueSat.hue + ' and saturation to ' + validHueSat.sat);
-            
-            /*if(accessory.waitForEndColor){
-              clearTimeout(accessory.waitForEndColor);
-              accessory.waitForEndColor = false;
-            }*/
-            
-            if(bulbState){
-            
-              /*accessory.waitForEndColor = setTimeout(async () => {
-              
-                try {
-            
-                  await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-                  Logger.info(text + ' (' + target + ')', accessory.displayName);
-                
-                } catch(err) {
-                
-                  handleError(accessory, false, target, err, {set: true});
-                
-                }
-              
-              }, 500);*/
-              
-              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-              Logger.info(text + ' (' + target + ')', accessory.displayName);
-            
-            }
+            Logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
           
           }
         
@@ -1228,9 +1486,29 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd = state ? 'setswitchon' : 'setswitchoff';
           
-          await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+          if(accessory.context.config.group && !accessory.context.config.ain){
           
-          Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
+            if(!smarthomeGroupList)
+              await this.refreshSmarthome(false, true);
+            
+            let device = smarthomeList
+              .find(device => device.name.includes(accessory.displayName));
+            
+            if(device)
+              accessory.context.config.ain = device.ain;
+          
+          }
+          
+          if(accessory.context.config.ain){
+          
+            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+            Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);          
+          
+          } else {
+          
+            Logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+          
+          }
         
         } catch(err) {
         
@@ -1250,48 +1528,69 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
           let cmd, text;
           
-          if(config === 'temperature'){
+          if(accessory.context.config.group && !accessory.context.config.ain){
           
-            let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
+            if(!smarthomeGroupList)
+              await this.refreshSmarthome(false, true);
+            
+            let device = smarthomeList
+              .find(device => device.name.includes(accessory.displayName));
+            
+            if(device)
+              accessory.context.config.ain = device.ain;
           
-            cmd = 'sethkrtsoll&param='+temp;
-            text = ('Setting temperature to ' + state);
-        
-            /*if(accessory.waitForEndTemp){
-              clearTimeout(accessory.waitForEndTemp);
-              accessory.waitForEndTemp = false;
-            }*/
-            
-            /*accessory.waitForEndTemp = setTimeout(async () => {
-            
-              try {
+          }
           
-                await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-                Logger.info(text + ' (' + target + ')', accessory.displayName);
-              
-              } catch(err) {
-              
-                handleError(accessory, false, target, err, {set: true});
-              
-              }
+          if(accessory.context.config.ain){
+          
+            if(config === 'temperature'){
             
-            }, 500);*/
+              let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
             
-            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-            Logger.info(text + ' (' + target + ')', accessory.displayName);
-        
+              cmd = 'sethkrtsoll&param='+temp;
+              text = ('Setting temperature to ' + state);
+          
+              /*if(accessory.waitForEndTemp){
+                clearTimeout(accessory.waitForEndTemp);
+                accessory.waitForEndTemp = false;
+              }*/
+              
+              /*accessory.waitForEndTemp = setTimeout(async () => {
+              
+                try {
+            
+                  await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                  Logger.info(text + ' (' + target + ')', accessory.displayName);
+                
+                } catch(err) {
+                
+                  handleError(accessory, false, target, err, {set: true});
+                
+                }
+              
+              }, 500);*/
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
+          
+            } else {
+           
+              let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
+              
+              let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
+              
+              cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
+              text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
+              
+              await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              Logger.info(text + ' (' + target + ')', accessory.displayName);
+          
+            }        
+          
           } else {
-         
-            let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
-            
-            let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
-            
-            cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
-            text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
-            
-            await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
-            Logger.info(text + ' (' + target + ')', accessory.displayName);
-        
+          
+            Logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+          
           }
         
         } catch(err) {
@@ -2050,7 +2349,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\�/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2108,7 +2407,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\�/g, '');
                       
                       let telNumbers = [];
                       
@@ -2355,7 +2654,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
           break;
         
-        }            
+        }         
         
         case 'presence': {
         
@@ -2608,12 +2907,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
         let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
         let deviceList = smarthomes.devicelist.device; 
-        //let groupList = smarthomes.devicelist.group; 
+        let groupList = smarthomes.devicelist.group; 
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
           
-        //Logger.debug(deviceList, 'SmartHome')
+        if(!Array.isArray(groupList))
+          groupList = [groupList];
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
@@ -2629,7 +2929,97 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           if(device['$'].functionbitmask !== '1'){
             let dev = {
               name: device.name,
+              id: device['$'].id,
               ain: device['$'].identifier.replace(/\s/g,''),
+              online: parseInt(device.present),
+              bitmask: device['$'].functionbitmask,
+              busy: parseInt(device.txbusy),
+              battery: device.battery 
+                ? { 
+                  value: parseInt(device.battery) || 0, 
+                  low: parseInt(device.batterylow) || 0
+                }
+                : false,
+              alert: device.alert
+                ? {
+                  state: parseInt(device.alert.state) || 0
+                }
+                : false,  
+              temperature: device.temperature
+                ? { 
+                  value: parseInt(device.temperature.celsius)/10 || 0, 
+                  offset: parseInt(device.temperature.offset) || 0 
+                }
+                : false,
+              powermeter: device.powermeter
+                ? { 
+                  voltage: parseInt(device.powermeter.voltage)/1000 || 0,  // >> voltage   = 0.001V = 1V
+                  power: parseInt(device.powermeter.power)/1000 || 0,      // >> power     = 0.001W = 1W
+                  energy: parseInt(device.powermeter.energy)/1000 || 0     // >> energy    = 1.00Wh = 0.001 kWh
+                }
+                : false,
+              switch: device.switch
+                ? {
+                  state: parseInt(device.switch.state) || 0
+                }
+                : false,
+              button: device.button
+                ? device.button
+                : false,    
+              thermostat: device.hkr
+                ? {
+                  current: convertTemp(device.hkr.tist) || 0,
+                  target: convertTemp(device.hkr.tsoll) || 0,
+                  windowOpen: parseInt(device.hkr.windowopenactiv) || 0
+                }
+                : false,
+              light: device.simpleonoff && !device.switch
+                ? {
+                  state: parseInt(device.simpleonoff.state) || 0,
+                  brightness: device.levelcontrol
+                    ? {
+                      level: parseInt(device.levelcontrol.level),                        // 0 - 255
+                      levelpercentage: parseInt(device.levelcontrol.levelpercentage)     // 0 - 100
+                    }
+                    : false,
+                  color: device.colorcontrol
+                    ? {
+                      supported_modes: parseInt(device.colorcontrol['$'].supported_modes),
+                      current_mode: parseInt(device.colorcontrol['$'].current_mode),
+                      hue: parseInt(device.colorcontrol.hue),                            // 0 - 359
+                      saturation: parseInt(device.colorcontrol.saturation),              // 0 - 100 (if current_mode === 1)
+                      temperature: parseInt(device.colorcontrol.temperature)             // 2700 - 6500 Kelvin
+                    }
+                    : false
+                }
+                : false
+            };
+            return dev;
+          }
+        
+        }).filter(device => device);
+        
+        smarthomeGroupList = groupList.map(device => {
+          const convertTemp = value => {
+            value = parseInt(value);
+            if (value == 254)
+              return 'on';
+            else if (value == 253)
+              return 'off';
+            else {
+              return (parseFloat(value) - 16) / 2 + 8;
+            }
+          };
+          if(device['$'].functionbitmask !== '1'){
+            let dev = {
+              name: device.name,
+              id: device['$'].id,
+              ain: device['$'].identifier.replace(/\s/g,''),
+              associated: device.groupinfo && device.groupinfo.members
+                ? device.groupinfo.members.includes(',') 
+                  ? device.groupinfo.members.split(',')
+                  : [device.groupinfo.members]
+                : false,
               online: parseInt(device.present),
               bitmask: device['$'].functionbitmask,
               busy: parseInt(device.txbusy),
@@ -2693,12 +3083,141 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 }
                 : false
             };
+            
+            if(dev.associated){
+            
+              let types = [];
+            
+              dev.associated = dev.associated.map(id => {
+                let foundDevice = smarthomeList.filter(device => { 
+                  if(device.id === id){
+                    if(device.light && !types.includes('light'))
+                      types.push('light');
+                    if(device.switch && !types.includes('switch'))
+                      types.push('switch');
+                    if(device.thermostat && !types.includes('thermostat'))
+                      types.push('thermostat');
+                    return device;
+                  }
+                });
+                
+                if(foundDevice)
+                  return foundDevice[0];
+                
+              }).filter(device => device);
+              
+              if(types.length){
+              
+                if(types.includes('thermostat')){
+                
+                  let batteryValues = dev.associated.map(device => {
+                    if(device.battery)
+                      return device.battery.value;
+                  }).filter(device => !isNaN(device));
+                  
+                  let batteryLows = dev.associated.map(device => {
+                    if(device.battery)
+                      return device.battery.low;
+                  }).filter(device => !isNaN(device));
+                  
+                  dev.battery = {
+                    value: batteryValues.reduce( ( p, c ) => p + c, 0 ) / batteryValues.length,
+                    low: batteryLows.includes(0) ? 0 : 1
+                  };
+                
+                }
+              
+                if(types.includes('switch') || types.includes('thermostat')){
+                
+                  let temps = dev.associated.map(device => {
+                    if(device.temperature)
+                      return device.temperature.value;
+                  }).filter(device => !isNaN(device));
+                  
+                  let offs = dev.associated.map(device => {
+                    if(device.temperature)
+                      return device.temperature.offset;
+                  }).filter(device => !isNaN(device));
+                  
+                  dev.temperature = {
+                    value: temps.reduce( ( p, c ) => p + c, 0 ) / temps.length,
+                    offset: offs.reduce( ( p, c ) => p + c, 0 ) / offs.length 
+                  };
+                
+                }
+              
+                //brightness
+              
+                let levels = dev.associated.map(device => {
+                  if(device.light && device.light.brightness)
+                    return device.light.brightness.level;
+                }).filter(device => !isNaN(device));
+                
+                let levelpercentages = dev.associated.map(device => {
+                  if(device.light && device.light.brightness)
+                    return device.light.brightness.levelpercentage;
+                }).filter(device => !isNaN(device));
+                
+                if(levels.length && levelpercentages.length){
+                
+                  if(!dev.light)
+                    dev.light = {};
+                
+                  dev.light.brightness = {
+                    level: levels.reduce( ( p, c ) => p + c, 0 ) / levels.length,
+                    levelpercentage: levelpercentages.reduce( ( p, c ) => p + c, 0 ) / levelpercentages.length 
+                  };
+                
+                }
+                
+                //color
+                
+                let hues = dev.associated.map(device => {
+                  if(device.light && device.light.color)
+                    return device.light.color.hue;
+                }).filter(device => !isNaN(device));
+                
+                let sats = dev.associated.map(device => {
+                  if(device.light && device.light.color)
+                    return device.light.color.saturation;
+                }).filter(device => !isNaN(device));
+                
+                let cTemps = dev.associated.map(device => {
+                  if(device.light && device.light.color)
+                    return device.light.color.temperature;
+                }).filter(device => !isNaN(device));
+                
+                if(hues.length && sats.length){
+                
+                  if(!dev.light)
+                    dev.light = {};
+                
+                  dev.light.color = {
+                    hue: hues.reduce( ( p, c ) => p + c, 0 ) / hues.length,
+                    saturation: sats.reduce( ( p, c ) => p + c, 0 ) / sats.length,
+                    temperature: null 
+                  };
+                
+                } else if(cTemps.length) {
+                
+                  dev.light.color = {
+                    hue: null,
+                    saturation: null,
+                    temperature: cTemps.reduce( ( p, c ) => p + c, 0 ) / cTemps.length 
+                  };
+                                                                      
+                }
+              
+              }
+              
+            }
+            
             return dev;
           }
         
         }).filter(device => device);
-        
-        //Logger.debug(smarthomeList, 'SmartHome')
+
+        Logger.debug(smarthomeGroupList, 'SmartHome');
         
         if(accessories){
         
@@ -2709,6 +3228,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               const accessory = accessories.find(curAcc => curAcc.UUID === uuid || (curAcc.UUID + '-' + device.subtype) === uuid);
               
               switch(device.subtype) {
+              
+                case 'smarthome-switch-lightbulb':
+                  await get(accessory, device.energy ? api.hap.Service.Outlet : api.hap.Service.Switch, api.hap.Characteristic.On, device.subtype);
+                  break;
               
                 case 'smarthome-lightbulb':
                   await get(accessory, api.hap.Service.Lightbulb, api.hap.Characteristic.On, device.subtype);

@@ -54,10 +54,10 @@ class SmarthomeOutletAccessory {
     if(!service.testCharacteristic(this.api.hap.Characteristic.ResetTotal))
       service.addCharacteristic(this.api.hap.Characteristic.ResetTotal);
   
-    this.historyService = new this.FakeGatoHistoryService('custom', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
+    this.historyService = new this.FakeGatoHistoryService('energy', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
-      .on('change', this.handler.change.bind(this, this.accessory, 'smarthome-switch', this.accessory.displayName, this.historyService));
+      .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
     
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal)
       .on('set', (value,callback) => {
@@ -78,12 +78,11 @@ class SmarthomeOutletAccessory {
       });
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
- 
- 
+
       if(!this.accessory.context.config.readOnly){
   
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options));
   
       } else {
   
@@ -111,13 +110,13 @@ class SmarthomeOutletAccessory {
       if(!this.accessory.context.config.readOnly){
    
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
-          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options));
    
       } else {
       
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Outlet, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
           .on('set', (state, callback) => {
           
             Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);

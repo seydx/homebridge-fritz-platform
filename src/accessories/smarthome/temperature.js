@@ -33,6 +33,12 @@ class SmarthomeTemperatureAccessory {
       service = this.accessory.addService(this.api.hap.Service.TemperatureSensor, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
+    service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
+      .setProps({
+        minValue: -100,
+        maxValue: 100
+      });  
+    
     if(this.accessory.context.config.battery){
       
       let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);

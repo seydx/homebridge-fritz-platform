@@ -28,6 +28,9 @@ const SmarthomeThermostatAccessory = require('./accessories/smarthome/thermostat
 const SmarthomeContactAccessory = require('./accessories/smarthome/contact.js');
 const SmarthomeWindowAccessory = require('./accessories/smarthome/window.js');
 
+const SmarthomeSwitchLightbulbAccessory = require('./accessories/smarthome/switch-lightbulb.js');
+const SmarthomeOutletLightbulbAccessory = require('./accessories/smarthome/outlet-lightbulb.js');
+
 //Custom Types
 const RouterTypes = require('./types/custom_types.js');
 const EveTypes = require('./types/eve_types.js');
@@ -191,22 +194,36 @@ function FritzPlatform (log, config, api) {
     
       let error = false;
       let validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window'];
-
-      if (!device.name) {
-        Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
-        error = true;
-      } else if (!device.ain) {
-        Logger.warn('There is no AIN configured for this smarthome device. This device will be skipped.', device.name);
-        error = true;
-      } else if (!device.accType || !validTypes.includes(device.accType)) {
-        Logger.warn('There is no or no valid type configured for this smarthome device. This device will be skipped.', device.name);
-        error = true;
+      let validTypesGroup = ['switch', 'lightbulb', 'thermostat', 'switch-lightbulb'];
+      
+      if(!device.group){  
+        if (!device.name) {
+          Logger.warn('One of the smarthome devices has no name configured. This device will be skipped.');
+          error = true;
+        } else if (!device.ain) {
+          Logger.warn('There is no AIN configured for this smarthome device. This device will be skipped.', device.name);
+          error = true;
+        } else if (!device.accType || !validTypes.includes(device.accType)) {
+          Logger.warn('There is no or no valid type configured for this smarthome device. This device will be skipped.', device.name);
+          error = true;
+        }
+      } else {
+        if (!device.name) {
+          Logger.warn('One of the smarthome grouped devices has no name configured. This device will be skipped.');
+          error = true;
+        } else if (!device.accTypeGroup || !validTypesGroup.includes(device.accTypeGroup)) {
+          Logger.warn('There is no or no valid type configured for this grouped smarthome device. This device will be skipped.', device.name);
+          error = true;
+        }
       }
-
+      
       if (!error) {
-        device.ain = device.ain.replace(/\s/g,'');
+      
+        if(!device.group)
+          device.ain = device.ain.replace(/\s/g,'');
+     
         device.type = 'smarthome';
-        device.subtype = 'smarthome-' + device.accType;
+        device.subtype = 'smarthome-' + (device.accType || device.accTypeGroup);
         const uuid = UUIDGen.generate(device.name);
         if (this.devices.has(uuid)) {
           Logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
@@ -215,12 +232,14 @@ function FritzPlatform (log, config, api) {
           this.smarthome.set(uuid, device);
         }
         
-        if(device.temperature){
+        if(!device.group && device.temperature && device.accType === 'switch'){
         
           let tempDevice = {
             name: device.name + ' Temperature',
             type: 'smarthome',
             subtype: 'smarthome-temperature',
+            group: device.group,
+            battery: device.battery,
             ain: device.ain
           };
 
@@ -234,12 +253,14 @@ function FritzPlatform (log, config, api) {
         
         }
         
-        if(device.window){
+        if(!device.group && device.window && device.accType === 'thermostat'){
         
           let windowDevice = {
             name: device.name + ' Window',
             type: 'smarthome',
             subtype: 'smarthome-window',
+            group: device.group,
+            battery: device.battery,
             ain: device.ain
           };
 
@@ -721,6 +742,10 @@ FritzPlatform.prototype = {
           new SmarthomeWindowAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
         if(device.subtype === 'smarthome-lightbulb')
           new SmarthomeLightbulbAccessory(this.api, accessory, this.handler);
+        if(device.subtype === 'smarthome-switch-lightbulb' && device.energy)
+          new SmarthomeOutletLightbulbAccessory(this.api, accessory, this.handler, FakeGatoHistoryService);
+        if(device.subtype === 'smarthome-switch-lightbulb' && !device.energy)
+          new SmarthomeSwitchLightbulbAccessory(this.api, accessory, this.handler);
         break;
       case 'presence':
         if(device.subtype === 'presence-motion')

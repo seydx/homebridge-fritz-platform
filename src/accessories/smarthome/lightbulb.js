@@ -48,9 +48,15 @@ class SmarthomeLightbulbAccessory {
         service.addCharacteristic(this.api.hap.Characteristic.Saturation);
    
       if(!service.testCharacteristic(this.api.hap.Characteristic.ColorTemperature))
-        service.addCharacteristic(this.api.hap.Characteristic.ColorTemperature);                  
+        service.addCharacteristic(this.api.hap.Characteristic.ColorTemperature); 
+        
+      service.getCharacteristic(this.api.hap.Characteristic.ColorTemperature)
+        .setProps({
+          minValue: 140,
+          maxValue: 500
+        });               
       
-      /*if(this.api.versionGreaterOrEqual('v1.3.0-beta.23')){
+      if(this.api.versionGreaterOrEqual && this.api.versionGreaterOrEqual('v1.3.0-beta.23')){
     
         this.adaptiveLightingController  = new this.api.hap.AdaptiveLightingController(service, {
           controllerMode: this.api.hap.AdaptiveLightingControllerMode.AUTOMATIC,
@@ -59,7 +65,7 @@ class SmarthomeLightbulbAccessory {
         this.accessory.configureController(this.adaptiveLightingController);
         this.accessory.adaptiveLightingController = this.adaptiveLightingController;
       
-      }*/
+      }
     
     } else {
     
@@ -96,11 +102,7 @@ class SmarthomeLightbulbAccessory {
         
     if(this.accessory.context.config.color){
     
-      service.getCharacteristic(this.api.hap.Characteristic.ColorTemperature)
-        .setProps({
-          minValue: 153,
-          maxValue: 371
-        })      
+      service.getCharacteristic(this.api.hap.Characteristic.ColorTemperature)    
         .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Lightbulb, this.api.hap.Characteristic.ColorTemperature, 'smarthome-lightbulb', 'temperature'));  
    
       service.getCharacteristic(this.api.hap.Characteristic.Saturation)

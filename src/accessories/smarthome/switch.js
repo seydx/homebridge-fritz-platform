@@ -39,7 +39,7 @@ class SmarthomeSwitchAccessory {
       if(!this.accessory.context.config.readOnly){
   
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options));
   
       } else {
   
@@ -67,13 +67,13 @@ class SmarthomeSwitchAccessory {
       if(!this.accessory.context.config.readOnly){
    
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
-          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options));
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
+          .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options));
    
       } else {
    
         service.getCharacteristic(this.api.hap.Characteristic.On)
-          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, 'smarthome-switch', this.accessory.context.config.options))
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.On, this.accessory.context.config.subtype, this.accessory.context.config.options))
           .on('set', (state, callback) => {
           
             Logger.info('Can not be switched ' + (state ? 'ON' : 'OFF') + ' - "readOnly" is active!', this.accessory.displayName);
