@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.16 - 2020-11-27
+- Bugfixes
+
 ## v5.0.15 - 2020-11-27
 - Added new option to expose grouped smarthome devices.
 - Adaptive Lighting
