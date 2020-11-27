@@ -2911,9 +2911,6 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
-          
-        if(!Array.isArray(groupList))
-          groupList = [groupList];
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
@@ -2999,225 +2996,234 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
         }).filter(device => device);
         
-        smarthomeGroupList = groupList.map(device => {
-          const convertTemp = value => {
-            value = parseInt(value);
-            if (value == 254)
-              return 'on';
-            else if (value == 253)
-              return 'off';
-            else {
-              return (parseFloat(value) - 16) / 2 + 8;
-            }
-          };
-          if(device['$'].functionbitmask !== '1'){
-            let dev = {
-              name: device.name,
-              id: device['$'].id,
-              ain: device['$'].identifier.replace(/\s/g,''),
-              associated: device.groupinfo && device.groupinfo.members
-                ? device.groupinfo.members.includes(',') 
-                  ? device.groupinfo.members.split(',')
-                  : [device.groupinfo.members]
-                : false,
-              online: parseInt(device.present),
-              bitmask: device['$'].functionbitmask,
-              busy: parseInt(device.txbusy),
-              battery: device.battery 
-                ? { 
-                  value: parseInt(device.battery) || 0, 
-                  low: parseInt(device.batterylow) || 0
-                }
-                : false,
-              alert: device.alert
-                ? {
-                  state: parseInt(device.alert.state) || 0
-                }
-                : false,  
-              temperature: device.temperature
-                ? { 
-                  value: parseInt(device.temperature.celsius)/10 || 0, 
-                  offset: parseInt(device.temperature.offset) || 0 
-                }
-                : false,
-              powermeter: device.powermeter
-                ? { 
-                  voltage: parseInt(device.powermeter.voltage)/1000 || 0,  // >> voltage   = 0.001V = 1V
-                  power: parseInt(device.powermeter.power)/1000 || 0,      // >> power     = 0.001W = 1W
-                  energy: parseInt(device.powermeter.energy)/1000 || 0     // >> energy    = 1.00Wh = 0.001 kWh
-                }
-                : false,
-              switch: device.switch
-                ? {
-                  state: parseInt(device.switch.state) || 0
-                }
-                : false,
-              button: device.button
-                ? device.button
-                : false,    
-              thermostat: device.hkr
-                ? {
-                  current: convertTemp(device.hkr.tist) || 0,
-                  target: convertTemp(device.hkr.tsoll) || 0,
-                  windowOpen: parseInt(device.hkr.windowopenactiv) || 0
-                }
-                : false,
-              light: device.simpleonoff
-                ? {
-                  state: parseInt(device.simpleonoff.state) || 0,
-                  brightness: device.levelcontrol
-                    ? {
-                      level: parseInt(device.levelcontrol.level),                        // 0 - 255
-                      levelpercentage: parseInt(device.levelcontrol.levelpercentage)     // 0 - 100
-                    }
-                    : false,
-                  color: device.colorcontrol
-                    ? {
-                      supported_modes: parseInt(device.colorcontrol['$'].supported_modes),
-                      current_mode: parseInt(device.colorcontrol['$'].current_mode),
-                      hue: parseInt(device.colorcontrol.hue),                            // 0 - 359
-                      saturation: parseInt(device.colorcontrol.saturation),              // 0 - 100 (if current_mode === 1)
-                      temperature: parseInt(device.colorcontrol.temperature)             // 2700 - 6500 Kelvin
-                    }
-                    : false
-                }
-                : false
+        //Logger.debug(smarthomeList, 'SmartHome Devices');
+        
+        if(groupList){
+            
+          if(!Array.isArray(groupList))
+            groupList = [groupList];
+          
+          smarthomeGroupList = groupList.map(device => {
+            const convertTemp = value => {
+              value = parseInt(value);
+              if (value == 254)
+                return 'on';
+              else if (value == 253)
+                return 'off';
+              else {
+                return (parseFloat(value) - 16) / 2 + 8;
+              }
             };
-            
-            if(dev.associated){
-            
-              let types = [];
-            
-              dev.associated = dev.associated.map(id => {
-                let foundDevice = smarthomeList.filter(device => { 
-                  if(device.id === id){
-                    if(device.light && !types.includes('light'))
-                      types.push('light');
-                    if(device.switch && !types.includes('switch'))
-                      types.push('switch');
-                    if(device.thermostat && !types.includes('thermostat'))
-                      types.push('thermostat');
-                    return device;
+            if(device['$'].functionbitmask !== '1'){
+              let dev = {
+                name: device.name,
+                id: device['$'].id,
+                ain: device['$'].identifier.replace(/\s/g,''),
+                associated: device.groupinfo && device.groupinfo.members
+                  ? device.groupinfo.members.includes(',') 
+                    ? device.groupinfo.members.split(',')
+                    : [device.groupinfo.members]
+                  : false,
+                online: parseInt(device.present),
+                bitmask: device['$'].functionbitmask,
+                busy: parseInt(device.txbusy),
+                battery: device.battery 
+                  ? { 
+                    value: parseInt(device.battery) || 0, 
+                    low: parseInt(device.batterylow) || 0
                   }
-                });
-                
-                if(foundDevice)
-                  return foundDevice[0];
-                
-              }).filter(device => device);
+                  : false,
+                alert: device.alert
+                  ? {
+                    state: parseInt(device.alert.state) || 0
+                  }
+                  : false,  
+                temperature: device.temperature
+                  ? { 
+                    value: parseInt(device.temperature.celsius)/10 || 0, 
+                    offset: parseInt(device.temperature.offset) || 0 
+                  }
+                  : false,
+                powermeter: device.powermeter
+                  ? { 
+                    voltage: parseInt(device.powermeter.voltage)/1000 || 0,  // >> voltage   = 0.001V = 1V
+                    power: parseInt(device.powermeter.power)/1000 || 0,      // >> power     = 0.001W = 1W
+                    energy: parseInt(device.powermeter.energy)/1000 || 0     // >> energy    = 1.00Wh = 0.001 kWh
+                  }
+                  : false,
+                switch: device.switch
+                  ? {
+                    state: parseInt(device.switch.state) || 0
+                  }
+                  : false,
+                button: device.button
+                  ? device.button
+                  : false,    
+                thermostat: device.hkr
+                  ? {
+                    current: convertTemp(device.hkr.tist) || 0,
+                    target: convertTemp(device.hkr.tsoll) || 0,
+                    windowOpen: parseInt(device.hkr.windowopenactiv) || 0
+                  }
+                  : false,
+                light: device.simpleonoff
+                  ? {
+                    state: parseInt(device.simpleonoff.state) || 0,
+                    brightness: device.levelcontrol
+                      ? {
+                        level: parseInt(device.levelcontrol.level),                        // 0 - 255
+                        levelpercentage: parseInt(device.levelcontrol.levelpercentage)     // 0 - 100
+                      }
+                      : false,
+                    color: device.colorcontrol
+                      ? {
+                        supported_modes: parseInt(device.colorcontrol['$'].supported_modes),
+                        current_mode: parseInt(device.colorcontrol['$'].current_mode),
+                        hue: parseInt(device.colorcontrol.hue),                            // 0 - 359
+                        saturation: parseInt(device.colorcontrol.saturation),              // 0 - 100 (if current_mode === 1)
+                        temperature: parseInt(device.colorcontrol.temperature)             // 2700 - 6500 Kelvin
+                      }
+                      : false
+                  }
+                  : false
+              };
               
-              if(types.length){
+              if(dev.associated){
               
-                if(types.includes('thermostat')){
+                let types = [];
+              
+                dev.associated = dev.associated.map(id => {
+                  let foundDevice = smarthomeList.filter(device => { 
+                    if(device.id === id){
+                      if(device.light && !types.includes('light'))
+                        types.push('light');
+                      if(device.switch && !types.includes('switch'))
+                        types.push('switch');
+                      if(device.thermostat && !types.includes('thermostat'))
+                        types.push('thermostat');
+                      return device;
+                    }
+                  });
+                  
+                  if(foundDevice)
+                    return foundDevice[0];
+                  
+                }).filter(device => device);
                 
-                  let batteryValues = dev.associated.map(device => {
-                    if(device.battery)
-                      return device.battery.value;
+                if(types.length){
+                
+                  if(types.includes('thermostat')){
+                  
+                    let batteryValues = dev.associated.map(device => {
+                      if(device.battery)
+                        return device.battery.value;
+                    }).filter(device => !isNaN(device));
+                    
+                    let batteryLows = dev.associated.map(device => {
+                      if(device.battery)
+                        return device.battery.low;
+                    }).filter(device => !isNaN(device));
+                    
+                    dev.battery = {
+                      value: batteryValues.reduce( ( p, c ) => p + c, 0 ) / batteryValues.length,
+                      low: batteryLows.includes(0) ? 0 : 1
+                    };
+                  
+                  }
+                
+                  if(types.includes('switch') || types.includes('thermostat')){
+                  
+                    let temps = dev.associated.map(device => {
+                      if(device.temperature)
+                        return device.temperature.value;
+                    }).filter(device => !isNaN(device));
+                    
+                    let offs = dev.associated.map(device => {
+                      if(device.temperature)
+                        return device.temperature.offset;
+                    }).filter(device => !isNaN(device));
+                    
+                    dev.temperature = {
+                      value: temps.reduce( ( p, c ) => p + c, 0 ) / temps.length,
+                      offset: offs.reduce( ( p, c ) => p + c, 0 ) / offs.length 
+                    };
+                  
+                  }
+                
+                  //brightness
+                
+                  let levels = dev.associated.map(device => {
+                    if(device.light && device.light.brightness)
+                      return device.light.brightness.level;
                   }).filter(device => !isNaN(device));
                   
-                  let batteryLows = dev.associated.map(device => {
-                    if(device.battery)
-                      return device.battery.low;
+                  let levelpercentages = dev.associated.map(device => {
+                    if(device.light && device.light.brightness)
+                      return device.light.brightness.levelpercentage;
                   }).filter(device => !isNaN(device));
                   
-                  dev.battery = {
-                    value: batteryValues.reduce( ( p, c ) => p + c, 0 ) / batteryValues.length,
-                    low: batteryLows.includes(0) ? 0 : 1
-                  };
-                
-                }
-              
-                if(types.includes('switch') || types.includes('thermostat')){
-                
-                  let temps = dev.associated.map(device => {
-                    if(device.temperature)
-                      return device.temperature.value;
+                  if(levels.length && levelpercentages.length){
+                  
+                    if(!dev.light)
+                      dev.light = {};
+                  
+                    dev.light.brightness = {
+                      level: levels.reduce( ( p, c ) => p + c, 0 ) / levels.length,
+                      levelpercentage: levelpercentages.reduce( ( p, c ) => p + c, 0 ) / levelpercentages.length 
+                    };
+                  
+                  }
+                  
+                  //color
+                  
+                  let hues = dev.associated.map(device => {
+                    if(device.light && device.light.color)
+                      return device.light.color.hue;
                   }).filter(device => !isNaN(device));
                   
-                  let offs = dev.associated.map(device => {
-                    if(device.temperature)
-                      return device.temperature.offset;
+                  let sats = dev.associated.map(device => {
+                    if(device.light && device.light.color)
+                      return device.light.color.saturation;
                   }).filter(device => !isNaN(device));
                   
-                  dev.temperature = {
-                    value: temps.reduce( ( p, c ) => p + c, 0 ) / temps.length,
-                    offset: offs.reduce( ( p, c ) => p + c, 0 ) / offs.length 
-                  };
-                
-                }
-              
-                //brightness
-              
-                let levels = dev.associated.map(device => {
-                  if(device.light && device.light.brightness)
-                    return device.light.brightness.level;
-                }).filter(device => !isNaN(device));
-                
-                let levelpercentages = dev.associated.map(device => {
-                  if(device.light && device.light.brightness)
-                    return device.light.brightness.levelpercentage;
-                }).filter(device => !isNaN(device));
-                
-                if(levels.length && levelpercentages.length){
-                
-                  if(!dev.light)
-                    dev.light = {};
-                
-                  dev.light.brightness = {
-                    level: levels.reduce( ( p, c ) => p + c, 0 ) / levels.length,
-                    levelpercentage: levelpercentages.reduce( ( p, c ) => p + c, 0 ) / levelpercentages.length 
-                  };
+                  let cTemps = dev.associated.map(device => {
+                    if(device.light && device.light.color)
+                      return device.light.color.temperature;
+                  }).filter(device => !isNaN(device));
+                  
+                  if(hues.length && sats.length){
+                  
+                    if(!dev.light)
+                      dev.light = {};
+                  
+                    dev.light.color = {
+                      hue: hues.reduce( ( p, c ) => p + c, 0 ) / hues.length,
+                      saturation: sats.reduce( ( p, c ) => p + c, 0 ) / sats.length,
+                      temperature: null 
+                    };
+                  
+                  } else if(cTemps.length) {
+                  
+                    dev.light.color = {
+                      hue: null,
+                      saturation: null,
+                      temperature: cTemps.reduce( ( p, c ) => p + c, 0 ) / cTemps.length 
+                    };
+                                                                        
+                  }
                 
                 }
                 
-                //color
-                
-                let hues = dev.associated.map(device => {
-                  if(device.light && device.light.color)
-                    return device.light.color.hue;
-                }).filter(device => !isNaN(device));
-                
-                let sats = dev.associated.map(device => {
-                  if(device.light && device.light.color)
-                    return device.light.color.saturation;
-                }).filter(device => !isNaN(device));
-                
-                let cTemps = dev.associated.map(device => {
-                  if(device.light && device.light.color)
-                    return device.light.color.temperature;
-                }).filter(device => !isNaN(device));
-                
-                if(hues.length && sats.length){
-                
-                  if(!dev.light)
-                    dev.light = {};
-                
-                  dev.light.color = {
-                    hue: hues.reduce( ( p, c ) => p + c, 0 ) / hues.length,
-                    saturation: sats.reduce( ( p, c ) => p + c, 0 ) / sats.length,
-                    temperature: null 
-                  };
-                
-                } else if(cTemps.length) {
-                
-                  dev.light.color = {
-                    hue: null,
-                    saturation: null,
-                    temperature: cTemps.reduce( ( p, c ) => p + c, 0 ) / cTemps.length 
-                  };
-                                                                      
-                }
-              
               }
               
+              return dev;
             }
-            
-            return dev;
-          }
-        
-        }).filter(device => device);
-
-        Logger.debug(smarthomeGroupList, 'SmartHome');
+          
+          }).filter(device => device);
+  
+          //Logger.debug(smarthomeGroupList, 'SmartHome Groups');
+          
+        }
         
         if(accessories){
         
