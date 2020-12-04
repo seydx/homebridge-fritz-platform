@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.17 - 2020-12-04
+- Added humidity sensor for supported smarthome devices (currently available only with Fritz!OS 7.24)
+
 ## v5.0.16 - 2020-11-27
 - Bugfixes
 
