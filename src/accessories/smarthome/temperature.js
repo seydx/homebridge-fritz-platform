@@ -58,6 +58,22 @@ class SmarthomeTemperatureAccessory {
     
     }
     
+    if(this.accessory.context.config.humidity){
+      
+      let humidityService = this.accessory.getService(this.api.hap.Service.HumiditySensor);
+      
+      if(!humidityService){
+        Logger.info('Adding Humidity service', this.accessory.displayName);
+        humidityService = this.accessory.addService(this.api.hap.Service.HumiditySensor);
+      }
+      
+    } else {
+    
+      if(this.accessory.getService(this.api.hap.Service.HumiditySensor))
+        this.accessory.removeService(this.accessory.getService(this.api.hap.Service.HumiditySensor));
+    
+    }
+    
     this.historyService = new this.FakeGatoHistoryService('room', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
