@@ -240,6 +240,7 @@ function FritzPlatform (log, config, api) {
             subtype: 'smarthome-temperature',
             group: device.group,
             battery: device.battery,
+            humidity: device.humidity,
             ain: device.ain
           };
 
