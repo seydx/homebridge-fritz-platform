@@ -483,6 +483,14 @@
             },
             "description": "Enable this, if the device(s) has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
           },
+          "humidity": {
+            "title": "Humidity Sensor",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].temperature === true || model.smarthome[arrayIndices[0]].accType === 'temperature';"
+            },
+            "description": "Enable this, if the device(s) has a built in humidity sensor. This adds an additional humidity sensor to the temperature sensor."
+          },
           "window": {
             "title": "Window Sensor",
             "type": "boolean",
@@ -1408,6 +1416,7 @@
                 "smarthome[].readOnly",
                 "smarthome[].energy",
                 "smarthome[].temperature",
+                "smarthome[].humidity",
                 "smarthome[].window",
                 "smarthome[].brightness",
                 "smarthome[].color",
