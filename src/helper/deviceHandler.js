@@ -432,6 +432,17 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           
           }
           
+          if(device && device.online && device.humidity && accessory.context.config.humidity){
+            
+            let humidity = device.humidity.value || 0;
+            
+            accessory
+              .getService(api.hap.Service.HumiditySensor)
+              .getCharacteristic(api.hap.Characteristic.CurrentRelativeHumidity)
+              .updateValue(humidity);
+            
+          }
+          
           if(device && device.online && device.battery && accessory.context.config.battery){
             
             let batteryLevel = device.battery.value || 0;
@@ -2349,7 +2360,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\�/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2407,7 +2418,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\�/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                       
                       let telNumbers = [];
                       
@@ -2948,6 +2959,11 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   offset: parseInt(device.temperature.offset) || 0 
                 }
                 : false,
+              humidity: device.avmbutton
+                ? { 
+                  value: parseInt(device.avmbutton.humidity) || 0 
+                }
+                : false,
               powermeter: device.powermeter
                 ? { 
                   voltage: parseInt(device.powermeter.voltage)/1000 || 0,  // >> voltage   = 0.001V = 1V
@@ -3042,6 +3058,11 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   ? { 
                     value: parseInt(device.temperature.celsius)/10 || 0, 
                     offset: parseInt(device.temperature.offset) || 0 
+                  }
+                  : false,
+                humidity: device.avmbutton
+                  ? { 
+                    value: parseInt(device.avmbutton.humidity) || 0 
                   }
                   : false,
                 powermeter: device.powermeter
@@ -3143,9 +3164,18 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                         return device.temperature.offset;
                     }).filter(device => !isNaN(device));
                     
+                    let humids = dev.associated.map(device => {
+                      if(device.humidity)
+                        return device.humidity.value;
+                    }).filter(device => !isNaN(device));
+                    
                     dev.temperature = {
                       value: temps.reduce( ( p, c ) => p + c, 0 ) / temps.length,
                       offset: offs.reduce( ( p, c ) => p + c, 0 ) / offs.length 
+                    };
+                    
+                    dev.humidity = {
+                      value: humids.reduce( ( p, c ) => p + c, 0 ) / humids.length
                     };
                   
                   }
