@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.20 - 2020-12-05
+- Fix smarthome humidity
+
 ## v5.0.19 - 2020-12-05
 - Fixed answering machine
 - Improved debug for smarthome devices/groups
