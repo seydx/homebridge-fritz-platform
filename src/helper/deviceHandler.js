@@ -2922,6 +2922,11 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 
         if(!Array.isArray(deviceList))
           deviceList = [deviceList];
+          
+        Logger.debug(deviceList, 'SmartHome Devices');
+        
+        if(groupList)
+          Logger.debug(groupList, 'SmartHome Groups');
         
         smarthomeList = deviceList.map(device => {
           const convertTemp = value => {
