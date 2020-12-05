@@ -1878,7 +1878,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
          
         try {
          
-          await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_TAM:1', 'SetEnable', {NewIndex: 0, NewEnable: state});
+          await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_TAM:1', 'SetEnable', {NewIndex: 0, NewEnable: state ? '1' : '0'});
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
          
         } catch(err) {
