@@ -2964,9 +2964,9 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   offset: parseInt(device.temperature.offset) || 0 
                 }
                 : false,
-              humidity: device.avmbutton && device.avmbutton.humidity
+              humidity: device.humidity
                 ? { 
-                  value: parseInt(device.avmbutton.humidity) || 0 
+                  value: parseInt(device.humidity.rel_humidity) || 0 
                 }
                 : false,
               powermeter: device.powermeter
@@ -3065,9 +3065,9 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                     offset: parseInt(device.temperature.offset) || 0 
                   }
                   : false,
-                humidity: device.avmbutton && device.avmbutton.humidity
+                humidity: device.humidity
                   ? { 
-                    value: parseInt(device.avmbutton.humidity) || 0 
+                    value: parseInt(device.humidity.rel_humidity) || 0 
                   }
                   : false,
                 powermeter: device.powermeter
