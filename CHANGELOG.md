@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v5.0.19 - 2020-12-05
+- Fixed answering machine
+- Improved debug for smarthome devices/groups
+
 ## v5.0.18 - 2020-12-04
 - Updated config.schema.json to support humidity sensor
 
