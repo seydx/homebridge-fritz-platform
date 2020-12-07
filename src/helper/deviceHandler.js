@@ -2360,7 +2360,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2418,7 +2418,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                       
                       let telNumbers = [];
                       
@@ -2705,7 +2705,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         case 'alarm': {
   
           if(Telegram)
-            Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated');
+            Telegram.send('alarm', value.newValue ? 'activated' : 'deactivated', replacer);
         
           break;
           
@@ -2714,7 +2714,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         case 'router': {
   
           if(!accessory.context.config.readOnly && Telegram)
-            Telegram.send('reboot', value.newValue ? 'finish' : 'start', accessory.displayName);
+            Telegram.send('reboot', value.newValue ? 'finish' : 'start', replacer);
         
           break;
           
