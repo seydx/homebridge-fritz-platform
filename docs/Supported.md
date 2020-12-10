@@ -13,6 +13,7 @@
 - [x] Fritz!Box 7430
 - [x] Fritz!Box 7390 WLAN
 - [x] Fritz!Box 7360 WLAN
+- [x] Fritz!Box 6660 Cable
 - [x] Fritz!Box 6591 Cable
 - [x] Fritz!Box 6590 Cable
 - [x] Fritz!Box 6490 Cable
@@ -28,6 +29,7 @@
 - [x] Fritz!DECT 500
 - [x] Fritz!DECT 404
 - [x] Fritz!DECT 301
+- [x] Fritz!DECT 210
 - [x] Fritz!DECT 200
 - [x] HAN-FUN Contact sensor
 
