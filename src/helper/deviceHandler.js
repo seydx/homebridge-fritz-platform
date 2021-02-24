@@ -1187,7 +1187,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             
             Logger.debug(body, accessory.displayName);
        
-            actives.push((parseInt(body.value) || 0));
+            actives.push(body.checked && body.checked === 'checked' ? 1 : 0);
             
           }
             
@@ -2209,8 +2209,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                 idx: count.toString(),
                 xhr: '1',
                 nightsetting: '1',
-                lockmode: '1',
-                lockday: dayForm,
+                lockmode: '0',
+                lockday: 'everyday',
                 starthh: hour.toString(),
                 startmm: minute.toString(),
                 endhh: endhour.toString(),
@@ -2238,7 +2238,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           }
           
           for(const formdata of phonesFormData)
-            await lua.request(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting');
+            await lua.request(formdata, accessory.context.config.fritzbox.url.hostname, '/data.lua', 'nightsetting', true);
             
           Logger.info((state ? 'ON': 'OFF') + ' (' + target + ')', accessory.displayName);
             
@@ -2360,7 +2360,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   
                         let telnr = number._;
                     
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                         
                         telNumbers.push(telnr);
                         
@@ -2418,7 +2418,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                      
                       let telnr = numbers._;
                     
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
                       
                       let telNumbers = [];
                       
