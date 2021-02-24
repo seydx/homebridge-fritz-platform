@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.21 - 2020-02-24
+- Bugfixes
+
 ## v5.0.20 - 2020-12-05
 - Fix smarthome humidity
 
