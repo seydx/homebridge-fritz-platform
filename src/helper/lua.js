@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 
 module.exports = {
 
-  request: async function(formData, host, path, target){
+  request: async function(formData, host, path, target, exec){
   
     let url = 'http://' + host + path + '?sid=' + formData.sid;
     
@@ -14,7 +14,7 @@ module.exports = {
         
       let post = await axios.post(url, querystring.stringify(formData), { headers: { 'Content-Type': 'application/x-www-form-urlencoded'}});
       
-      if(target)
+      if(target && !exec)
         return this.parseOutput(post.data, target);
         
       return post.data;
