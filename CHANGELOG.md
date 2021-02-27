@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.22 - 2020-02-27
+- Refactored broadband
+
 ## v5.0.21 - 2020-02-24
 - Bugfixes
 
