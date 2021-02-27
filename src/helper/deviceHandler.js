@@ -1212,15 +1212,54 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
       
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
         let ul;
-         
-        try {
         
-          let data = await fritzbox.exec('urn:WANIPConnection-com:serviceId:WANDSLInterfaceConfig1', 'X_AVM-DE_GetDSLInfo');
-          Logger.debug(data, accessory.displayName);
+        try {
+         
+          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+         
+          let body = await lua.request({
+            xhr: '1',
+            xhrId: 'first',
+            sid: sid,
+            page: 'overview',
+            noMenuRef: '1',
+            no_sidrenew: ''
+          }, accessory.context.config.fritzbox.url.hostname, '/data.lua');
           
-          state = parseInt(data.NewDownstreamCurrRate)/1000;
-          ul = parseInt(data.NewUpstreamCurrRate)/1000;
-
+          if(body && body.data){
+          
+            if(body.data.internet){
+            
+              //state = parseFloat(body.data.internet.down.replace(',', '.').replace( /^\D+/g, ''));
+              //ul = parseFloat(body.data.internet.up.replace(',', '.').replace( /^\D+/g, ''));
+              
+              Logger.debug(body.data.internet, accessory.displayName);
+              
+              state = body.data.internet.down;
+              ul = body.data.internet.up;
+            
+            } else if(body.data.dsl){
+            
+              //state = parseFloat(body.data.dsl.down.replace(',', '.').replace( /^\D+/g, ''));
+              //ul = parseFloat(body.data.dsl.up.replace(',', '.').replace( /^\D+/g, ''));
+              
+              Logger.debug(body.data.dsl, accessory.displayName);
+              
+              state = body.data.dsl.down;
+              ul = body.data.dsl.up;
+            
+            } else {
+            
+              Logger.debug(body.data, accessory.displayName);
+              
+              state = 'undefined';
+              ul = 'undefined';
+            
+            }
+          
+          }
+         
         } catch(err) {
         
           state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
