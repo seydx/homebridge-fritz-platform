@@ -223,10 +223,8 @@ class RouterSwitchAccessory {
           Logger.info('Adding Upload characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.Upload);
         }
-        if(!(this.accessory.context.polling.timer && !this.accessory.context.polling.exclude.includes('broadband') && !this.accessory.context.polling.exclude.includes('extra'))){
-          service.getCharacteristic(this.api.hap.Characteristic.Download)
-            .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.Download, 'broadband', 'dl'));
-        }
+        service.getCharacteristic(this.api.hap.Characteristic.Download)
+          .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Switch, this.api.hap.Characteristic.Download, 'broadband', 'dl'));
       } else {
         if(service.testCharacteristic(this.api.hap.Characteristic.Download)){
           Logger.info('Removing Download characteristic', this.accessory.displayName);
