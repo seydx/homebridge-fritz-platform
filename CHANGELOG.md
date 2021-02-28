@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v5.0.24 - 2020-02-28
+- Fixed broadband
+
+**INFO: ** If you have "Broadband" active you have to deactivate it after the update, restart HB and reactivate "Broadband" !
+
 ## v5.0.23 - 2020-02-28
 - Refactored broadband again
 
