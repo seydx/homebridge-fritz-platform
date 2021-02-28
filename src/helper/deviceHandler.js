@@ -842,18 +842,18 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
          
         try {
         
-          let service = 'urn:dslforum-org:service:WLANConfiguration:1';
+          let serviceId = 'urn:dslforum-org:service:WLANConfiguration:1';
           let prefix = 'NewEnable';
           
           if(accessory.context.config.connection === 'cable'){
-            service = 'urn:dslforum-org:service:WANIPConnection:1';
+            serviceId = 'urn:dslforum-org:service:WANIPConnection:1';
             prefix = 'NewConnectionStatus';
           } else if(accessory.context.config.connection === 'dsl'){
-            service = 'urn:dslforum-org:service:WANPPPConnection:1';
+            serviceId = 'urn:dslforum-org:service:WANPPPConnection:1';
             prefix = 'NewConnectionStatus';
           }
          
-          let data = await fritzbox.exec(service, 'GetInfo');
+          let data = await fritzbox.exec(serviceId, 'GetInfo');
           Logger.debug(data, accessory.displayName);
           
           if(prefix === 'NewEnable'){
@@ -3531,12 +3531,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
       Logger.warn('Device seems to be offline' + ' (' + target + ')', accessory.displayName);
       if(state === 1){
         state = 0;
-      } else if(state === 0) {
-        state = 1;
       } else if(state === true){
         state = false;
-      } else if(state === false) {
-        state = true;
       }
     } else if(err.message && err.message.includes('500')){
       Logger.warn('Could not process the request during ' + mode + ' state' + ' (' + target + ')', accessory.displayName);
