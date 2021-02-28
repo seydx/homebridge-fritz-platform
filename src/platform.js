@@ -470,7 +470,7 @@ function FritzPlatform (log, config, api) {
       timer: config.options.polling && !isNaN(parseInt(config.options.polling.timer)) ? (config.options.polling.timer < 1 ? false : config.options.polling.timer * 1000) : 10000,
       exclude: config.options.polling && config.options.polling.exclude && config.options.polling.exclude.length 
         ?  config.options.polling.exclude
-        :  ['wakeup', 'alarm', 'phoneBook']
+        :  ['wakeup', 'alarm', 'phoneBook', 'broadband']
     };
     this.reboot = {
       on: config.options.reboot && config.options.reboot.on ? config.options.reboot.on : false,
@@ -479,7 +479,7 @@ function FritzPlatform (log, config, api) {
   } else {
     this.polling = {
       timer: 10000,
-      exclude: ['wakeup', 'alarm', 'phoneBook']
+      exclude: ['wakeup', 'alarm', 'phoneBook', 'broadband']
     };
     this.reboot = {
       on: false,
@@ -495,6 +495,9 @@ function FritzPlatform (log, config, api) {
     
   if(!this.polling.exclude.includes('phoneBook'))
     this.polling.exclude.push('phoneBook');
+    
+  if(!this.polling.exclude.includes('broadband'))
+    this.polling.exclude.push('broadband');
   
   if(this.presence.size){
     if(this.presenceOptions){
