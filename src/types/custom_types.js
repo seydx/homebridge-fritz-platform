@@ -222,10 +222,7 @@ module.exports = {
     Characteristic.Download = function() {
       Characteristic.call(this, 'Download', '37574b8e-2d7c-47ee-8b5e-6bfc42f195d9');
       this.setProps({
-        format: Characteristic.Formats.FLOAT,
-        maxValue: 9999,
-        minValue: 0,
-        minStep: 0.1,
+        format: Characteristic.Formats.STRING,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();
@@ -239,10 +236,7 @@ module.exports = {
     Characteristic.Upload = function() {
       Characteristic.call(this, 'Upload', '9b2e94f7-a665-4575-9efd-1b37474d758b');
       this.setProps({
-        format: Characteristic.Formats.FLOAT,
-        maxValue: 9999,
-        minValue: 0,
-        minStep: 0.1,
+        format: Characteristic.Formats.STRING,
         perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
       });
       this.value = this.getDefaultValue();
