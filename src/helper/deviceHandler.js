@@ -1258,11 +1258,18 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             
             }
           
+          } else {
+            
+            Logger.debug(body, accessory.displayName);
+              
+            state = 'undefined';
+            ul = 'undefined';
+            
           }
          
         } catch(err) {
         
-          state = handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
+          handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
         
