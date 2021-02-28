@@ -107,7 +107,7 @@ This Plugin uses modules from others, see [CONTRIBUTING](https://github.com/Seyd
 
 **MIT License**
 
-Copyright (c) 2019-2020 **Seyit Bayraktar**
+Copyright (c) 2019-2021 **Seyit Bayraktar**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
