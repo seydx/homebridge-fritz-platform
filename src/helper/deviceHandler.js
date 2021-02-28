@@ -1103,7 +1103,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           if(body && body.data && body.data.ledSettings)
             state = parseInt(body.data.ledSettings.ledDisplay) === 0 ? true : false;
            
-          //old fw  
+          //old fw
           if(body && body.data && body.data.led_display)
             state = parseInt(body.data.led_display) === 0 ? true : false;
          
@@ -1229,8 +1229,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           
           if(body && body.data){
           
-            if(body.data.internet){
-            
+            if(body.data.internet && body.data.internet.down && body.data.internet.up){
+              
               //state = parseFloat(body.data.internet.down.replace(',', '.').replace( /^\D+/g, ''));
               //ul = parseFloat(body.data.internet.up.replace(',', '.').replace( /^\D+/g, ''));
               
@@ -1239,8 +1239,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               state = body.data.internet.down;
               ul = body.data.internet.up;
             
-            } else if(body.data.dsl){
-            
+            } else if(body.data.dsl && body.data.dsl.down && body.data.dsl.up){
+              
               //state = parseFloat(body.data.dsl.down.replace(',', '.').replace( /^\D+/g, ''));
               //ul = parseFloat(body.data.dsl.up.replace(',', '.').replace( /^\D+/g, ''));
               
@@ -1249,12 +1249,22 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               state = body.data.dsl.down;
               ul = body.data.dsl.up;
             
-            } else {
+            } else if(body.data.docsis && body.data.docsis.down && body.data.docsis.up){
+              
+              //state = parseFloat(body.data.docsis.down.replace(',', '.').replace( /^\D+/g, ''));
+              //ul = parseFloat(body.data.docsis.up.replace(',', '.').replace( /^\D+/g, ''));
+              
+              Logger.debug(body.data.docsis, accessory.displayName);
+              
+              state = body.data.docsis.down;
+              ul = body.data.docsis.up;
             
+            } else {
+              
               Logger.debug(body.data, accessory.displayName);
               
-              state = 'undefined';
-              ul = 'undefined';
+              state = 'unknown';
+              ul = 'unknown';
             
             }
           
@@ -1262,13 +1272,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             
             Logger.debug(body, accessory.displayName);
               
-            state = 'undefined';
-            ul = 'undefined';
+            state = 'unknown';
+            ul = 'unknown';
             
           }
          
         } catch(err) {
-        
+          
           handleError(accessory, state, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
        
         }
@@ -2846,13 +2856,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           switch (device.type) {
             
             case 'router':
-           
+            
               await get(accessory, api.hap.Service.Switch, api.hap.Characteristic.On, device.type);
            
               break;
            
             case 'extra': {
-            
+              
               let characteristic = device.characteristic || api.hap.Characteristic.On;
             
               await get(accessory, api.hap.Service.Switch, characteristic, device.subtype, device.options);
