@@ -602,7 +602,15 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           if(device && device.online && device.thermostat){
           
             currentTemp = device.thermostat.current;
-            targetTemp = device.thermostat.target;
+            targetTemp = device.thermostat.target; 
+
+            /*currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
+              ? currentTemp
+              : device.thermostat.current;
+            
+            targetTemp = (device.thermostat.target === 'on' || device.thermostat.target === 'off')
+              ? targetTemp
+              : device.thermostat.target;*/
             
             if(device.temperature)
               currentTemp = device.temperature.value || currentTemp;
@@ -613,25 +621,56 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
              
             } else {
-             
-              if(currentTemp > targetTemp){
-                 
-                targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL;
-                currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
-                 
-              } else {
-               
-                targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT;
-                currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
-               
+            
+              if(currentTemp && targetTemp){
+              
+                if(targetTemp !== 'on' && currentTemp !== 'on' && currentTemp !== 'off'){
+                
+                  if(currentTemp > targetTemp){
+                     
+                    targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL;
+                    currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
+                     
+                  } else {
+                   
+                    targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT;
+                    currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+                    
+                    let valvePos = Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20));
+                      
+                    accessory
+                      .getService(service)
+                      .getCharacteristic(api.hap.Characteristic.ValvePosition)
+                      .updateValue(valvePos);
+                   
+                  }
+                   
+                  accessory
+                    .getService(service)
+                    .getCharacteristic(api.hap.Characteristic.TargetTemperature)
+                    .updateValue(targetTemp);
+                
+                }
+              
               }
-               
-              accessory
-                .getService(service)
-                .getCharacteristic(api.hap.Characteristic.TargetTemperature)
-                .updateValue(targetTemp);
              
             }
+            
+            if(!isNaN(currentTemp))
+              accessory
+                .getService(service)
+                .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
+                .updateValue(currentTemp);
+              
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
+              .updateValue(currentState);
+        
+            accessory
+              .getService(service)
+              .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
+              .updateValue(targetState);
           
           }
           
@@ -657,30 +696,6 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           handleError(accessory, currentState, target, err, typeof callback === 'function' ? {get: true} : {poll: true});
         
         }
-        
-        let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
-          ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
-          : 0;
-        
-        accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
-          .updateValue(currentState);
-    
-        accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
-          .updateValue(targetState);
-          
-        accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.CurrentTemperature)
-          .updateValue(currentTemp);
-          
-        accessory
-          .getService(service)
-          .getCharacteristic(api.hap.Characteristic.ValvePosition)
-          .updateValue(valvePos);
         
         break;
       
@@ -2197,16 +2212,16 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         try {
         
           let phonesFormData = [];
-          let dayForm;
+          //let dayForm;
           
-          let today = new Date();
+          //let today = new Date();
           let now = moment();
           let hour = now.hour();
           let minute = now.minute();
           let endhour = now.add(12,'h');
           let endminute = '00';
     
-          if(today.getDay() === 6 || today.getDay() === 0){
+          /*if(today.getDay() === 6 || today.getDay() === 0){
             
             dayForm = 'weekend';
          
@@ -2214,7 +2229,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             
             dayForm = 'weekday';
          
-          }
+          }*/
        
           if(config.start && config.end){
           
