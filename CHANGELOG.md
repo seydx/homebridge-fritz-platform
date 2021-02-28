@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v5.0.25 - 2020-02-28
+- Fix [#157](https://github.com/SeydX/homebridge-fritz-platform/issues/157)
+- Fix [#139](https://github.com/SeydX/homebridge-fritz-platform/issues/139)
+
 ## v5.0.24 - 2020-02-28
 - Fixed broadband
 
