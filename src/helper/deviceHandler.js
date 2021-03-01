@@ -2029,13 +2029,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             xhr: '1',
             led_brightness: '2',
             environment_light: '1',
-            led_display: '0',
+            led_display: state ? '0' : '2',
             envLight: '1',
             dimValue: '2',
             ledDisplay: state ? '0': '2',
             apply: '',
             sid: sid,
-            page: 'led'
+            page: 'led',
+            event: '14'
           };
           
           if(accessory.context.config.oldFW){
@@ -2044,7 +2045,8 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               led_display: state ? '0' : '2',
               apply: '',
               sid: sid,
-              page: 'led'
+              page: 'led',
+              event: '14'
             };
           }
          
