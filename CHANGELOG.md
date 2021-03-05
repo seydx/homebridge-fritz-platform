@@ -1,22 +1,22 @@
 # Changelog
 
 
-## v5.0.25 - 2020-02-28
+## v5.0.25 - 2021-02-28
 - Fix [#157](https://github.com/SeydX/homebridge-fritz-platform/issues/157)
 - Fix [#139](https://github.com/SeydX/homebridge-fritz-platform/issues/139)
 
-## v5.0.24 - 2020-02-28
+## v5.0.24 - 2021-02-28
 - Fixed broadband
 
 **INFO: ** If you have "Broadband" active you have to deactivate it after the update, restart HB and reactivate "Broadband" !
 
-## v5.0.23 - 2020-02-28
+## v5.0.23 - 2021-02-28
 - Refactored broadband again
 
-## v5.0.22 - 2020-02-27
+## v5.0.22 - 2021-02-27
 - Refactored broadband
 
-## v5.0.21 - 2020-02-24
+## v5.0.21 - 2021-02-24
 - Bugfixes
 
 ## v5.0.20 - 2020-12-05
