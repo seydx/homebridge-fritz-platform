@@ -24,7 +24,7 @@ class SmarthomeOutletLightbulbAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
     
     let serviceOutlet = this.accessory.getService(this.api.hap.Service.Outlet);
     let serviceLightbulb = this.accessory.getService(this.api.hap.Service.Lightbulb);
@@ -133,6 +133,8 @@ class SmarthomeOutletLightbulbAccessory {
   
     this.historyService = new this.FakeGatoHistoryService('energy', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
+    await timeout(250); //wait for historyService to load
+    
     serviceOutlet.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
       .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
     
@@ -233,8 +235,6 @@ class SmarthomeOutletLightbulbAccessory {
   }
   
   async refreshHistory(serviceOutlet){ 
-    
-    await timeout(5000);
     
     let state = serviceOutlet.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption).value;
     

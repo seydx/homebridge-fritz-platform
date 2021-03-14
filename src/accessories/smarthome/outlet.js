@@ -24,7 +24,7 @@ class SmarthomeOutletAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
     
     let service = this.accessory.getService(this.api.hap.Service.Outlet);
     let serviceOld = this.accessory.getService(this.api.hap.Service.Switch);
@@ -55,6 +55,8 @@ class SmarthomeOutletAccessory {
       service.addCharacteristic(this.api.hap.Characteristic.ResetTotal);
   
     this.historyService = new this.FakeGatoHistoryService('energy', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
+    
+    await timeout(250); //wait for historyService to load
     
     service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
       .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
@@ -142,8 +144,6 @@ class SmarthomeOutletAccessory {
   }
   
   async refreshHistory(service){ 
-    
-    await timeout(5000);
     
     let state = service.getCharacteristic(this.api.hap.Characteristic.CurrentConsumption).value;
     

@@ -24,7 +24,7 @@ class SmarthomeThermostatAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
     
     let service = this.accessory.getService(this.api.hap.Service.Thermostat);
     
@@ -86,6 +86,8 @@ class SmarthomeThermostatAccessory {
     
     this.historyService = new this.FakeGatoHistoryService('thermo', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true}); 
     
+    await timeout(250); //wait for historyService to load
+    
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
 
       service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState)
@@ -129,8 +131,6 @@ class SmarthomeThermostatAccessory {
   }
   
   async refreshHistory(service){ 
-    
-    await timeout(5000);
 
     let currentState = service.getCharacteristic(this.api.hap.Characteristic.CurrentHeatingCoolingState).value;  
     let targetState = service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState).value;  

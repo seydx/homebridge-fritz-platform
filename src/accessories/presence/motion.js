@@ -45,6 +45,8 @@ class PresenceMotionAccessory {
     
     this.historyService = new this.FakeGatoHistoryService('motion', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
     
+    await timeout(250); //wait for historyService to load
+    
     this.accessory.context.lastSeen = false;
     
     if(this.accessory.displayName === 'Anyone' || (this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName)))){
@@ -101,8 +103,6 @@ class PresenceMotionAccessory {
   }
   
   async refreshHistory(service){ 
-    
-    await timeout(5000);
     
     let state = service.getCharacteristic(this.api.hap.Characteristic.MotionDetected).value;
     

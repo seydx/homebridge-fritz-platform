@@ -29,7 +29,7 @@ class CallmonitorContactAccessory {
   // Services
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  getService () {
+  async getService () {
     
     let service = this.accessory.getService(this.api.hap.Service.ContactSensor);
     
@@ -84,6 +84,8 @@ class CallmonitorContactAccessory {
       });
     
     this.historyService = new this.FakeGatoHistoryService('door', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true});
+    
+    await timeout(250); //wait for historyService to load
     
     service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
       .on('change', value => {
@@ -348,8 +350,6 @@ class CallmonitorContactAccessory {
   }
   
   async refreshHistory(service){ 
-    
-    await timeout(5000);
     
     let state = service.getCharacteristic(this.api.hap.Characteristic.ContactSensorState).value;
     
