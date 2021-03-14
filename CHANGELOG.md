@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v5.0.26 - 2021-03-14
+- Fixed characteristic warnings from eve characteristics (fakegato)
+- Bump dependencies
+
 ## v5.0.25 - 2021-02-28
 - Fix [#157](https://github.com/SeydX/homebridge-fritz-platform/issues/157)
 - Fix [#139](https://github.com/SeydX/homebridge-fritz-platform/issues/139)
