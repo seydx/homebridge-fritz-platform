@@ -13,6 +13,11 @@
 
 **Creating and maintaining Homebridge plugins consume a lot of time and effort, if you would like to share your appreciation, feel free to "Star" or donate.** [Click here](https://github.com/SeydX) to review more of my plugins.
 
+[Click here](https://github.com/SeydX) to review more of my plugins.
+
+
+## Info
+
 This plugin allows almost full control of **AVM** hardware like:
 
 - **Fritz!Box**
