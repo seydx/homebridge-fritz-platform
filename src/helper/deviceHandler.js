@@ -580,10 +580,10 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
       
       case 'smarthome-thermostat': {
       
-        let currentState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;
-        let targetState = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;
-        let currentTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
-        let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
+        let active = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.Active).value;
+        let currentState = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.CurrentHeaterCoolerState).value;
+        let currentTemp = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value;
+        let targetTemp = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.HeatingThresholdTemperature).value;
         
         try {
         
@@ -617,24 +617,19 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
              
             if(targetTemp === 'off'){
              
-              currentState = api.hap.Characteristic.CurrentHeatingCoolingState.OFF;
-              targetState = api.hap.Characteristic.TargetHeatingCoolingState.OFF;
+              active = api.hap.Characteristic.Active.INACTIVE;
+              currentState = api.hap.Characteristic.CurrentHeaterCoolerState.INACTIVE;
              
             } else {
+            
+              active = api.hap.Characteristic.Active.ACTIVE;
+              currentState = api.hap.Characteristic.CurrentHeaterCoolerState.HEATING;
             
               if(currentTemp && targetTemp){
               
                 if(targetTemp !== 'on' && currentTemp !== 'on' && currentTemp !== 'off'){
                 
-                  if(currentTemp > targetTemp){
-                     
-                    targetState = api.hap.Characteristic.TargetHeatingCoolingState.COOL;
-                    currentState = api.hap.Characteristic.CurrentHeatingCoolingState.COOL;
-                     
-                  } else {
-                   
-                    targetState = api.hap.Characteristic.TargetHeatingCoolingState.HEAT;
-                    currentState = api.hap.Characteristic.CurrentHeatingCoolingState.HEAT;
+                  if(currentTemp < targetTemp){
                     
                     let valvePos = Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20));
                       
@@ -647,7 +642,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                    
                   accessory
                     .getService(service)
-                    .getCharacteristic(api.hap.Characteristic.TargetTemperature)
+                    .getCharacteristic(api.hap.Characteristic.HeatingThresholdTemperature)
                     .updateValue(targetTemp);
                 
                 }
@@ -664,13 +659,13 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
               
             accessory
               .getService(service)
-              .getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState)
-              .updateValue(currentState);
-        
+              .getCharacteristic(api.hap.Characteristic.Active)
+              .updateValue(active);
+              
             accessory
               .getService(service)
-              .getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState)
-              .updateValue(targetState);
+              .getCharacteristic(api.hap.Characteristic.CurrentHeaterCoolerState)
+              .updateValue(currentState);
           
           }
           
@@ -1642,12 +1637,12 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
           
             } else {
            
-              let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.TargetTemperature).value;
+              let targetTemp = accessory.getService(service).getCharacteristic(api.hap.Characteristic.HeatingThresholdTemperature).value;
               
               let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
               
               cmd = state ? 'sethkrtsoll&param=' + temp : 'sethkrtsoll&param=253';
-              text = (state ? (state === 1 ? 'HEAT' : 'COOL' ) : 'OFF') + ' (' + target + ')';
+              text = state ? 'ON' : 'OFF';
               
               await aha.request( masterDevice.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               Logger.info(text + ' (' + target + ')', accessory.displayName);
@@ -2702,12 +2697,11 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
         
         case 'smarthome-thermostat': {
         
-          let currentState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentHeatingCoolingState).value;  
-          let targetState = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetHeatingCoolingState).value;  
-          let currentTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
-          let targetTemp = accessory.getService(api.hap.Service.Thermostat).getCharacteristic(api.hap.Characteristic.TargetTemperature).value; 
+          let currentState = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.CurrentHeaterCoolerState).value;  
+          let currentTemp = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.CurrentTemperature).value; 
+          let targetTemp = accessory.getService(api.hap.Service.HeaterCooler).getCharacteristic(api.hap.Characteristic.HeatingThresholdTemperature).value; 
             
-          let valvePos = currentTemp <= targetTemp && currentState !== api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== api.hap.Characteristic.TargetHeatingCoolingState.OFF
+          let valvePos = currentTemp <= targetTemp && currentState !== 0
             ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
             : 0;
             
@@ -3349,7 +3343,7 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                   break;                                                                                                 
                   
                 case 'smarthome-thermostat':
-                  await get(accessory, api.hap.Service.Thermostat, false, device.subtype);
+                  await get(accessory, api.hap.Service.HeaterCooler, false, device.subtype);
                   break;
                   
                 case 'smarthome-window':

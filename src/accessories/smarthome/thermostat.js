@@ -26,11 +26,17 @@ class SmarthomeThermostatAccessory {
 
   async getService () {
     
-    let service = this.accessory.getService(this.api.hap.Service.Thermostat);
+    let service = this.accessory.getService(this.api.hap.Service.HeaterCooler);
+    let serviceOld = this.accessory.getService(this.api.hap.Service.Thermostat);
+    
+    if(serviceOld){
+      Logger.info('Removing Thermostat service', this.accessory.displayName);
+      service = this.accessory.removeService(serviceOld);
+    }
     
     if(!service){
-      Logger.info('Adding Thermostat service', this.accessory.displayName);
-      service = this.accessory.addService(this.api.hap.Service.Thermostat, this.accessory.displayName, this.accessory.context.config.subtype);
+      Logger.info('Adding HeaterCooler service', this.accessory.displayName);
+      service = this.accessory.addService(this.api.hap.Service.HeaterCooler, this.accessory.displayName, this.accessory.context.config.subtype);
     }
     
     if(this.accessory.context.config.battery){
@@ -52,37 +58,56 @@ class SmarthomeThermostatAccessory {
     
     }
     
-    service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState)
+    if (!service.testCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature))
+      service.addCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature);
+
+    if(service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState).value > 2)
+      service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
+        .updateValue(2);
+
+    service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
       .setProps({
-        maxValue: 2
+        maxValue: 2,      
+        minValue: 0,        
+        validValues: [0, 1, 2]
+      });
+    
+    service.getCharacteristic(this.api.hap.Characteristic.TargetHeaterCoolerState)
+      .updateValue(1);
+
+    service.getCharacteristic(this.api.hap.Characteristic.TargetHeaterCoolerState)
+      .setProps({
+        maxValue: 1,
+        minValue: 1,        
+        validValues: [1]
       });
       
+    let minValue = 8;
+    let maxValue = 28;
+    
+    service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+      .setProps({
+        minValue: 8,
+        maxValue: 28,
+        minStep: 0.5
+      });
+    
+    if (service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value < minValue)
+      service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+        .updateValue(minValue);
+        
+    if (service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value > maxValue)
+      service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+        .updateValue(maxValue);
+    
     service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
       .setProps({
         minValue: -100,
         maxValue: 100
       });
       
-    service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature)
-      .setProps({
-        minValue: 8,
-        maxValue: 28,
-        minStep: 0.5
-      });
-      
-    service.getCharacteristic(this.api.hap.Characteristic.TemperatureDisplayUnits)
-      .setProps({
-        maxValue: 1
-      });
-      
     if (!service.testCharacteristic(this.api.hap.Characteristic.ValvePosition))
       service.addCharacteristic(this.api.hap.Characteristic.ValvePosition);
-      
-    /*if (!service.testCharacteristic(this.api.hap.Characteristic.ProgramCommand))
-      service.addCharacteristic(this.api.hap.Characteristic.ProgramCommand);
-      
-    if (!service.testCharacteristic(this.api.hap.Characteristic.ProgramData))
-      service.addCharacteristic(this.api.hap.Characteristic.ProgramData);*/
     
     this.historyService = new this.FakeGatoHistoryService('thermo', this.accessory, {storage:'fs', path: this.api.user.storagePath() + '/fritzbox/', disableTimer:true}); 
     
@@ -90,14 +115,14 @@ class SmarthomeThermostatAccessory {
     
     if(this.accessory.context.polling.timer && (!this.accessory.context.polling.exclude.includes(this.accessory.context.config.type) && !this.accessory.context.polling.exclude.includes(this.accessory.context.config.subtype) && !this.accessory.context.polling.exclude.includes(this.accessory.displayName))){
 
-      service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState)
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetHeatingCoolingState, 'smarthome-thermostat', 'state'));
+      service.getCharacteristic(this.api.hap.Characteristic.Active)
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, this.api.hap.Characteristic.Active, 'smarthome-thermostat', 'state'));
         
       service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
 
-      service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature)
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetTemperature, 'smarthome-thermostat', 'temperature'))
+      service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, this.api.hap.Characteristic.HeatingThresholdTemperature, 'smarthome-thermostat', 'temperature'))
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
         
       service.getCharacteristic(this.api.hap.Characteristic.ValvePosition)
@@ -106,19 +131,15 @@ class SmarthomeThermostatAccessory {
     } else {
  
       service.getCharacteristic(this.api.hap.Characteristic.CurrentHeatingCoolingState)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Thermostat, false, this.accessory.context.config.subtype, false));
-        
-      service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Thermostat, false, this.accessory.context.config.subtype, false))
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetHeatingCoolingState, 'smarthome-thermostat', 'state'));
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, false, this.accessory.context.config.subtype, false));
         
       service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Thermostat, false, this.accessory.context.config.subtype, false))
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, false, this.accessory.context.config.subtype, false))
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
         
-      service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature)
-        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.Thermostat, false, this.accessory.context.config.subtype, false))
-        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.Thermostat, this.api.hap.Characteristic.TargetTemperature, 'smarthome-thermostat', 'temperature'))
+      service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, false, this.accessory.context.config.subtype, false))
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, this.api.hap.Characteristic.HeatingThresholdTemperature, 'smarthome-thermostat', 'temperature'))
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
         
       service.getCharacteristic(this.api.hap.Characteristic.ValvePosition)
@@ -132,12 +153,11 @@ class SmarthomeThermostatAccessory {
   
   async refreshHistory(service){ 
 
-    let currentState = service.getCharacteristic(this.api.hap.Characteristic.CurrentHeatingCoolingState).value;  
-    let targetState = service.getCharacteristic(this.api.hap.Characteristic.TargetHeatingCoolingState).value;  
+    let currentState = service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState).value;  
     let currentTemp = service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature).value; 
-    let targetTemp = service.getCharacteristic(this.api.hap.Characteristic.TargetTemperature).value; 
+    let targetTemp = service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value; 
       
-    let valvePos = currentTemp <= targetTemp && currentState !== this.api.hap.Characteristic.CurrentHeatingCoolingState.OFF && targetState !== this.api.hap.Characteristic.TargetHeatingCoolingState.OFF
+    let valvePos = currentTemp <= targetTemp && currentState !== 0
       ? Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20))
       : 0;
       
