@@ -623,13 +623,14 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
             } else {
             
               active = api.hap.Characteristic.Active.ACTIVE;
-              currentState = api.hap.Characteristic.CurrentHeaterCoolerState.HEATING;
             
               if(currentTemp && targetTemp){
               
                 if(targetTemp !== 'on' && currentTemp !== 'on' && currentTemp !== 'off'){
                 
                   if(currentTemp < targetTemp){
+                  
+                    currentState = api.hap.Characteristic.CurrentHeaterCoolerState.HEATING;
                     
                     let valvePos = Math.round(((targetTemp - currentTemp) >= 5 ? 100 : (targetTemp - currentTemp) * 20));
                       
@@ -638,11 +639,20 @@ module.exports = (api, masterDevice, devices, presence, smarthome, configPath, T
                       .getCharacteristic(api.hap.Characteristic.ValvePosition)
                       .updateValue(valvePos);
                    
+                  } else {
+                  
+                    currentState = api.hap.Characteristic.CurrentHeaterCoolerState.COOLING;
+                  
                   }
                    
                   accessory
                     .getService(service)
                     .getCharacteristic(api.hap.Characteristic.HeatingThresholdTemperature)
+                    .updateValue(targetTemp);
+                    
+                  accessory
+                    .getService(service)
+                    .getCharacteristic(api.hap.Characteristic.CoolingThresholdTemperature)
                     .updateValue(targetTemp);
                 
                 }
