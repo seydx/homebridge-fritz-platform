@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.30 - 2021-03-16
+- Changed Smarthome Thermostat Service to HeaterCooler Service
+
 ## v5.0.26 - 2021-03-14
 - Fixed characteristic warnings from eve characteristics (fakegato)
 - Bump dependencies
