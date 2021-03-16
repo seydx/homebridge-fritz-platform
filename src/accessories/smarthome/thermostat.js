@@ -58,18 +58,11 @@ class SmarthomeThermostatAccessory {
     
     }
     
-    if (!service.testCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature))
-      service.addCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature);
-
-    if(service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState).value > 2)
-      service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
-        .updateValue(2);
-
     service.getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
       .setProps({
-        maxValue: 2,      
+        maxValue: 3,
         minValue: 0,        
-        validValues: [0, 1, 2]
+        validValues: [0, 1, 2, 3]
       });
     
     service.getCharacteristic(this.api.hap.Characteristic.TargetHeaterCoolerState)
@@ -85,12 +78,26 @@ class SmarthomeThermostatAccessory {
     let minValue = 8;
     let maxValue = 28;
     
-    service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+    if (!service.testCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature))
+      service.addCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature);
+    
+    if (service.getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature).value < minValue)
+      service.getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
+        .updateValue(minValue);
+        
+    if (service.getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature).value > maxValue)
+      service.getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
+        .updateValue(maxValue);
+    
+    service.getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
       .setProps({
-        minValue: 8,
-        maxValue: 28,
+        minValue: minValue,
+        maxValue: maxValue,
         minStep: 0.5
       });
+    
+    if (!service.testCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature))
+      service.addCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature);
     
     if (service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value < minValue)
       service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
@@ -99,6 +106,13 @@ class SmarthomeThermostatAccessory {
     if (service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value > maxValue)
       service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
         .updateValue(maxValue);
+    
+    service.getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+      .setProps({
+        minValue: minValue,
+        maxValue: maxValue,
+        minStep: 0.5
+      });
     
     service.getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
       .setProps({
