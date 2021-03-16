@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.31 - 2021-03-16
+- Added "cooling" state to HeaterCooler
+
 ## v5.0.30 - 2021-03-16
 - Changed Smarthome Thermostat Service to HeaterCooler Service
 
