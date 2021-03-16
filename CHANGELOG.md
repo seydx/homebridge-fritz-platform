@@ -4,6 +4,10 @@
 ## v5.0.30 - 2021-03-16
 - Changed Smarthome Thermostat Service to HeaterCooler Service
 
+**WARNING**
+
+This change will break your automations with your smarthome thermostats because they will be removed from HomeKit and re added again as a new type of thermostats!
+
 ## v5.0.26 - 2021-03-14
 - Fixed characteristic warnings from eve characteristics (fakegato)
 - Bump dependencies
