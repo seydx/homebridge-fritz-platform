@@ -10,8 +10,12 @@
       "url": "https://paypal.me/seydx"
     },
     {
+      "type": "kofi",
+      "url": "https://ko-fi.com/seydx"
+    },
+    {
       "type": "github",
-      "url": "https://github.com/SeydX"
+      "url": "https://github.com/sponsors/seydx"
     }
   ],
   "repository": {
