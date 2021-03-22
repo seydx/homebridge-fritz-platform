@@ -143,6 +143,10 @@ class SmarthomeThermostatAccessory {
         .on('change', this.handler.change.bind(this, this.accessory, this.accessory.context.config.subtype, this.accessory.displayName, this.historyService));
  
     } else {
+    
+      service.getCharacteristic(this.api.hap.Characteristic.Active)
+        .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, false, this.accessory.context.config.subtype, false))
+        .on('set', this.handler.set.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, this.api.hap.Characteristic.Active, 'smarthome-thermostat', 'state'));
  
       service.getCharacteristic(this.api.hap.Characteristic.CurrentHeatingCoolingState)
         .on('get', this.handler.get.bind(this, this.accessory, this.api.hap.Service.HeaterCooler, false, this.accessory.context.config.subtype, false));
