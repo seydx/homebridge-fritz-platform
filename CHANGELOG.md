@@ -1,6 +1,9 @@
 # Changelog
 
 
+## v5.0.32 - 2021-03-22
+- Bugfix
+
 ## v5.0.31 - 2021-03-16
 - Added "cooling" state to HeaterCooler
 
