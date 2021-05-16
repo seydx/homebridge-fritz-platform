@@ -1,6 +1,7 @@
 const assert = require('assert');
 
-const lookupTable = new Map([ // <MIRED, [SATURATION, HUE]>
+const lookupTable = new Map([
+  // <MIRED, [SATURATION, HUE]>
   [100, [19, 222.1]],
   [101, [18.7, 222.2]],
   [102, [18.4, 222.3]],
@@ -405,17 +406,15 @@ const lookupTable = new Map([ // <MIRED, [SATURATION, HUE]>
 ]);
 
 module.exports = {
-
-  colorTemperatureToHueAndSaturation: function(colorTemperature, roundResults){
-  
+  colorTemperatureToHueAndSaturation: function (colorTemperature, roundResults) {
     roundResults = true;
-    
+
     if (colorTemperature > 500) {
       colorTemperature = 500;
     } else if (colorTemperature < 100) {
       colorTemperature = 100;
     }
-    
+
     colorTemperature = Math.round(colorTemperature); // ensure integer
     const hueAndTemperature = lookupTable.get(colorTemperature);
     assert(colorTemperature != undefined, 'lookup for temperature ' + colorTemperature + ' did not yield any results');
@@ -423,12 +422,10 @@ module.exports = {
       hueAndTemperature[0] = Math.round(hueAndTemperature[0]);
       hueAndTemperature[1] = Math.round(hueAndTemperature[1]);
     }
-  
+
     return {
       saturation: hueAndTemperature[0],
-      hue: hueAndTemperature[1]
+      hue: hueAndTemperature[1],
     };
-  
-  }
-
+  },
 };

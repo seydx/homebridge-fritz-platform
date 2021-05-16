@@ -9,13 +9,13 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // ResetTotal
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.ResetTotal = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.ResetTotal = function () {
       Characteristic.call(this, 'Reset Total', 'E863F112-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT32,
         unit: Characteristic.Units.SECONDS,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -24,12 +24,12 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // HistoryStatus
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.HistoryStatus = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.HistoryStatus = function () {
       Characteristic.call(this, 'History Status', 'E863F116-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -38,12 +38,12 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // HistoryEntries
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.HistoryEntries = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.HistoryEntries = function () {
       Characteristic.call(this, 'History Entries', 'E863F117-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -52,12 +52,12 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // HistoryRequest
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.HistoryRequest = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.HistoryRequest = function () {
       Characteristic.call(this, 'History Request', 'E863F11C-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -66,12 +66,12 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // SetTime
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.SetTime = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.SetTime = function () {
       Characteristic.call(this, 'Set Time', 'E863F121-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -80,13 +80,13 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // LastActivation
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.LastActivation = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.LastActivation = function () {
       Characteristic.call(this, 'Last Activation', 'E863F11A-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT32,
         unit: Characteristic.Units.SECONDS,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
@@ -95,12 +95,12 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // TimesOpened
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.TimesOpened = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.TimesOpened = function () {
       Characteristic.call(this, 'Times Opened', 'E863F129-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT32,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
@@ -109,13 +109,13 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // OpenDuration
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.OpenDuration = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.OpenDuration = function () {
       Characteristic.call(this, 'Open Duration', 'E863F118-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT32,
         unit: Characteristic.Units.SECONDS,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
@@ -124,73 +124,73 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // ClosedDuration
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.ClosedDuration = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.ClosedDuration = function () {
       Characteristic.call(this, 'Closed Duration', 'E863F119-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT32,
         unit: Characteristic.Units.SECONDS,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY, Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.ClosedDuration, Characteristic);
     Characteristic.ClosedDuration.UUID = 'E863F119-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // CurrentConsumption
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.CurrentConsumption = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.CurrentConsumption = function () {
       Characteristic.call(this, 'Current Consumption', 'E863F10D-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.FLOAT,
         unit: 'W',
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.CurrentConsumption, Characteristic);
     Characteristic.CurrentConsumption.UUID = 'E863F10D-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // TotalConsumption
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.TotalConsumption = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.TotalConsumption = function () {
       Characteristic.call(this, 'Total Consumption', 'E863F10C-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.FLOAT,
         unit: 'kWh',
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.TotalConsumption, Characteristic);
     Characteristic.TotalConsumption.UUID = 'E863F10C-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // Volts
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.Volts = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.Volts = function () {
       Characteristic.call(this, 'Volts', 'E863F10A-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.FLOAT,
         unit: 'V',
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.Volts, Characteristic);
     Characteristic.Volts.UUID = 'E863F10A-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // Amperes
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.Amperes = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.Amperes = function () {
       Characteristic.call(this, 'Amperes', 'E863F126-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.FLOAT,
         unit: 'A',
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
@@ -199,41 +199,41 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // ValvePosition
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.ValvePosition = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.ValvePosition = function () {
       Characteristic.call(this, 'Valve Position', 'E863F12E-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.UINT8,
         unit: Characteristic.Units.PERCENTAGE,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.ValvePosition, Characteristic);
     Characteristic.ValvePosition.UUID = 'E863F12E-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // ProgramCommand
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.ProgramCommand = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.ProgramCommand = function () {
       Characteristic.call(this, 'Program Command', 'E863F12C-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.WRITE]
+        perms: [Characteristic.Perms.WRITE],
       });
       this.value = this.getDefaultValue();
     };
     inherits(Characteristic.ProgramCommand, Characteristic);
     Characteristic.ProgramCommand.UUID = 'E863F12C-079E-48FF-8F27-9C2605A29F52';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // ProgramData
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Characteristic.ProgramData = function() {
+    /// /////////////////////////////////////////////////////////////////////////
+    Characteristic.ProgramData = function () {
       Characteristic.call(this, 'Program Data', 'E863F12F-079E-48FF-8F27-9C2605A29F52');
       this.setProps({
         format: Characteristic.Formats.DATA,
-        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY]
+        perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
       });
       this.value = this.getDefaultValue();
     };
@@ -242,10 +242,10 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // Outlet
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Service.Outlet = function(displayName, subtype) {
+    /// /////////////////////////////////////////////////////////////////////////
+    Service.Outlet = function (displayName, subtype) {
       Service.call(this, displayName, '00000047-0000-1000-8000-0026BB765291', subtype);
-      
+
       // Required Characteristics
       this.addCharacteristic(Characteristic.On);
       this.addCharacteristic(Characteristic.OutletInUse);
@@ -258,15 +258,14 @@ module.exports = {
 
       // Optional Characteristics
       this.addOptionalCharacteristic(Characteristic.Name);
-    
     };
     inherits(Service.Outlet, Service);
     Service.Outlet.UUID = '00000047-0000-1000-8000-0026BB765291';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // Thermostat
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Service.Thermostat = function(displayName, subtype) {
+    /// /////////////////////////////////////////////////////////////////////////
+    Service.Thermostat = function (displayName, subtype) {
       Service.call(this, displayName, '0000004A-0000-1000-8000-0026BB765291', subtype);
       // Required Characteristics
       this.addCharacteristic(Characteristic.CurrentHeatingCoolingState);
@@ -292,8 +291,8 @@ module.exports = {
 
     /// /////////////////////////////////////////////////////////////////////////
     // ContactSensor
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Service.ContactSensor = function(displayName, subtype) {
+    /// /////////////////////////////////////////////////////////////////////////
+    Service.ContactSensor = function (displayName, subtype) {
       Service.call(this, displayName, '00000080-0000-1000-8000-0026BB765291', subtype);
       // Required Characteristics
       this.addCharacteristic(Characteristic.ContactSensorState);
@@ -313,11 +312,11 @@ module.exports = {
     };
     inherits(Service.ContactSensor, Service);
     Service.ContactSensor.UUID = '00000080-0000-1000-8000-0026BB765291';
-    
+
     /// /////////////////////////////////////////////////////////////////////////
     // MotionSensor
-    /// ///////////////////////////////////////////////////////////////////////// 
-    Service.MotionSensor = function(displayName, subtype) {
+    /// /////////////////////////////////////////////////////////////////////////
+    Service.MotionSensor = function (displayName, subtype) {
       Service.call(this, displayName, '00000085-0000-1000-8000-0026BB765291', subtype);
       // Required Characteristics
       this.addCharacteristic(Characteristic.MotionDetected);
@@ -334,6 +333,5 @@ module.exports = {
     };
     inherits(Service.MotionSensor, Service);
     Service.MotionSensor.UUID = '00000085-0000-1000-8000-0026BB765291';
-
-  }
+  },
 };

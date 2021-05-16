@@ -5,61 +5,50 @@ const querystring = require('querystring');
 const cheerio = require('cheerio');
 
 module.exports = {
-
-  request: async function(formData, host, path, target, exec){
-  
+  request: async function (formData, host, path, target, exec) {
     let url = 'http://' + host + path + '?sid=' + formData.sid;
-    
-    try {    
-        
-      let post = await axios.post(url, querystring.stringify(formData), { headers: { 'Content-Type': 'application/x-www-form-urlencoded'}});
-      
-      if(target && !exec)
-        return this.parseOutput(post.data, target);
-        
+
+    try {
+      let post = await axios.post(url, querystring.stringify(formData), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+
+      if (target && !exec) return this.parseOutput(post.data, target);
+
       return post.data;
-    
-    } catch(error) {
-      
+    } catch (error) {
       let err;
-    
+
       if (error.response) {
         err = {
           name: target,
           status: error.response.status,
           text: error.response.statusText,
-          message: error.response.data !== '' ? error.response.data : error.response.statusText
+          message: error.response.data !== '' ? error.response.data : error.response.statusText,
         };
       } else if (error.request) {
         err = {
           name: target,
           code: error.code,
-          message: error.message
+          message: error.message,
         };
       } else {
         err = {
           name: target,
-          message: error.message
+          message: error.message,
         };
       }
-      
+
       throw err;
-    
     }
-  
   },
-  
-  parseOutput: async function(data, target){
-    
+
+  parseOutput: async function (data, target) {
     let $ = cheerio.load(data);
     let elements = $('input').toArray();
-    
-    for(const el of elements)
-      if(el.attribs.name === target)
-        return el.attribs;
-    
-    return false;
-  
-  }
 
+    for (const el of elements) if (el.attribs.name === target) return el.attribs;
+
+    return false;
+  },
 };

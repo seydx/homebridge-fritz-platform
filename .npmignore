@@ -29,18 +29,17 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
+# Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
 # Dependency directories
 node_modules/
 jspm_packages/
 
-# TypeScript v1 declaration files
-typings/
-
 # Optional npm cache directory
 .npm
+package-lock.json
+yarn.lock
 
 # Optional eslint cache
 .eslintcache
@@ -55,5 +54,13 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
-
+.envtest/
+.github
+.vscode
+demo
+images
+example-config.json
+.prettierrc.json
+.eslintrc.js
+docs
+cmd
