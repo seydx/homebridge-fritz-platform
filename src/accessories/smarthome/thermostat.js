@@ -153,6 +153,30 @@ class SmarthomeThermostatAccessory {
         );
 
       service
+        .getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
+        .on(
+          'set',
+          this.handler.set.bind(
+            this,
+            this.accessory,
+            this.api.hap.Service.HeaterCooler,
+            this.api.hap.Characteristic.CoolingThresholdTemperature,
+            'smarthome-thermostat',
+            'temperature'
+          )
+        )
+        .on(
+          'change',
+          this.handler.change.bind(
+            this,
+            this.accessory,
+            this.accessory.context.config.subtype,
+            this.accessory.displayName,
+            this.historyService
+          )
+        );
+
+      service
         .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
         .on(
           'set',
@@ -239,6 +263,41 @@ class SmarthomeThermostatAccessory {
             false,
             this.accessory.context.config.subtype,
             false
+          )
+        )
+        .on(
+          'change',
+          this.handler.change.bind(
+            this,
+            this.accessory,
+            this.accessory.context.config.subtype,
+            this.accessory.displayName,
+            this.historyService
+          )
+        );
+
+      service
+        .getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
+        .on(
+          'get',
+          this.handler.get.bind(
+            this,
+            this.accessory,
+            this.api.hap.Service.HeaterCooler,
+            false,
+            this.accessory.context.config.subtype,
+            false
+          )
+        )
+        .on(
+          'set',
+          this.handler.set.bind(
+            this,
+            this.accessory,
+            this.api.hap.Service.HeaterCooler,
+            this.api.hap.Characteristic.CoolingThresholdTemperature,
+            'smarthome-thermostat',
+            'temperature'
           )
         )
         .on(

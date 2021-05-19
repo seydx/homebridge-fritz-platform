@@ -1,5 +1,9 @@
 # Changelog
 
+## v5.0.33 - 2021-05-19
+- Fixed an issue where changing temperature from thermostat was not possible with Siri
+- Bump dependencies
+- Minor bugfixes and improvements
 
 ## v5.0.32 - 2021-03-22
 - Bugfix
