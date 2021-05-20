@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## v5.1.0 - 2021-05-20
 - Refactored backend module `@seydx/fritzbox`
 - Some minor improvements and bugfixes
 - Bump dependencies
