@@ -3,7 +3,7 @@
 const Logger = require('./helper/logger.js');
 const packageFile = require('../package.json');
 
-const { Fritzbox } = require('@seydx/fritzbox');
+const Fritzbox = require('@seydx/fritzbox');
 const fs = require('fs-extra');
 
 const Telegram = require('./helper/telegram');

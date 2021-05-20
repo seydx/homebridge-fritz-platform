@@ -1,5 +1,10 @@
 # Changelog
 
+## NEXT
+- Refactored backend module `@seydx/fritzbox`
+- Some minor improvements and bugfixes
+- Bump dependencies
+
 ## v5.0.33 - 2021-05-19
 - Fixed an issue where changing temperature from thermostat was not possible with Siri
 - Bump dependencies

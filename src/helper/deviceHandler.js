@@ -10,7 +10,7 @@ const fs = require('fs-extra');
 const moment = require('moment');
 const ping = require('ping');
 
-const { requestXml } = require('@seydx/fritzbox/dist/lib/request');
+const { requestXml } = require('@seydx/fritzbox/lib/request');
 
 let hostList, smarthomeList, smarthomeGroupList;
 
@@ -1998,7 +1998,7 @@ module.exports = (
               let bookName = data.NewPhonebookName;
               let uri = data.NewPhonebookURL;
 
-              let book = await requestXml({ uri, rejectUnauthorized: false });
+              let book = await requestXml(uri, { https: { rejectUnauthorized: false } });
 
               let contacts = book.phonebooks.phonebook.contact;
 
@@ -2462,7 +2462,7 @@ module.exports = (
           (ssl ? '49443' : '49000') +
           data['NewX_AVM-DE_HostListPath'];
 
-        const hosts = await requestXml({ uri, rejectUnauthorized: false });
+        const hosts = await requestXml(uri, { https: { rejectUnauthorized: false } });
 
         hostList = hosts.List.Item;
         //Logger.debug(hostList, 'Hosts')
@@ -2518,7 +2518,7 @@ module.exports = (
           '/webservices/homeautoswitch.lua?switchcmd=getdevicelistinfos&sid=' +
           sid;
 
-        let smarthomes = await requestXml({ uri, rejectUnauthorized: false });
+        let smarthomes = await requestXml(uri, { https: { rejectUnauthorized: false } });
         let deviceList = smarthomes.devicelist.device;
         let groupList = smarthomes.devicelist.group;
 
