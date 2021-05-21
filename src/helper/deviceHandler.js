@@ -661,7 +661,7 @@ module.exports = (
           let user = hostList ? hostList.find((user) => user[target] === accessory.context.config.address) : false;
 
           if (!user) {
-            user = await fritzbox.exec('urn:dslforum-org:service:Hosts:1', service, input);
+            user = await fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
             active = 'NewActive';
           }
 
@@ -766,14 +766,14 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let serviceId = 'urn:dslforum-org:service:WLANConfiguration:1';
+          let serviceId = 'urn:WLANConfiguration-com:serviceId:WLANConfiguration1';
           let prefix = 'NewEnable';
 
           if (accessory.context.config.connection === 'cable') {
-            serviceId = 'urn:dslforum-org:service:WANIPConnection:1';
+            serviceId = 'urn:WANIPConnection-com:serviceId:WANIPConnection1';
             prefix = 'NewConnectionStatus';
           } else if (accessory.context.config.connection === 'dsl') {
-            serviceId = 'urn:dslforum-org:service:WANPPPConnection:1';
+            serviceId = 'urn:WANPPPConnection-com:serviceId:WANPPPConnection1';
             prefix = 'NewConnectionStatus';
           }
 
@@ -818,7 +818,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'GetInfo');
+          let data = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'GetInfo');
           Logger.debug(data, accessory.displayName);
           state = parseInt(data.NewEnable) ? true : false;
         } catch (err) {
@@ -840,7 +840,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:2', 'GetInfo');
+          let data = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration2', 'GetInfo');
           Logger.debug(data, accessory.displayName);
           state = parseInt(data.NewEnable) ? true : false;
         } catch (err) {
@@ -862,7 +862,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:3', 'GetInfo');
+          let data = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration3', 'GetInfo');
           Logger.debug(data, accessory.displayName);
           state = parseInt(data.NewEnable) ? true : false;
         } catch (err) {
@@ -884,7 +884,10 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'X_AVM-DE_GetWPSInfo');
+          let data = await fritzbox.exec(
+            'urn:WLANConfiguration-com:serviceId:WLANConfiguration1',
+            'X_AVM-DE_GetWPSInfo'
+          );
           Logger.debug(data, accessory.displayName);
           state = data['NewX_AVM-DE_WPSStatus'] === 'off' ? false : true;
         } catch (err) {
@@ -906,7 +909,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceInfo-com:serviceId:DeviceInfo1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let body = await lua.request(
@@ -943,7 +946,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_TAM:1', 'GetInfo', { NewIndex: '0' });
+          let data = await fritzbox.exec('urn:X_AVM-DE_TAM-com:serviceId:X_AVM-DE_TAM1', 'GetInfo', { NewIndex: '0' });
           Logger.debug(data, accessory.displayName);
           state = parseInt(data.NewEnable) ? true : false;
         } catch (err) {
@@ -965,13 +968,13 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetNumberOfDeflections');
+          let data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetNumberOfDeflections');
           Logger.debug(data, accessory.displayName);
 
           let amount = parseInt(data.NewNumberOfDeflections);
 
           if (amount) {
-            data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetDeflection', {
+            data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetDeflection', {
               NewDeflectionId: '0',
             });
             Logger.debug(data, accessory.displayName);
@@ -998,7 +1001,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let body = await lua.request(
@@ -1038,7 +1041,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let body = await lua.request(
@@ -1075,7 +1078,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let phonesFormData = [];
@@ -1125,7 +1128,7 @@ module.exports = (
         let ul;
 
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let body = await lua.request(
@@ -1216,7 +1219,7 @@ module.exports = (
 
         try {
           let data = await masterDevice.fritzbox.exec(
-            'urn:dslforum-org:service:DeviceConfig:1',
+            'urn:DeviceConfig-com:serviceId:DeviceConfig1',
             'X_AVM-DE_CreateUrlSID'
           );
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
@@ -1305,7 +1308,7 @@ module.exports = (
 
         try {
           let data = await masterDevice.fritzbox.exec(
-            'urn:dslforum-org:service:DeviceConfig:1',
+            'urn:DeviceConfig-com:serviceId:DeviceConfig1',
             'X_AVM-DE_CreateUrlSID'
           );
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
@@ -1390,7 +1393,7 @@ module.exports = (
       case 'smarthome-switch': {
         try {
           let data = await masterDevice.fritzbox.exec(
-            'urn:dslforum-org:service:DeviceConfig:1',
+            'urn:DeviceConfig-com:serviceId:DeviceConfig1',
             'X_AVM-DE_CreateUrlSID'
           );
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
@@ -1420,7 +1423,7 @@ module.exports = (
       case 'smarthome-thermostat': {
         try {
           let data = await masterDevice.fritzbox.exec(
-            'urn:dslforum-org:service:DeviceConfig:1',
+            'urn:DeviceConfig-com:serviceId:DeviceConfig1',
             'X_AVM-DE_CreateUrlSID'
           );
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
@@ -1507,7 +1510,7 @@ module.exports = (
           }
 
           try {
-            await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'Reboot');
+            await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
 
             accessory.context.restart = true;
           } catch (err) {
@@ -1524,7 +1527,7 @@ module.exports = (
 
       case 'wol': {
         try {
-          await fritzbox.exec('urn:dslforum-org:service:Hosts:1', 'X_AVM-DE_WakeOnLANByMACAddress', {
+          await fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_WakeOnLANByMACAddress', {
             NewMACAddress: accessory.context.config.address,
           });
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
@@ -1541,7 +1544,9 @@ module.exports = (
 
       case 'wifi_2ghz': {
         try {
-          await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'SetEnable', { NewEnable: state });
+          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'SetEnable', {
+            NewEnable: state,
+          });
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
         } catch (err) {
           handleError(accessory, false, target, err, { set: true });
@@ -1556,7 +1561,9 @@ module.exports = (
 
       case 'wifi_5ghz': {
         try {
-          await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:2', 'SetEnable', { NewEnable: state });
+          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration2', 'SetEnable', {
+            NewEnable: state,
+          });
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
         } catch (err) {
           handleError(accessory, false, target, err, { set: true });
@@ -1571,7 +1578,9 @@ module.exports = (
 
       case 'wifi_guest': {
         try {
-          await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:3', 'SetEnable', { NewEnable: state });
+          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration3', 'SetEnable', {
+            NewEnable: state,
+          });
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
         } catch (err) {
           handleError(accessory, false, target, err, { set: true });
@@ -1588,7 +1597,7 @@ module.exports = (
         try {
           let status = state ? 'pbc' : 'stop';
 
-          await fritzbox.exec('urn:dslforum-org:service:WLANConfiguration:1', 'X_AVM-DE_SetWPSConfig', {
+          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'X_AVM-DE_SetWPSConfig', {
             'NewX_AVM-DE_WPSMode': status,
           });
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
@@ -1605,7 +1614,7 @@ module.exports = (
 
       case 'dect': {
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let formData;
@@ -1658,7 +1667,7 @@ module.exports = (
 
       case 'aw': {
         try {
-          await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_TAM:1', 'SetEnable', {
+          await fritzbox.exec('urn:X_AVM-DE_TAM-com:serviceId:X_AVM-DE_TAM1', 'SetEnable', {
             NewIndex: 0,
             NewEnable: state ? '1' : '0',
           });
@@ -1676,11 +1685,11 @@ module.exports = (
 
       case 'deflection': {
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetNumberOfDeflections');
+          let data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetNumberOfDeflections');
 
           if (parseInt(data.NewNumberOfDeflections)) {
             try {
-              await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'SetDeflectionEnable', {
+              await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'SetDeflectionEnable', {
                 NewDeflectionId: 0,
                 NewEnable: state ? 1 : 0,
               });
@@ -1712,7 +1721,7 @@ module.exports = (
 
       case 'led': {
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let formData = {
@@ -1756,7 +1765,7 @@ module.exports = (
 
       case 'lock': {
         try {
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           await lua.request(
@@ -1787,7 +1796,7 @@ module.exports = (
       case 'alarm': {
         try {
           if (state) {
-            await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_DialNumber', {
+            await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialNumber', {
               'NewX_AVM-DE_PhoneNumber': config.telNr,
             });
 
@@ -1813,7 +1822,7 @@ module.exports = (
               accessory.context.alarmTimeout = false;
             }
 
-            await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_DialHangup');
+            await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialHangup');
           }
 
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
@@ -1831,11 +1840,11 @@ module.exports = (
       case 'wakeup': {
         try {
           if (state) {
-            await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_DialNumber', {
+            await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialNumber', {
               'NewX_AVM-DE_PhoneNumber': config.internNr,
             });
           } else {
-            await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_DialHangup');
+            await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialHangup');
           }
 
           Logger.info((state ? 'ON' : 'OFF') + ' (' + target + ')', accessory.displayName);
@@ -1888,7 +1897,7 @@ module.exports = (
             if (endhour < 10 && endhour >= 0) endhour = '0' + endhour;
           }
 
-          let data = await fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           for (let count = 1; count <= config.DECTphones; count++) {
@@ -1960,7 +1969,7 @@ module.exports = (
 
               if (prefix.includes('00')) lkz = prefix.split('00')[1];
             } else {
-              lkz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonCountryCode');
+              lkz = await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_GetVoIPCommonCountryCode');
 
               lkz = lkz['NewX_AVM-DE_LKZ']; //49 => 0049 => +49
             }
@@ -1968,7 +1977,7 @@ module.exports = (
             if (masterDevice.cityPrefix) {
               if (masterDevice.cityPrefix.indexOf('0') === 0) okz = masterDevice.cityPrefix.replace('0', '');
             } else {
-              okz = await fritzbox.exec('urn:dslforum-org:service:X_VoIP:1', 'X_AVM-DE_GetVoIPCommonAreaCode');
+              okz = await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_GetVoIPCommonAreaCode');
 
               okz = okz['NewX_AVM-DE_OKZ']; //531
             }
@@ -1983,7 +1992,7 @@ module.exports = (
             let telBook = [];
             let blackBook = [];
 
-            let books = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebookList');
+            let books = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetPhonebookList');
             books = books.NewPhonebookList.split(',');
 
             if (!Array.isArray(books)) books = [books];
@@ -1991,7 +2000,7 @@ module.exports = (
             Logger.debug('Found ' + books.length + ' phonebook(s). Fetching entries...', accessory.displayName);
 
             for (const id of books) {
-              let data = await fritzbox.exec('urn:dslforum-org:service:X_AVM-DE_OnTel:1', 'GetPhonebook', {
+              let data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetPhonebook', {
                 NewPhonebookID: id,
               });
 
@@ -2510,7 +2519,10 @@ module.exports = (
 
     if (poll) {
       try {
-        let data = await masterDevice.fritzbox.exec('urn:dslforum-org:service:DeviceConfig:1', 'X_AVM-DE_CreateUrlSID');
+        let data = await masterDevice.fritzbox.exec(
+          'urn:DeviceConfig-com:serviceId:DeviceConfig1',
+          'X_AVM-DE_CreateUrlSID'
+        );
         let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
         let uri =
           'http://' +
