@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "5.1.1-beta.1",
+  "version": "5.1.1-beta.2",
   "description": "Homebridge Plugin to control FritzBox router, smarthome devices and more.",
   "main": "index.js",
   "funding": [
@@ -45,7 +45,7 @@
     "homebridge": "^1.1.6"
   },
   "dependencies": {
-    "@seydx/fritzbox": "2.0.2",
+    "@seydx/fritzbox": "^2.0.3",
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.9",
     "fakegato-history": "0.6.1",
