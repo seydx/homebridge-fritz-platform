@@ -82,10 +82,10 @@ function FritzPlatform(log, config, api) {
         device.password = device.password || false;
         this.masterDevice = device;
         this.masterDevice.fritzbox = new Fritzbox({
+          host: device.host,
+          port: device.port || 49000,
           username: device.username,
           password: device.password,
-          url: 'http://' + device.host,
-          port: device.port || 49000,
           tr064: device.tr064,
           igd: device.igd,
           autoSsl: device.ssl,
@@ -147,10 +147,10 @@ function FritzPlatform(log, config, api) {
           };
 
           router.fritzbox = new Fritzbox({
+            host: options.host,
+            port: options.port,
             username: options.username,
             password: options.password,
-            url: 'http://' + options.host,
-            port: options.port,
             tr064: options.tr064,
             igd: options.igd,
             autoSsl: options.ssl,
