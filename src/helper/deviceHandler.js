@@ -909,7 +909,7 @@ module.exports = (
         let state = accessory.getService(service).getCharacteristic(characteristic).value;
 
         try {
-          let data = await fritzbox.exec('urn:DeviceInfo-com:serviceId:DeviceInfo1', 'X_AVM-DE_CreateUrlSID');
+          let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
           let body = await lua.request(
