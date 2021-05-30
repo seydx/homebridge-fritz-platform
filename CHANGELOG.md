@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.1.2 - 2021-05-30
+- Fix CreateUrlSID for DECT
+
 ## v5.1.1 - 2021-05-30
 - Bump dependencies
 
