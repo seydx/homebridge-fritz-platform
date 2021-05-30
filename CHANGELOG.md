@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## v5.1.1 - 2021-05-30
 - Bump dependencies
 
 ## v5.1.0 - 2021-05-20
