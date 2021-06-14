@@ -21,6 +21,11 @@
         "title": "Devices",
         "type": "object",
         "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "If enabled, the device will be exposed to HomeKit."
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -31,13 +36,19 @@
             "title": "Host",
             "type": "string",
             "required": true,
-            "description": "FritzBox IP Address."
+            "description": "FritzBox IP Address.",
+            "condition": {
+              "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "port": {
             "title": "Port",
             "type": "integer",
             "placeholder": 49000,
-            "description": "Port to the TR064 Endpoint."
+            "description": "Port to the TR064 Endpoint.",
+            "condition": {
+              "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "username": {
             "title": "Username",
@@ -98,7 +109,10 @@
             "type": "boolean",
             "description": "Enables this device as master device. Only ONE device can be checked as master device!",
             "required": true,
-            "default": false
+            "default": false,
+            "condition": {
+              "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "readOnly": {
             "title": "Read Only",
@@ -118,24 +132,21 @@
             "oneOf": [
               {
                 "title": "DSL",
-                "enum": [
-                  "dsl"
-                ]
+                "enum": ["dsl"]
               },
               {
                 "title": "Cable",
-                "enum": [
-                  "cable"
-                ]
+                "enum": ["cable"]
               },
               {
                 "title": "Repeater",
-                "enum": [
-                  "repeater"
-                ]
+                "enum": ["repeater"]
               }
             ],
-            "required": true
+            "required": true,
+            "condition": {
+              "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "options": {
             "title": "Options",
@@ -147,15 +158,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Wifi 2.4GHZ as Switch or Characteristic."
@@ -166,15 +173,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Wifi 5GHZ as Switch or Characteristic."
@@ -185,15 +188,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Wifi Guest as Switch or Characteristic."
@@ -207,15 +206,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables WPS as Switch or Characteristic. (Only for Master Device)"
@@ -229,15 +224,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables DECT as Switch or Characteristic. (Only for Master Device)"
@@ -251,15 +242,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Answering Machine as Switch or Characteristic. (Only for Master Device)"
@@ -273,15 +260,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Deflection as Switch or Characteristic. (Only for Master Device)"
@@ -292,15 +275,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables LED as Switch or Characteristic."
@@ -311,15 +290,11 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   },
                   {
                     "title": "Switch",
-                    "enum": [
-                      "switch"
-                    ]
+                    "enum": ["switch"]
                   }
                 ],
                 "description": "Enables Device Lock as Switch or Characteristic."
@@ -333,9 +308,7 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": [
-                      "characteristic"
-                    ]
+                    "enum": ["characteristic"]
                   }
                 ],
                 "description": "Enables Broadband as Characteristic. (Only for Master Device)"
@@ -359,7 +332,10 @@
           "blockTelegram": {
             "title": "Block Telegram",
             "type": "boolean",
-            "description": "Enable this, if you don't want telegram notifications for this user."
+            "description": "Enable this, if you don't want telegram notifications for this user.",
+            "condition": {
+              "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "name": {
             "title": "Name",
@@ -371,7 +347,10 @@
             "title": "Address",
             "type": "string",
             "required": true,
-            "description": "The IP/MAC address of the device."
+            "description": "The IP/MAC address of the device.",
+            "condition": {
+              "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "accType": {
             "title": "Accessory Type",
@@ -379,19 +358,18 @@
             "oneOf": [
               {
                 "title": "Occupancy",
-                "enum": [
-                  "occupancy"
-                ]
+                "enum": ["occupancy"]
               },
               {
                 "title": "Motion",
-                "enum": [
-                  "motion"
-                ]
+                "enum": ["motion"]
               }
             ],
             "required": true,
-            "description": "The accessory type of the device."
+            "description": "The accessory type of the device.",
+            "condition": {
+              "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "ping": {
             "title": "Ping",
@@ -402,10 +380,28 @@
           "threshold": {
             "title": "Threshold",
             "type": "integer",
+            "description": "Some devices deliberately disconnect from the network once the screen is turned off to save power. Ping works by keeping track of the last time a device was seen, and comparing that to a threshold value (in minutes). (Default: 15min)",
             "condition": {
-              "functionBody": "return model.presence[arrayIndices[0]].ping === true;"
-            },
-            "description": "Some devices deliberately disconnect from the network once the screen is turned off to save power. Ping works by keeping track of the last time a device was seen, and comparing that to a threshold value (in minutes). (Default: 15min)"
+              "functionBody": "try { return model.presence[arrayIndices[0]].ping } catch(e){ return false }"
+            }
+          },
+          "onDelay": {
+            "title": "Delay on detection",
+            "type": "integer",
+            "placeholder": 30,
+            "description": "Delay timer (s) before switching to detected.",
+            "condition": {
+              "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+            }
+          },
+          "offDelay": {
+            "title": "Delay on NO detection",
+            "type": "integer",
+            "placeholder": 90,
+            "description": "Delay timer (s) before switching to NOT detected.",
+            "condition": {
+              "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+            }
           }
         }
       }
@@ -416,6 +412,11 @@
         "title": "Wake on LAN",
         "type": "object",
         "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "If enabled, the device will be exposed to HomeKit."
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -427,7 +428,10 @@
             "type": "string",
             "required": true,
             "description": "The MAC address of the device.",
-            "placeholder": "AA:BB:00:11:22:B1"
+            "placeholder": "AA:BB:00:11:22:B1",
+            "condition": {
+              "functionBody": "try { return model.wol[arrayIndices[0]].active } catch(e){ return false }"
+            }
           }
         }
       }
@@ -438,6 +442,11 @@
         "title": "Smarthome",
         "type": "object",
         "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "If enabled, the device will be exposed to HomeKit."
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -449,23 +458,26 @@
             "type": "string",
             "required": true,
             "placeholder": "01234567890",
+            "description": "The AIN of the device.",
             "condition": {
-              "functionBody": "return !model.smarthome[arrayIndices[0]].group;"
-            },
-            "description": "The AIN of the device."
+              "functionBody": "try { return model.smarthome[arrayIndices[0]].active && !model.smarthome[arrayIndices[0]].group } catch(e){ return false }"
+            }
           },
           "readOnly": {
             "title": "Read Only",
             "type": "boolean",
+            "description": "If enabled, the device/group will not trigger on switching on/off.",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
-            },
-            "description": "If enabled, the device/group will not trigger on switching on/off."
+              "functionBody": "try { model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb' } catch(e){ return false }"
+            }
           },
           "group": {
             "title": "Grouped Device",
             "type": "boolean",
-            "description": "Enable this if you want to expose a group instead of a smarthome device."
+            "description": "Enable this if you want to expose a group instead of a smarthome device.",
+            "condition": {
+              "functionBody": "try { return model.smarthome[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "energy": {
             "title": "Power Meter",
@@ -527,32 +539,24 @@
             "title": "Accessory Types (Group)",
             "type": "string",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].group === true;"
+              "functionBody": "try { return model.smarthome[arrayIndices[0]].active && model.smarthome[arrayIndices[0]].group } catch(e){ return false }"
             },
             "oneOf": [
               {
                 "title": "Switch",
-                "enum": [
-                  "switch"
-                ]
+                "enum": ["switch"]
               },
               {
                 "title": "Lightbulb",
-                "enum": [
-                  "lightbulb"
-                ]
+                "enum": ["lightbulb"]
               },
               {
                 "title": "Thermostat",
-                "enum": [
-                  "thermostat"
-                ]
+                "enum": ["thermostat"]
               },
               {
                 "title": "Switch & Lightbulb",
-                "enum": [
-                  "switch-lightbulb"
-                ]
+                "enum": ["switch-lightbulb"]
               }
             ],
             "required": true,
@@ -562,44 +566,36 @@
             "title": "Accessory Type",
             "type": "string",
             "condition": {
-              "functionBody": "return !model.smarthome[arrayIndices[0]].group;"
+              "functionBody": "try { return model.smarthome[arrayIndices[0]].active && !model.smarthome[arrayIndices[0]].group } catch(e){ return false }"
             },
             "oneOf": [
               {
                 "title": "Switch",
-                "enum": [
-                  "switch"
-                ]
+                "enum": ["switch"]
+              },
+              {
+                "title": "Blind",
+                "enum": ["blind"]
               },
               {
                 "title": "Contact",
-                "enum": [
-                  "contact"
-                ]
+                "enum": ["contact"]
               },
               {
                 "title": "Thermostat",
-                "enum": [
-                  "thermostat"
-                ]
+                "enum": ["thermostat"]
               },
               {
                 "title": "Lightbulb",
-                "enum": [
-                  "lightbulb"
-                ]
+                "enum": ["lightbulb"]
               },
               {
                 "title": "Temperature",
-                "enum": [
-                  "temperature"
-                ]
+                "enum": ["temperature"]
               },
               {
                 "title": "Window",
-                "enum": [
-                  "window"
-                ]
+                "enum": ["window"]
               }
             ],
             "required": true,
@@ -614,6 +610,11 @@
         "title": "Watch Network",
         "type": "object",
         "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "Enabled the device for network monitoring."
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -624,24 +625,36 @@
             "title": "Address",
             "type": "string",
             "required": true,
-            "description": "The IP/MAC address of the device."
+            "description": "The IP/MAC address of the device.",
+            "condition": {
+              "functionBody": "try { return model.network[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "polling": {
             "title": "Polling",
             "type": "integer",
             "description": "Polling timer.",
             "placeholder": 30,
-            "minimum": 10
+            "minimum": 10,
+            "condition": {
+              "functionBody": "try { return model.network[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "onDelay": {
             "title": "Delay on detection",
             "type": "integer",
-            "description": "Delay timer (s) before switching to detected."
+            "description": "Delay timer (s) before switching to detected.",
+            "condition": {
+              "functionBody": "try { return model.network[arrayIndices[0]].active } catch(e){ return false }"
+            }
           },
           "offDelay": {
             "title": "Delay on NO detection",
             "type": "integer",
-            "description": "Delay timer (s) before switching to NOT detected."
+            "description": "Delay timer (s) before switching to NOT detected.",
+            "condition": {
+              "functionBody": "try { return model.network[arrayIndices[0]].active } catch(e){ return false }"
+            }
           }
         }
       }
@@ -662,7 +675,7 @@
           "description": "Groups incoming and outgoing sensor to one.",
           "type": "boolean",
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           }
         },
         "ip": {
@@ -671,7 +684,7 @@
           "placeholder": "192.168.178.1",
           "required": true,
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "description": "FritzBox IP Address. (Master Device)"
         },
@@ -681,7 +694,7 @@
           "placeholder": 1012,
           "default": 1012,
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "description": "The port to listen on for Callmonitor.",
           "required": true
@@ -690,7 +703,7 @@
           "title": "Country Prefix",
           "type": "string",
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "description": "If your FritzBox does not provide VOIP, please enter your country prefix (eg 49, 0049 or +49)."
         },
@@ -698,7 +711,7 @@
           "title": "City Prefix",
           "type": "string",
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "description": "If your FritzBox does not provide VOIP, please enter your city prefix (eg 030)."
         },
@@ -706,7 +719,7 @@
           "title": "Incoming To",
           "type": "array",
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "items": {
             "title": "Number",
@@ -718,7 +731,7 @@
           "title": "Outgoing From",
           "type": "array",
           "condition": {
-            "functionBody": "return model.callmonitor.active === true;"
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
           "items": {
             "title": "Number",
@@ -748,7 +761,7 @@
               "type": "integer",
               "placeholder": 30,
               "condition": {
-                "functionBody": "return model.extras.alarm.active === true;"
+                "functionBody": "try { return model.extras.alarm.active } catch(e){ return false }"
               },
               "description": "Duration of the call."
             },
@@ -756,7 +769,7 @@
               "title": "Telephone Number",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.alarm.active === true;"
+                "functionBody": "try { return model.extras.alarm.active } catch(e){ return false }"
               },
               "description": "Telephone number to call if alarm is enabled.",
               "required": true
@@ -764,21 +777,17 @@
             "accType": {
               "title": "Accessory Type",
               "condition": {
-                "functionBody": "return model.extras.alarm.active === true;"
+                "functionBody": "try { return model.extras.alarm.active } catch(e){ return false }"
               },
               "type": "string",
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": [
-                    "switch"
-                  ]
+                  "enum": ["switch"]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": [
-                    "characteristic"
-                  ]
+                  "enum": ["characteristic"]
                 }
               ],
               "required": true,
@@ -800,7 +809,7 @@
             "duration": {
               "title": "Duration",
               "condition": {
-                "functionBody": "return model.extras.wakeup.active === true;"
+                "functionBody": "try { return model.extras.wakeup.active } catch(e){ return false }"
               },
               "type": "integer",
               "placeholder": 30,
@@ -810,7 +819,7 @@
               "title": "Intern Phone Number",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.wakeup.active === true;"
+                "functionBody": "try { return model.extras.wakeup.active } catch(e){ return false }"
               },
               "description": "The intern phone number to call on WakeUp. (e.g **620)",
               "required": true
@@ -818,21 +827,17 @@
             "accType": {
               "title": "Accessory Type",
               "condition": {
-                "functionBody": "return model.extras.wakeup.active === true;"
+                "functionBody": "try { return model.extras.wakeup.active } catch(e){ return false }"
               },
               "type": "string",
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": [
-                    "switch"
-                  ]
+                  "enum": ["switch"]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": [
-                    "characteristic"
-                  ]
+                  "enum": ["characteristic"]
                 }
               ],
               "required": true,
@@ -855,7 +860,7 @@
               "title": "DECT phones",
               "type": "integer",
               "condition": {
-                "functionBody": "return model.extras.ringlock.active === true;"
+                "functionBody": "try { return model.extras.ringlock.active } catch(e){ return false }"
               },
               "description": "Amount of DECT phones.",
               "required": true
@@ -864,7 +869,7 @@
               "title": "Start Time",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.ringlock.active === true;"
+                "functionBody": "try { return model.extras.ringlock.active } catch(e){ return false }"
               },
               "description": "The time to start ring lock. (eg 14:00)"
             },
@@ -872,7 +877,7 @@
               "title": "End Time",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.ringlock.active === true;"
+                "functionBody": "try { return model.extras.ringlock.active } catch(e){ return false }"
               },
               "description": "The time to end ring lock. (eg 22:00)"
             },
@@ -880,20 +885,16 @@
               "title": "Accessory Type",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.ringlock.active === true;"
+                "functionBody": "try { return model.extras.ringlock.active } catch(e){ return false }"
               },
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": [
-                    "switch"
-                  ]
+                  "enum": ["switch"]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": [
-                    "characteristic"
-                  ]
+                  "enum": ["characteristic"]
                 }
               ],
               "required": true,
@@ -916,7 +917,7 @@
               "title": "Blacklists",
               "type": "array",
               "condition": {
-                "functionBody": "return model.extras.phoneBook.active === true;"
+                "functionBody": "try { return model.extras.phoneBook.active } catch(e){ return false }"
               },
               "items": {
                 "title": "Name",
@@ -928,20 +929,16 @@
               "title": "Accessory Type",
               "type": "string",
               "condition": {
-                "functionBody": "return model.extras.phoneBook.active === true;"
+                "functionBody": "try { return model.extras.phoneBook.active } catch(e){ return false }"
               },
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": [
-                    "switch"
-                  ]
+                  "enum": ["switch"]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": [
-                    "characteristic"
-                  ]
+                  "enum": ["characteristic"]
                 }
               ],
               "required": true,
@@ -970,31 +967,15 @@
               "oneOf": [
                 {
                   "title": "Occupancy",
-                  "enum": [
-                    "occupancy"
-                  ]
+                  "enum": ["occupancy"]
                 },
                 {
                   "title": "Motion",
-                  "enum": [
-                    "motion"
-                  ]
+                  "enum": ["motion"]
                 }
               ],
               "required": true,
               "description": "The accessory type of the anyone sensor."
-            },
-            "onDelay": {
-              "title": "Delay on detection",
-              "type": "integer",
-              "placeholder": 30,
-              "description": "Delay timer (s) before switching to detected."
-            },
-            "offDelay": {
-              "title": "Delay on NO detection",
-              "type": "integer",
-              "placeholder": 90,
-              "description": "Delay timer (s) before switching to NOT detected."
             }
           }
         },
@@ -1055,7 +1036,7 @@
           "type": "string",
           "description": "Telegram Bot Token.",
           "condition": {
-            "functionBody": "return model.telegram.active === true;"
+            "functionBody": "try { return model.telegram.active } catch(e){ return false }"
           },
           "required": true
         },
@@ -1064,15 +1045,12 @@
           "type": "string",
           "description": "Telegram Chat ID.",
           "condition": {
-            "functionBody": "return model.telegram.active === true;"
+            "functionBody": "try { return model.telegram.active } catch(e){ return false }"
           },
           "required": true
         },
         "messages": {
           "title": "Messages",
-          "condition": {
-            "functionBody": "return model.telegram.active === true;"
-          },
           "type": "object",
           "properties": {
             "presence": {
@@ -1176,21 +1154,14 @@
     }
   },
   "layout": [
-    {
-      "title": "Log",
-      "expandable": true,
-      "expanded": true,
-      "orderable": false,
-      "items": [
-        "name",
-        "debug"
-      ]
-    },
+    "name",
+    "debug",
     {
       "title": "Devices",
       "expandable": true,
       "expanded": false,
       "orderable": false,
+      "type": "section",
       "items": [
         {
           "key": "devices",
@@ -1198,6 +1169,7 @@
           "orderable": false,
           "buttonText": "Add Device",
           "items": [
+            "devices[].active",
             "devices[].name",
             "devices[].host",
             "devices[].port",
@@ -1208,11 +1180,11 @@
               "type": "section",
               "title": "Credentials",
               "expandable": true,
-              "expanded": true,
-              "items": [
-                "devices[].username",
-                "devices[].password"
-              ]
+              "expanded": false,
+              "condition": {
+                "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+              },
+              "items": ["devices[].username", "devices[].password"]
             },
             {
               "key": "devices[]",
@@ -1220,6 +1192,9 @@
               "title": "Advanced",
               "expandable": true,
               "expanded": false,
+              "condition": {
+                "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+              },
               "items": [
                 "devices[].oldFW",
                 "devices[].readOnly",
@@ -1235,11 +1210,10 @@
               "title": "Branding",
               "expandable": true,
               "expanded": false,
-              "items": [
-                "devices[].manufacturer",
-                "devices[].model",
-                "devices[].serialNumber"
-              ]
+              "condition": {
+                "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+              },
+              "items": ["devices[].manufacturer", "devices[].model", "devices[].serialNumber"]
             },
             {
               "key": "devices[]",
@@ -1247,6 +1221,9 @@
               "title": "Options",
               "expandable": true,
               "expanded": false,
+              "condition": {
+                "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
+              },
               "items": [
                 "devices[].options.wifi_2ghz",
                 "devices[].options.wifi_5ghz",
@@ -1269,6 +1246,7 @@
       "orderable": false,
       "expandable": true,
       "expanded": false,
+      "type": "section",
       "items": [
         {
           "key": "extras",
@@ -1277,12 +1255,7 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": [
-            "extras.alarm.active",
-            "extras.alarm.telNr",
-            "extras.alarm.duration",
-            "extras.alarm.accType"
-          ]
+          "items": ["extras.alarm.active", "extras.alarm.telNr", "extras.alarm.duration", "extras.alarm.accType"]
         },
         {
           "key": "extras",
@@ -1291,12 +1264,7 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": [
-            "extras.wakeup.active",
-            "extras.wakeup.internNr",
-            "extras.wakeup.duration",
-            "extras.wakeup.accType"
-          ]
+          "items": ["extras.wakeup.active", "extras.wakeup.internNr", "extras.wakeup.duration", "extras.wakeup.accType"]
         },
         {
           "key": "extras",
@@ -1330,9 +1298,7 @@
               "expandable": true,
               "expanded": true,
               "buttonText": "Add Blacklist",
-              "items": [
-                "extras.phoneBook.blacklists[]"
-              ]
+              "items": ["extras.phoneBook.blacklists[]"]
             }
           ]
         }
@@ -1343,6 +1309,7 @@
       "expandable": true,
       "expanded": false,
       "orderable": false,
+      "type": "section",
       "items": [
         {
           "key": "presence",
@@ -1354,6 +1321,8 @@
             "presence[].name",
             "presence[].address",
             "presence[].accType",
+            "presence[].onDelay",
+            "presence[].offDelay",
             "presence[].blockTelegram",
             {
               "key": "presence[]",
@@ -1361,10 +1330,10 @@
               "title": "Ping",
               "expandable": true,
               "expanded": false,
-              "items": [
-                "presence[].ping",
-                "presence[].threshold"
-              ]
+              "condition": {
+                "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
+              },
+              "items": ["presence[].ping", "presence[].threshold"]
             }
           ]
         }
@@ -1375,16 +1344,14 @@
       "expandable": true,
       "expanded": false,
       "orderable": false,
+      "type": "section",
       "items": [
         {
           "key": "wol",
           "type": "array",
           "orderable": false,
           "buttonText": "Add WOL Device",
-          "items": [
-            "wol[].name",
-            "wol[].address"
-          ]
+          "items": ["wol[].active", "wol[].name", "wol[].address"]
         }
       ]
     },
@@ -1393,6 +1360,7 @@
       "expandable": true,
       "expanded": false,
       "orderable": false,
+      "type": "section",
       "items": [
         {
           "key": "smarthome",
@@ -1400,6 +1368,7 @@
           "orderable": false,
           "buttonText": "Add Smarthome Device",
           "items": [
+            "smarthome[].active",
             "smarthome[].name",
             "smarthome[].group",
             "smarthome[].ain",
@@ -1411,7 +1380,10 @@
               "type": "section",
               "orderable": false,
               "expandable": true,
-              "expanded": false, 
+              "expanded": false,
+              "condition": {
+                "functionBody": "try { return model.smarthome[arrayIndices[0]].active } catch(e){ return false }"
+              },
               "items": [
                 "smarthome[].readOnly",
                 "smarthome[].energy",
@@ -1432,6 +1404,7 @@
       "orderable": false,
       "expandable": true,
       "expanded": false,
+      "type": "section",
       "items": [
         {
           "key": "callmonitor",
@@ -1450,9 +1423,7 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": [
-                "callmonitor.incomingTo[]"
-              ]
+              "items": ["callmonitor.incomingTo[]"]
             },
             {
               "key": "callmonitor.outgoingFrom",
@@ -1461,19 +1432,18 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": [
-                "callmonitor.outgoingFrom[]"
-              ]
+              "items": ["callmonitor.outgoingFrom[]"]
             }
           ]
         }
       ]
     },
     {
-      "title": "Watch Network",
+      "title": "Network Monitor",
       "expandable": true,
       "expanded": false,
       "orderable": false,
+      "type": "section",
       "items": [
         {
           "key": "network",
@@ -1481,6 +1451,7 @@
           "orderable": false,
           "buttonText": "Add Device",
           "items": [
+            "network[].active",
             "network[].name",
             "network[].address",
             "network[].polling",
@@ -1495,6 +1466,7 @@
       "orderable": false,
       "expandable": true,
       "expanded": false,
+      "type": "section",
       "items": [
         {
           "key": "options",
@@ -1503,12 +1475,7 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": [
-            "options.presence.anyone",
-            "options.presence.accType",
-            "options.presence.onDelay",
-            "options.presence.offDelay"
-          ]
+          "items": ["options.presence.anyone", "options.presence.accType"]
         },
         {
           "key": "options",
@@ -1517,10 +1484,7 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": [
-            "options.reboot.on",
-            "options.reboot.off"
-          ]
+          "items": ["options.reboot.on", "options.reboot.off"]
         },
         {
           "key": "options",
@@ -1538,9 +1502,7 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add",
-              "items": [
-                "options.polling.exclude[]"
-              ]
+              "items": ["options.polling.exclude[]"]
             }
           ]
         }
@@ -1551,6 +1513,7 @@
       "orderable": false,
       "expandable": true,
       "expanded": false,
+      "type": "section",
       "items": [
         "telegram.active",
         "telegram.token",
@@ -1599,10 +1562,7 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": [
-                "telegram.messages.alarm.activated",
-                "telegram.messages.alarm.deactivated"
-              ]
+              "items": ["telegram.messages.alarm.activated", "telegram.messages.alarm.deactivated"]
             },
             {
               "key": "telegram",
@@ -1611,10 +1571,7 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": [
-                "telegram.messages.reboot.start",
-                "telegram.messages.reboot.finish"
-              ]
+              "items": ["telegram.messages.reboot.start", "telegram.messages.reboot.finish"]
             },
             {
               "key": "telegram",
@@ -1623,10 +1580,7 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": [
-                "telegram.messages.network.on",
-                "telegram.messages.network.off"
-              ]
+              "items": ["telegram.messages.network.on", "telegram.messages.network.off"]
             }
           ]
         }

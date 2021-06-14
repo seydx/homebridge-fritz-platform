@@ -14,6 +14,7 @@
             "debug": true,
             "devices": [
                 {
+                    "active": true,
                     "name": "FritzBox 7590",
                     "host": "192.168.178.1",
                     "port": 49000,
@@ -43,6 +44,7 @@
                     }
                 },
                 {
+                    "active": true,
                     "name": "FritzBox 7430 BU",
                     "host": "192.168.178.28",
                     "port": 49000,
@@ -65,6 +67,7 @@
                     }
                 },
                 {
+                    "active": true,
                     "name": "FritzRepeater",
                     "host": "192.168.178.66",
                     "port": 49000,
@@ -94,9 +97,12 @@
                     "address": "11:1A:25:22:88:33",
                     "accType": "occupancy",
                     "ping": true,
-                    "threshold": 15
+                    "threshold": 15,
+                    "onDelay": 30,
+                    "offDelay": 90
                 },
                 {
+                    "active": true,
                     "name": "Test",
                     "address": "06:64:F0:49:63:F8",
                     "accType": "motion"
@@ -110,6 +116,7 @@
             ],
             "smarthome": [
                 {
+                    "active": true,
                     "name": "DECT 200",
                     "ain": "11630 0190819",
                     "energy": true,
@@ -117,17 +124,20 @@
                     "accType": "switch"
                 },
                 {
+                    "active": true,
                     "name": "DECT 200 Temperature",
                     "ain": "11630 0190819",
                     "accType": "temperature"
                 },
                 {
+                    "active": true,
                     "name": "HAN FUN Sensor",
                     "ain": "119340107283",
                     "accType": "contact",
                     "battery": true
                 },
                 {
+                    "active": true,
                     "name": "DECT 301",
                     "ain": "09995 0692315",
                     "temperature": true,
@@ -136,18 +146,21 @@
                     "battery": true
                 },
                 {
+                    "active": true,
                     "name": "DECT 301",
                     "ain": "09995 0692315",
                     "accType": "window",
                     "battery": true
                 },
                 {
+                    "active": true,
                     "name": "DECT 301",
                     "ain": "09995 0692315",
                     "accType": "temperature",
                     "battery": true
                 },
                 {
+                    "active": true,
                     "name": "DECT 500",
                     "ain": "09995 0692315",
                     "accType": "lightbulb",
@@ -157,6 +170,7 @@
             ],
             "network": [
                 {
+                    "active": true,
                     "name": "Camera",
                     "address": "B0:D5:9D:B5:A7:C1",
                     "polling": 60,                    
@@ -207,21 +221,17 @@
                 }
             },
             "options": {
+                "polling": {
+                    "timer": 10,
+                    "exclude": []
+                },
                 "presence": {
                     "anyone": true,
-                    "onDelay": 30,
-                    "offDelay": 90
+                    "accType": "occupancy"
                 },
                 "reboot": {
                     "on": "/var/lib/homebridgee/rebootOn.sh",
                     "off": "/var/lib/homebridge/rebootOff.sh"
-                },
-                "polling": {
-                    "timer": 10,
-                    "exclude": [
-                        "router",
-                        "extra"
-                    ]
                 }
             },
             "telegram": {
