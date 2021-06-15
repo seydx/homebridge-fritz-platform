@@ -273,7 +273,7 @@ class Accessory {
       const extrasConfig = this.accessory.context.config.extras;
 
       //Alarm
-      if (extrasConfig.alarm.active && extrasConfig.alarm.telNr) {
+      if (extrasConfig.alarm.accType === 'characteristic' && extrasConfig.alarm.active && extrasConfig.alarm.telNr) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)) {
           logger.info('Adding DialAlarm characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.DialAlarm);
@@ -292,7 +292,11 @@ class Accessory {
       }
 
       //WakeUp
-      if (extrasConfig.wakeup.active && extrasConfig.wakeup.internNr) {
+      if (
+        extrasConfig.wakeup.accType === 'characteristic' &&
+        extrasConfig.wakeup.active &&
+        extrasConfig.wakeup.internNr
+      ) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.WakeUp)) {
           logger.info('Adding WakeUp characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.WakeUp);
@@ -310,7 +314,11 @@ class Accessory {
       }
 
       //RingLock
-      if (extrasConfig.ringlock.active && extrasConfig.ringlock.DECTphones) {
+      if (
+        extrasConfig.ringlock.accType === 'characteristic' &&
+        extrasConfig.ringlock.active &&
+        extrasConfig.ringlock.DECTphones
+      ) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.RingLock)) {
           logger.info('Adding RingLock characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.RingLock);
@@ -332,7 +340,7 @@ class Accessory {
         }
       }
 
-      if (extrasConfig.phoneBook.active) {
+      if (extrasConfig.phoneBook.accType === 'characteristic' && extrasConfig.phoneBook.active) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)) {
           logger.info('Adding PhoneBook characteristic', this.accessory.displayName);
           service.addCharacteristic(this.api.hap.Characteristic.PhoneBook);

@@ -120,8 +120,38 @@ class Handler {
 
     if (subtype === 'incoming') {
       state = this.incomingState;
+
+      if (this.from.caller) {
+        accessory
+          .getService(this.api.hap.Service.ContactSensor)
+          .getCharacteristic(this.api.hap.Characteristic.Caller)
+          .updateValue(this.from.caller);
+      }
     } else if (subtype === 'outgoing') {
       state = this.outgoingState;
+
+      if (this.from.called) {
+        accessory
+          .getService(this.api.hap.Service.ContactSensor)
+          .getCharacteristic(this.api.hap.Characteristic.Called)
+          .updateValue(this.from.called);
+      }
+    } else if (subtype === 'group') {
+      state = this.incomingState || this.outgoingState;
+
+      if (this.from.caller) {
+        accessory
+          .getService(this.api.hap.Service.ContactSensor)
+          .getCharacteristic(this.api.hap.Characteristic.Caller)
+          .updateValue(this.from.caller);
+      }
+
+      if (this.from.called) {
+        accessory
+          .getService(this.api.hap.Service.ContactSensor)
+          .getCharacteristic(this.api.hap.Characteristic.Called)
+          .updateValue(this.from.called);
+      }
     } else {
       logger.warn(`Can not handle GET event. Unknown subtype (${subtype})`, accessory.displayName);
     }
@@ -130,20 +160,6 @@ class Handler {
       .getService(this.api.hap.Service.ContactSensor)
       .getCharacteristic(this.api.hap.Characteristic.ContactSensorState)
       .updateValue(state);
-
-    if (this.from.caller) {
-      accessory
-        .getService(this.api.hap.Service.ContactSensor)
-        .getCharacteristic(this.api.hap.Characteristic.Caller)
-        .updateValue(this.from.caller);
-    }
-
-    if (this.from.called) {
-      accessory
-        .getService(this.api.hap.Service.ContactSensor)
-        .getCharacteristic(this.api.hap.Characteristic.Called)
-        .updateValue(this.from.called);
-    }
 
     return state;
   }
@@ -181,8 +197,6 @@ class Handler {
         let called = message.called.replace(/\D/g, '');
         let caller = message.caller.replace(/\D/g, '');
 
-        text = `Incoming call from: ${message.caller} to ${message.called}`;
-
         this.callerNr = caller;
         this.callerName = false;
         this.denyCall = false;
@@ -190,47 +204,66 @@ class Handler {
         this.outgoing = false;
         this.homeNr = called;
 
+        text = `Incoming call from: ${
+          this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+        } to ${this.homeNr}`;
+
         let phoneBook = await getPhonebook(this.api.user.storagePath());
         let blackBook = await getBlackbook(this.api.user.storagePath());
 
         phoneBook.forEach((entry) => {
-          let callerToNr = entry.number.find((nr) => nr === message.caller);
+          let callerToNr = entry.number.find((nr) => nr === message.caller || nr === this.callerNr);
 
           if (callerToNr) {
             this.callerName = entry.name;
-            text = `Incoming call from: ${this.callerName} (${this.callerNr}) to ${message.called}`;
+            text = `Incoming call from: ${this.callerName} (${this.callerNr}) to ${this.homeNr}`;
           }
         });
 
         blackBook.forEach((entry) => {
-          let callerToNr = entry.number.find((nr) => nr === message.caller);
+          let callerToNr = entry.number.find((nr) => nr === message.caller || nr === this.callerNr);
           this.denyCall = callerToNr ? true : false;
         });
 
         if (accessory.context.config.incomingTo.length) {
-          if (accessory.context.config.incomingTo.includes(message.called)) {
+          if (
+            accessory.context.config.incomingTo.includes(message.called) ||
+            accessory.context.config.incomingTo.includes(this.homeNr)
+          ) {
             logger.debug('"incomingTo" nr matched!', accessory.displayName);
             logger.info(text, accessory.displayName);
 
             if (this.denyCall) {
-              logger.debug(`Blocking Telegram notification for ${message.caller}`, accessory.displayName);
+              logger.debug(
+                `Blocking Telegram notification for ${
+                  this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+                }`,
+                accessory.displayName
+              );
             }
 
-            this.from = { caller: message.caller };
+            this.from = { caller: this.callerNr };
             this.incomingState = 1;
             this.outgoingState = 0;
 
             await this.get(accessory, 'incoming');
           } else {
             logger.info(
-              `"incomingTo" nr not matched. Receiving new call from ${message.caller} to ${message.called}`,
+              `"incomingTo" nr not matched. Receiving new call from ${
+                this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+              } to ${this.homeNr}`,
               accessory.displayName
             );
           }
         } else {
-          logger.info(`Receiving new call from ${message.caller} to ${message.called}`, accessory.displayName);
+          logger.info(
+            `Receiving new call from ${
+              this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+            } to ${this.homeNr}`,
+            accessory.displayName
+          );
 
-          this.from = { caller: message.caller };
+          this.from = { caller: this.callerNr };
           this.incomingState = 1;
           this.outgoingState = 0;
 
@@ -261,7 +294,6 @@ class Handler {
         let caller = message.caller.replace(/\D/g, '');
         let called = message.called.replace(/\D/g, '');
 
-        text = `Outgoing call from: ${message.caller} to ${message.called}`;
         this.callerName = false;
         this.callerNr = called;
         this.denyCall = false;
@@ -269,46 +301,60 @@ class Handler {
         this.inbound = false;
         this.homeNr = caller;
 
+        text = `Outgoing call from: ${this.homeNr} to ${
+          this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+        }`;
+
         const phoneBook = await getPhonebook(this.api.user.storagePath());
         const blackBook = await getBlackbook(this.api.user.storagePath());
 
         phoneBook.forEach((entry) => {
-          let callerToNr = entry.number.find((nr) => nr === message.called);
+          let callerToNr = entry.number.find((nr) => nr === message.called || nr === this.callerNr);
           if (callerToNr) {
             this.callerName = entry.name;
-            text = `Calling ${this.callerName} (${this.callerNr}) from ${message.caller}`;
+            text = `Calling ${this.callerName} (${this.callerNr}) from ${this.homeNr}`;
           }
         });
 
         blackBook.forEach((entry) => {
-          let callerToNr = entry.number.find((nr) => nr === message.caller);
+          let callerToNr = entry.number.find((nr) => nr === message.called || nr === this.callerNr);
           this.denyCall = callerToNr ? true : false;
         });
 
         if (accessory.context.config.outgoingFrom.length) {
-          if (accessory.context.config.outgoingFrom.includes(message.caller)) {
+          if (
+            accessory.context.config.outgoingFrom.includes(message.caller) ||
+            accessory.context.config.outgoingFrom.includes(this.homeNr)
+          ) {
             logger.debug('"outgoingFrom" nr matched!', accessory.displayName);
             logger.info(text, accessory.displayName);
 
             if (!this.denyCall) {
-              logger.debug(`Blocking Telegram notification for ${message.caller}`, accessory.displayName);
+              logger.debug(`Blocking Telegram notification for ${this.homeNr}`, accessory.displayName);
             }
 
-            this.from = { caller: message.called };
+            this.from = { called: this.callerNr };
             this.incomingState = 0;
             this.outgoingState = 1;
 
             await this.get(accessory, 'outgoing');
           } else {
             logger.info(
-              `"outgoingFrom" nr not matched. Calling from ${message.caller} to ${message.called}`,
+              `"outgoingFrom" nr not matched. Calling from ${this.homeNr} to ${
+                this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+              }`,
               accessory.displayName
             );
           }
         } else {
-          logger.info(`Calling from ${message.caller} to ${message.called}`, accessory.displayName);
+          logger.info(
+            `Calling from ${this.homeNr} to ${
+              this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+            }`,
+            accessory.displayName
+          );
 
-          this.from = { caller: message.called };
+          this.from = { called: this.callerNr };
           this.incomingState = 0;
           this.outgoingState = 1;
 
@@ -327,7 +373,12 @@ class Handler {
             called: this.call[data[2]]['called'],
           };
 
-          logger.debug(`Connection established from: ${message.caller} - to: ${message.called}`, accessory.displayName);
+          logger.debug(
+            `Connection established between: ${this.homeNr} and ${
+              this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+            }`,
+            accessory.displayName
+          );
         }
       }
 
@@ -344,7 +395,9 @@ class Handler {
           if (accessory.context.config.incomingTo.length || accessory.context.config.outgoingFrom.length) {
             if (
               accessory.context.config.incomingTo.includes(message.called) ||
-              accessory.context.config.outgoingFrom.includes(message.caller)
+              accessory.context.config.incomingTo.includes(this.homeNr) ||
+              accessory.context.config.outgoingFrom.includes(message.caller) ||
+              accessory.context.config.outgoingFrom.includes(this.callerNr)
             ) {
               logger.info(
                 `Call disconnected with ${
@@ -354,7 +407,12 @@ class Handler {
               );
 
               if (this.denyCall) {
-                logger.debug(`Blocking Telegram notification for ${message.caller}`, accessory.displayName);
+                logger.debug(
+                  `Blocking Telegram notification for ${
+                    this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+                  }`,
+                  accessory.displayName
+                );
               }
 
               this.from = {};
@@ -366,12 +424,19 @@ class Handler {
               logger.debug(
                 `${
                   message.type === 'inbound' ? '"incomingTo"' : '"outgoingFrom"'
-                } nr not matched. Call disconnected with ${message.caller}`,
+                } nr not matched. Call disconnected with ${
+                  this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+                }`,
                 accessory.displayName
               );
             }
           } else {
-            logger.debug(`Call disconnected with ${message.caller}`, accessory.displayName);
+            logger.debug(
+              `Call disconnected with ${
+                this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
+              }`,
+              accessory.displayName
+            );
 
             this.from = {};
             this.incomingState = 0;

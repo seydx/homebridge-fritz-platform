@@ -1,6 +1,6 @@
 {
   "name": "homebridge-fritz-platform",
-  "version": "6.0.0-beta.0",
+  "version": "6.0.0-beta.8",
   "description": "Homebridge Plugin to control FritzBox router, smarthome devices and more.",
   "main": "index.js",
   "funding": [
@@ -38,7 +38,9 @@
     "plugin",
     "presence",
     "dect",
-    "smarthome"
+    "smarthome",
+    "tr064",
+    "avm"
   ],
   "engines": {
     "node": ">=14.17.0",

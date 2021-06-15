@@ -41,10 +41,11 @@ class Handler {
     switch (subtype) {
       case 'dsl':
       case 'cable':
-      case 'repeater':
         if (!config.readOnly) {
           Telegram.send('reboot', context.newValue ? 'finish' : 'start', accessory.displayName);
         }
+        break;
+      case 'repeater':
         break;
       case 'wifi_2ghz':
         break;
@@ -86,6 +87,23 @@ class Handler {
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewConnectionStatus === 'Connected';
+
+          if (accessory.context.restart) {
+            accessory.context.restart = false;
+
+            if (config.reboot.off && accessory.context.config.master) {
+              try {
+                logger.info('Executing OFF script...', `${accessory.displayName} (${subtype})`);
+
+                await initReboot(config.reboot.off);
+
+                logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
+              } catch (err) {
+                logger.error('An error occured during executing OFF script!', `${accessory.displayName} (${subtype})`);
+                logger.error(err);
+              }
+            }
+          }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -101,6 +119,23 @@ class Handler {
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewConnectionStatus === 'Connected';
+
+          if (accessory.context.restart) {
+            accessory.context.restart = false;
+
+            if (config.reboot.off && accessory.context.config.master) {
+              try {
+                logger.info('Executing OFF script...', `${accessory.displayName} (${subtype})`);
+
+                await initReboot(config.reboot.off);
+
+                logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
+              } catch (err) {
+                logger.error('An error occured during executing OFF script!', `${accessory.displayName} (${subtype})`);
+                logger.error(err);
+              }
+            }
+          }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -396,16 +431,21 @@ class Handler {
         } else {
           if (config.reboot.on && config.master) {
             try {
-              await initReboot(config.reboot.on);
-              logger.info(`ON script executed successfully! (${subtype})`, accessory.displayName);
+              logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
+
+              await initReboot(config.reboot.off);
+
+              logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
-              logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+              logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
               logger.error(err);
             }
           }
 
           try {
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
+
+            accessory.context.restart = true;
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
@@ -429,16 +469,21 @@ class Handler {
         } else {
           if (config.reboot.on && config.master) {
             try {
-              await initReboot(config.reboot.on);
-              logger.info(`ON script executed successfully! (${subtype})`, accessory.displayName);
+              logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
+
+              await initReboot(config.reboot.off);
+
+              logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
-              logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+              logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
               logger.error(err);
             }
           }
 
           try {
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
+
+            accessory.context.restart = true;
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
@@ -460,16 +505,6 @@ class Handler {
             accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
           }, 1000);
         } else {
-          if (config.reboot.on && config.master) {
-            try {
-              await initReboot(config.reboot.on);
-              logger.info(`ON script executed successfully! (${subtype})`, accessory.displayName);
-            } catch (err) {
-              logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-              logger.error(err);
-            }
-          }
-
           try {
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
           } catch (err) {

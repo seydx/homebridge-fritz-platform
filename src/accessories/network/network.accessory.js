@@ -5,9 +5,8 @@ const { validIP } = require('../../utils/utils');
 const Telegram = require('../../lib/telegram');
 
 class Accessory {
-  constructor(device, polling, meshMaster) {
+  constructor(device, meshMaster) {
     this.device = device;
-    this.polling = polling;
     this.fritzbox = meshMaster.fritzbox;
 
     this.start();
@@ -105,7 +104,7 @@ class Accessory {
       logger.error('An error occured during polling network this.device!', this.device.name);
       logger.error(err);
     } finally {
-      setTimeout(() => this.start.bind(this), this.polling.timer * 1000);
+      setTimeout(() => this.start.bind(this), this.device.polling * 1000);
     }
   }
 }

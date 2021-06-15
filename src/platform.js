@@ -61,7 +61,6 @@ function FritzPlatform(log, config, api) {
   this.config = generateConfig(config);
 
   this.devices = new Map();
-  this.smarthome = new Map();
 
   this.meshMaster = {
     configured: false,
@@ -98,7 +97,7 @@ function FritzPlatform(log, config, api) {
   }
 
   if (this.config.network) {
-    NetworkSetup(this.config.network, this.polling, this.meshMaster);
+    NetworkSetup(this.config.network, this.meshMaster);
   }
 
   if (this.config.extras) {

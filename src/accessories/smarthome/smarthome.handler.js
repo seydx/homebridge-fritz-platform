@@ -213,62 +213,104 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.switch) {
-            state = device.switch.state ? true : false;
+            if (device.online) {
+              if (device.switch) {
+                state = device.switch.state ? true : false;
 
-            if (accessory.context.config.energy && device.powermeter) {
-              let currentPower = device.powermeter.power || 0;
-              let totalPower = device.powermeter.energy || 0;
-              let voltage = device.powermeter.voltage || 0;
-              let ampere = Math.round((currentPower / voltage + Number.EPSILON) * 100) / 100;
+                if (accessory.context.config.energy) {
+                  if (device.powermeter) {
+                    let currentPower = device.powermeter.power || 0;
+                    let totalPower = device.powermeter.energy || 0;
+                    let voltage = device.powermeter.voltage || 0;
+                    let ampere = Math.round((currentPower / voltage + Number.EPSILON) * 100) / 100;
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.OutletInUse)
-                .updateValue(currentPower > 0 ? true : false);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.OutletInUse)
+                      .updateValue(currentPower > 0 ? true : false);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
-                .updateValue(currentPower);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
+                      .updateValue(currentPower);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
-                .updateValue(totalPower);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
+                      .updateValue(totalPower);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.Volts)
-                .updateValue(voltage);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.Volts)
+                      .updateValue(voltage);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.Amperes)
-                .updateValue(ampere);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.Amperes)
+                      .updateValue(ampere);
+                  } else {
+                    logger.warn(
+                      'Can not find powermeter data - "accType" and/or options correct?',
+                      `${accessory.displayName} (${subtype})`
+                    );
+                  }
+                }
+              }
+
+              if (device.light) {
+                bulbState = device.light.state || 0;
+
+                if (accessory.context.config.brightness) {
+                  if (device.light.brightness) {
+                    brightness = !isNaN(device.light.brightness.levelpercentage)
+                      ? device.light.brightness.levelpercentage
+                      : null;
+                  }
+                } else {
+                  logger.warn(
+                    'Can not find brightness data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+
+                if (accessory.context.config.color) {
+                  if (device.light.color) {
+                    temp = device.light.color.temperature ? Math.round(1000000 / device.light.color.temperature) : null;
+                    hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
+                    sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation / 2.55 : null;
+                  }
+                } else {
+                  logger.warn(
+                    'Can not find color data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              } else {
+                logger.warn(
+                  'Can not find light data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+
+              if (accessory.context.config.temperature) {
+                if (device.temperature) {
+                  temperature = device.temperature.value || 0;
+                } else {
+                  logger.warn(
+                    'Can not find temperature data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
             }
-          }
-
-          if (device && device.online && device.light) {
-            bulbState = device.light.state || 0;
-
-            if (device.light.brightness) {
-              brightness = !isNaN(device.light.brightness.levelpercentage)
-                ? device.light.brightness.levelpercentage
-                : null;
-            }
-
-            if (device.light.color) {
-              temp = device.light.color.temperature ? Math.round(1000000 / device.light.color.temperature) : null;
-              hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
-              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation / 2.55 : null;
-            }
-          }
-
-          if (device && device.online && device.temperature) {
-            temperature = device.temperature.value || 0;
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -381,22 +423,50 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.light) {
-            state = device.light.state || false;
+            if (device.online) {
+              if (device.light) {
+                state = device.light.state || false;
 
-            if (device.light.brightness) {
-              brightness = !isNaN(device.light.brightness.levelpercentage)
-                ? device.light.brightness.levelpercentage
-                : null;
+                if (accessory.context.config.brightness) {
+                  if (device.light.brightness) {
+                    brightness = !isNaN(device.light.brightness.levelpercentage)
+                      ? device.light.brightness.levelpercentage
+                      : null;
+                  } else {
+                    logger.warn(
+                      'Can not find brightness data - "accType" and/or options correct?',
+                      `${accessory.displayName} (${subtype})`
+                    );
+                  }
+                }
+
+                if (accessory.context.config.color) {
+                  if (device.light.color) {
+                    temp = device.light.color.temperature ? Math.round(1000000 / device.light.color.temperature) : null;
+                    hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
+                    sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation / 2.55 : null;
+                  } else {
+                    logger.warn(
+                      'Can not find color data - "accType" and/or options correct?',
+                      `${accessory.displayName} (${subtype})`
+                    );
+                  }
+                }
+              } else {
+                logger.warn(
+                  'Can not find light data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
             }
-
-            if (device.light.color) {
-              temp = device.light.color.temperature ? Math.round(1000000 / device.light.color.temperature) : null;
-              hue = !isNaN(device.light.color.hue) ? device.light.color.hue : null;
-              sat = !isNaN(device.light.color.saturation) ? device.light.color.saturation / 2.55 : null;
-            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -483,42 +553,63 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.switch) {
-            state = device.switch.state ? true : false;
+            if (device.online) {
+              if (device.switch) {
+                state = device.switch.state ? true : false;
 
-            if (accessory.context.config.energy && device.powermeter) {
-              let currentPower = device.powermeter.power || 0;
-              let totalPower = device.powermeter.energy || 0;
-              let voltage = device.powermeter.voltage || 0;
-              let ampere = Math.round((currentPower / voltage + Number.EPSILON) * 100) / 100;
+                if (accessory.context.config.energy) {
+                  if (device.powermeter) {
+                    let currentPower = device.powermeter.power || 0;
+                    let totalPower = device.powermeter.energy || 0;
+                    let voltage = device.powermeter.voltage || 0;
+                    let ampere = Math.round((currentPower / voltage + Number.EPSILON) * 100) / 100;
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.OutletInUse)
-                .updateValue(currentPower > 0 ? true : false);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.OutletInUse)
+                      .updateValue(currentPower > 0 ? true : false);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
-                .updateValue(currentPower);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.CurrentConsumption)
+                      .updateValue(currentPower);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
-                .updateValue(totalPower);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.TotalConsumption)
+                      .updateValue(totalPower);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.Volts)
-                .updateValue(voltage);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.Volts)
+                      .updateValue(voltage);
 
-              accessory
-                .getService(this.api.hap.Service.Outlet)
-                .getCharacteristic(this.api.hap.Characteristic.Amperes)
-                .updateValue(ampere);
+                    accessory
+                      .getService(this.api.hap.Service.Outlet)
+                      .getCharacteristic(this.api.hap.Characteristic.Amperes)
+                      .updateValue(ampere);
+                  } else {
+                    logger.warn(
+                      'Can not find powermeter data - "accType" and/or options correct?',
+                      `${accessory.displayName} (${subtype})`
+                    );
+                  }
+                }
+              } else {
+                logger.warn(
+                  'Can not find switch data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
             }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -540,34 +631,62 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.temperature) {
-            state = device.temperature.value;
-          }
+            if (device.online) {
+              if (device.temperature) {
+                state = device.temperature.value;
+              } else {
+                logger.warn(
+                  'Can not find temperature data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
 
-          if (device && device.online && device.humidity && accessory.context.config.humidity) {
-            let humidity = device.humidity.value || 0;
+              if (accessory.context.config.humidity) {
+                if (device.humidity) {
+                  let humidity = device.humidity.value || 0;
 
-            accessory
-              .getService(this.api.hap.Service.HumiditySensor)
-              .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity)
-              .updateValue(humidity);
-          }
+                  accessory
+                    .getService(this.api.hap.Service.HumiditySensor)
+                    .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity)
+                    .updateValue(humidity);
+                } else {
+                  logger.warn(
+                    'Can not find humidity data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
 
-          if (device && device.online && device.battery && accessory.context.config.battery) {
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -592,25 +711,46 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.alert) {
-            state = device.alert.state || 0;
-          }
+            if (device.online) {
+              if (device.alert) {
+                state = device.alert.state || 0;
+              } else {
+                logger.warn(
+                  'Can not find alert data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
 
-          if (device && device.online && device.battery && accessory.context.config.battery) {
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -635,25 +775,46 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.thermostat) {
-            state = device.thermostat.windowOpen || 0;
-          }
+            if (device.online) {
+              if (device.thermostat) {
+                state = device.thermostat.windowOpen || 0;
+              } else {
+                logger.warn(
+                  'Can not find thermostat data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
 
-          if (device && device.online && device.battery && accessory.context.config.battery) {
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
 
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -693,88 +854,111 @@ class Handler {
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.thermostat) {
-            currentTemp = device.thermostat.current;
-            targetTemp = device.thermostat.target;
+            if (device.online) {
+              if (device.thermostat) {
+                currentTemp = device.thermostat.current;
+                targetTemp = device.thermostat.target;
 
-            /*currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
-              ? currentTemp
-              : device.thermostat.current;
-            
-            targetTemp = (device.thermostat.target === 'on' || device.thermostat.target === 'off')
-              ? targetTemp
-              : device.thermostat.target;*/
+                /*currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
+                ? currentTemp
+                : device.thermostat.current;
+              
+              targetTemp = (device.thermostat.target === 'on' || device.thermostat.target === 'off')
+                ? targetTemp
+                : device.thermostat.target;*/
 
-            if (device.temperature) {
-              currentTemp = device.temperature.value || currentTemp;
-            }
+                if (device.temperature) {
+                  currentTemp = device.temperature.value || currentTemp;
+                }
 
-            if (targetTemp === 'off') {
-              active = this.api.hap.Characteristic.Active.INACTIVE;
-              currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.INACTIVE;
-            } else {
-              active = this.api.hap.Characteristic.Active.ACTIVE;
+                if (targetTemp === 'off') {
+                  active = this.api.hap.Characteristic.Active.INACTIVE;
+                  currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.INACTIVE;
+                } else {
+                  active = this.api.hap.Characteristic.Active.ACTIVE;
 
-              if (currentTemp && targetTemp) {
-                if (targetTemp !== 'on' && currentTemp !== 'on' && currentTemp !== 'off') {
-                  if (currentTemp < targetTemp) {
-                    currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.HEATING;
+                  if (currentTemp && targetTemp) {
+                    if (targetTemp !== 'on' && currentTemp !== 'on' && currentTemp !== 'off') {
+                      if (currentTemp < targetTemp) {
+                        currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.HEATING;
 
-                    let valvePos = Math.round(targetTemp - currentTemp >= 5 ? 100 : (targetTemp - currentTemp) * 20);
+                        let valvePos = Math.round(
+                          targetTemp - currentTemp >= 5 ? 100 : (targetTemp - currentTemp) * 20
+                        );
 
-                    accessory
-                      .getService(this.api.hap.Service.HeaterCooler)
-                      .getCharacteristic(this.api.hap.Characteristic.ValvePosition)
-                      .updateValue(valvePos);
-                  } else {
-                    currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.COOLING;
+                        accessory
+                          .getService(this.api.hap.Service.HeaterCooler)
+                          .getCharacteristic(this.api.hap.Characteristic.ValvePosition)
+                          .updateValue(valvePos);
+                      } else {
+                        currentState = this.api.hap.Characteristic.CurrentHeaterCoolerState.COOLING;
+                      }
+
+                      accessory
+                        .getService(this.api.hap.Service.HeaterCooler)
+                        .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
+                        .updateValue(targetTemp);
+
+                      accessory
+                        .getService(this.api.hap.Service.HeaterCooler)
+                        .getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
+                        .updateValue(targetTemp);
+                    }
                   }
+                }
 
+                if (!isNaN(currentTemp))
                   accessory
                     .getService(this.api.hap.Service.HeaterCooler)
-                    .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
-                    .updateValue(targetTemp);
+                    .getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
+                    .updateValue(currentTemp);
+
+                accessory
+                  .getService(this.api.hap.Service.HeaterCooler)
+                  .getCharacteristic(this.api.hap.Characteristic.Active)
+                  .updateValue(active);
+
+                accessory
+                  .getService(this.api.hap.Service.HeaterCooler)
+                  .getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
+                  .updateValue(currentState);
+              } else {
+                logger.warn(
+                  'Can not find thermostat data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
 
                   accessory
-                    .getService(this.api.hap.Service.HeaterCooler)
-                    .getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
-                    .updateValue(targetTemp);
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
+
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
                 }
               }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
             }
-
-            if (!isNaN(currentTemp))
-              accessory
-                .getService(this.api.hap.Service.HeaterCooler)
-                .getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
-                .updateValue(currentTemp);
-
-            accessory
-              .getService(this.api.hap.Service.HeaterCooler)
-              .getCharacteristic(this.api.hap.Characteristic.Active)
-              .updateValue(active);
-
-            accessory
-              .getService(this.api.hap.Service.HeaterCooler)
-              .getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState)
-              .updateValue(currentState);
-          }
-
-          if (device && device.online && device.battery && accessory.context.config.battery) {
-            let batteryLevel = device.battery.value || 0;
-            let lowBattery = device.battery.low || 0;
-
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
-              .updateValue(batteryLevel);
-
-            accessory
-              .getService(this.api.hap.Service.BatteryService)
-              .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
-              .updateValue(lowBattery);
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -788,31 +972,83 @@ class Handler {
           .getService(this.api.hap.Service.WindowCovering)
           .getCharacteristic(this.api.hap.Characteristic.CurrentPosition).value;
 
+        let targetPosition = accessory
+          .getService(this.api.hap.Service.WindowCovering)
+          .getCharacteristic(this.api.hap.Characteristic.TargetPosition).value;
+
+        let validCurrentPosition = state;
+        let positionState;
+
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
           logger.debug(device, accessory.displayName);
 
           if (device) {
             accessory.context.config.ain = device.ain;
-          }
 
-          if (device && device.online && device.position) {
-            state = device.position.levelpercentage || 0;
+            if (device.online) {
+              if (device.position) {
+                validCurrentPosition = 100 - device.position.levelpercentage || 0;
+
+                if (!device.alert.state) {
+                  if (validCurrentPosition === targetPosition) {
+                    positionState = 2; //stopped
+                  }
+                } else {
+                  logger.warn(
+                    'Something is wrong with the blind, please check the blind!',
+                    `${accessory.displayName} (${subtype})`
+                  );
+
+                  positionState = 2; //stopped
+                }
+              } else {
+                logger.warn(
+                  'Can not find position data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+
+                positionState = 2; //stopped
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
+
+          positionState = 2; //stopped
         }
 
-        accessory
-          .getService(this.api.hap.Service.WindowCovering)
-          .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
-          .updateValue(state);
+        if (positionState === 2) {
+          targetPosition = validCurrentPosition;
 
-        accessory
-          .getService(this.api.hap.Service.WindowCovering)
-          .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
-          .updateValue(state);
+          accessory
+            .getService(this.api.hap.Service.WindowCovering)
+            .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
+            .updateValue(targetPosition);
+
+          accessory
+            .getService(this.api.hap.Service.WindowCovering)
+            .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
+            .updateValue(validCurrentPosition);
+
+          accessory
+            .getService(this.api.hap.Service.WindowCovering)
+            .getCharacteristic(this.api.hap.Characteristic.PositionState)
+            .updateValue(positionState);
+        } else {
+          accessory
+            .getService(this.api.hap.Service.WindowCovering)
+            .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
+            .updateValue(validCurrentPosition);
+        }
 
         return state;
       }
@@ -824,6 +1060,7 @@ class Handler {
 
   async set(state, accessory, subtype, target) {
     subtype = subtype || accessory.context.config.subtype;
+    // eslint-disable-next-line no-unused-vars
     const config = accessory.context.config;
 
     if (!this.configured) {
@@ -1141,6 +1378,41 @@ class Handler {
           try {
             logger.info(`Position ${state}`, accessory.displayName);
 
+            let validTargetPosition = 100 - state;
+
+            let currentPosition = accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.CurrentPosition).value;
+
+            if (state === currentPosition) {
+              const targetPosition = state;
+
+              accessory
+                .getService(this.api.hap.Service.WindowCovering)
+                .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
+                .updateValue(targetPosition);
+
+              accessory
+                .getService(this.api.hap.Service.WindowCovering)
+                .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
+                .updateValue(currentPosition);
+
+              accessory
+                .getService(this.api.hap.Service.WindowCovering)
+                .getCharacteristic(this.api.hap.Characteristic.PositionState)
+                .updateValue(2);
+
+              return;
+            }
+
+            let moveUp = state > currentPosition;
+            let positionState = moveUp ? 1 : 0;
+
+            accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.PositionState)
+              .updateValue(positionState);
+
             const response = await this.fritzbox.exec(
               'urn:DeviceConfig-com:serviceId:DeviceConfig1',
               'X_AVM-DE_CreateUrlSID'
@@ -1149,7 +1421,7 @@ class Handler {
 
             let cmd = {
               switchcmd: 'setlevelpercentage',
-              level: state,
+              level: validTargetPosition,
             };
 
             if (accessory.context.config.group && !accessory.context.config.ain) {
@@ -1165,10 +1437,20 @@ class Handler {
               await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
             } else {
               logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+
+              accessory
+                .getService(this.api.hap.Service.WindowCovering)
+                .getCharacteristic(this.api.hap.Characteristic.PositionState)
+                .updateValue(2);
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
+
+            accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.PositionState)
+              .updateValue(2);
           }
         }
         break;

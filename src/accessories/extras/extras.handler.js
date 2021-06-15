@@ -409,7 +409,7 @@ class Handler {
               await fs.writeJson(`${this.configPath}/fritzbox/blackbook.json`, blackBook, { spaces: 2 });
             }
 
-            logger.info(`Done!`, `${accessory.displayName} (${subtype})`);
+            logger.info('Done!', `${accessory.displayName} (${subtype})`);
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
