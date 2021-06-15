@@ -1088,9 +1088,7 @@ class Handler {
             );
             const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-            let cmd;
-
-            if (accessory.context.config.group && !accessory.context.config.ain) {
+            if (accessory.context.config.group) {
               let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
               if (device) {
@@ -1098,26 +1096,39 @@ class Handler {
               }
             }
 
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+            };
+
             if (accessory.context.config.ain) {
               if (target === 'on') {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
+                  ...cmd,
                   switchcmd: state ? 'setswitchon' : 'setswitchoff',
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               } else if (target === 'brightness') {
                 logger.info(`Brightness ${state}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setlevelpercentage',
                   level: state,
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               } else if (target === 'temperature') {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
@@ -1135,6 +1146,7 @@ class Handler {
                 );
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setcolortemperature',
                   temperature: validColorTemperatureKelvin,
                   duration: 100,
@@ -1142,7 +1154,7 @@ class Handler {
 
                 if (bulbState) {
                   logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                  await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await requestAHA(this.fritzbox.url.hostname, cmd);
 
                   accessory
                     .getService(this.api.hap.Service.Lightbulb)
@@ -1163,6 +1175,7 @@ class Handler {
                 );
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setcolor',
                   hue: validHueSat.hue,
                   saturation: validHueSat.sat,
@@ -1171,7 +1184,7 @@ class Handler {
 
                 if (bulbState) {
                   logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                  await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await requestAHA(this.fritzbox.url.hostname, cmd);
                 }
               }
             } else {
@@ -1196,9 +1209,7 @@ class Handler {
             );
             const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-            let cmd;
-
-            if (accessory.context.config.group && !accessory.context.config.ain) {
+            if (accessory.context.config.group) {
               let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
               if (device) {
@@ -1206,27 +1217,40 @@ class Handler {
               }
             }
 
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+            };
+
             if (accessory.context.config.ain) {
               if (target === 'on') {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setsimpleonoff',
                   onoff: state ? 1 : 0,
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               } else if (target === 'brightness') {
                 logger.info(`Brightness ${state}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setlevelpercentage',
                   level: state,
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               } else if (target === 'temperature') {
                 let colorTemperatureMired = state;
                 let colorTemperatureKelvin = Math.round(1000000 / colorTemperatureMired);
@@ -1242,6 +1266,7 @@ class Handler {
                 );
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setcolortemperature',
                   temperature: validColorTemperatureKelvin,
                   duration: 100,
@@ -1249,7 +1274,7 @@ class Handler {
 
                 if (bulbState) {
                   logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                  await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await requestAHA(this.fritzbox.url.hostname, cmd);
 
                   accessory
                     .getService(this.api.hap.Service.Lightbulb)
@@ -1270,6 +1295,7 @@ class Handler {
                 );
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'setcolor',
                   hue: validHueSat.hue,
                   saturation: validHueSat.sat,
@@ -1278,7 +1304,7 @@ class Handler {
 
                 if (bulbState) {
                   logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                  await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                  await requestAHA(this.fritzbox.url.hostname, cmd);
                 }
               }
             } else {
@@ -1301,11 +1327,7 @@ class Handler {
             );
             const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-            let cmd = {
-              switchcmd: state ? 'setswitchon' : 'setswitchoff',
-            };
-
-            if (accessory.context.config.group && !accessory.context.config.ain) {
+            if (accessory.context.config.group) {
               let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
               if (device) {
@@ -1313,9 +1335,21 @@ class Handler {
               }
             }
 
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+              switchcmd: state ? 'setswitchon' : 'setswitchoff',
+            };
+
             if (accessory.context.config.ain) {
               logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-              await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              await requestAHA(this.fritzbox.url.hostname, cmd);
             } else {
               logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
             }
@@ -1343,9 +1377,7 @@ class Handler {
             );
             const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-            let cmd;
-
-            if (accessory.context.config.group && !accessory.context.config.ain) {
+            if (accessory.context.config.group) {
               let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
               if (device) {
@@ -1353,18 +1385,30 @@ class Handler {
               }
             }
 
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+            };
+
             if (accessory.context.config.ain) {
               if (target === 'temperature') {
                 logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
                 let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'sethkrtsoll',
                   param: temp,
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               } else {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
@@ -1375,12 +1419,13 @@ class Handler {
                 let temp = Math.round((Math.min(Math.max(targetTemp, 8), 28) - 8) * 2) + 16;
 
                 cmd = {
+                  ...cmd,
                   switchcmd: 'sethkrtsoll',
                   param: state ? temp : 253,
                 };
 
                 logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+                await requestAHA(this.fritzbox.url.hostname, cmd);
               }
             } else {
               logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
@@ -1437,12 +1482,7 @@ class Handler {
             );
             const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-            let cmd = {
-              switchcmd: 'setlevelpercentage',
-              level: validTargetPosition,
-            };
-
-            if (accessory.context.config.group && !accessory.context.config.ain) {
+            if (accessory.context.config.group) {
               let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
               if (device) {
@@ -1450,9 +1490,22 @@ class Handler {
               }
             }
 
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+              switchcmd: 'setlevelpercentage',
+              level: validTargetPosition,
+            };
+
             if (accessory.context.config.ain) {
               logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-              await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
+              await requestAHA(this.fritzbox.url.hostname, cmd);
             } else {
               logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
 
