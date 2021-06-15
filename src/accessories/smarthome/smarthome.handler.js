@@ -975,12 +975,11 @@ class Handler {
           .getService(this.api.hap.Service.WindowCovering)
           .getCharacteristic(this.api.hap.Characteristic.CurrentPosition).value;
 
-        let targetPosition = accessory
+        /*let targetPosition = accessory
           .getService(this.api.hap.Service.WindowCovering)
-          .getCharacteristic(this.api.hap.Characteristic.TargetPosition).value;
+          .getCharacteristic(this.api.hap.Characteristic.TargetPosition).value;*/
 
         let validCurrentPosition = state;
-        let positionState;
 
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
@@ -992,26 +991,11 @@ class Handler {
             if (device.online) {
               if (device.blind.position) {
                 validCurrentPosition = 100 - device.blind.position.levelpercentage || 0;
-
-                if (!device.alert.state) {
-                  if (validCurrentPosition === targetPosition) {
-                    positionState = 2; //stopped
-                  }
-                } else {
-                  logger.warn(
-                    'Something is wrong with the blind, please check the blind!',
-                    `${accessory.displayName} (${subtype})`
-                  );
-
-                  positionState = 2; //stopped
-                }
               } else {
                 logger.warn(
                   'Can not find position data - "accType" and/or options correct?',
                   `${accessory.displayName} (${subtype})`
                 );
-
-                positionState = 2; //stopped
               }
             } else {
               logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
@@ -1025,33 +1009,17 @@ class Handler {
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
-
-          positionState = 2; //stopped
         }
 
-        if (positionState === 2) {
-          targetPosition = validCurrentPosition;
+        accessory
+          .getService(this.api.hap.Service.WindowCovering)
+          .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
+          .updateValue(validCurrentPosition);
 
-          accessory
-            .getService(this.api.hap.Service.WindowCovering)
-            .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
-            .updateValue(targetPosition);
-
-          accessory
-            .getService(this.api.hap.Service.WindowCovering)
-            .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
-            .updateValue(validCurrentPosition);
-
-          accessory
-            .getService(this.api.hap.Service.WindowCovering)
-            .getCharacteristic(this.api.hap.Characteristic.PositionState)
-            .updateValue(positionState);
-        } else {
-          accessory
-            .getService(this.api.hap.Service.WindowCovering)
-            .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
-            .updateValue(validCurrentPosition);
-        }
+        accessory
+          .getService(this.api.hap.Service.WindowCovering)
+          .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
+          .updateValue(validCurrentPosition);
 
         return state;
       }
@@ -1514,6 +1482,21 @@ class Handler {
                 .getCharacteristic(this.api.hap.Characteristic.PositionState)
                 .updateValue(2);
             }
+
+            accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.TargetPosition)
+              .updateValue(state);
+
+            accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.CurrentPosition)
+              .updateValue(state);
+
+            accessory
+              .getService(this.api.hap.Service.WindowCovering)
+              .getCharacteristic(this.api.hap.Characteristic.PositionState)
+              .updateValue(2);
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
