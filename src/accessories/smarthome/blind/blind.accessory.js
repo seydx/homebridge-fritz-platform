@@ -20,7 +20,10 @@ class Accessory {
     let service = this.accessory.getService(this.api.hap.Service.WindowCovering);
 
     if (!service) {
-      logger.info('Adding WindowCovering service', this.accessory.displayName);
+      logger.info(
+        'Adding WindowCovering service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.addService(
         this.api.hap.Service.WindowCovering,
         this.accessory.displayName,

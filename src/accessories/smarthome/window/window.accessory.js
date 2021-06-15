@@ -24,7 +24,7 @@ class Accessory {
     let service = this.accessory.getService(this.api.hap.Service.ContactSensor);
 
     if (!service) {
-      logger.info('Adding Window service', this.accessory.displayName);
+      logger.info('Adding Window service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.ContactSensor,
         this.accessory.displayName,
@@ -36,7 +36,10 @@ class Accessory {
       let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
 
       if (!batteryService) {
-        logger.info('Adding Battery service', this.accessory.displayName);
+        logger.info(
+          'Adding Battery service',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
       }
 
@@ -71,7 +74,7 @@ class Accessory {
     }
 
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal).onSet(() => {
-      logger.info('Resetting FakeGato..', this.accessory.displayName);
+      logger.info('Resetting FakeGato..', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
 
       const now = Math.round(new Date().valueOf() / 1000);
       const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);

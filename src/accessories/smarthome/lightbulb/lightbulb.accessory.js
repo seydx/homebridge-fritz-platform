@@ -20,7 +20,10 @@ class Accessory {
     let service = this.accessory.getService(this.api.hap.Service.Lightbulb);
 
     if (!service) {
-      logger.info('Adding Lightbulb service', this.accessory.displayName);
+      logger.info(
+        'Adding Lightbulb service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.addService(
         this.api.hap.Service.Lightbulb,
         this.accessory.displayName,

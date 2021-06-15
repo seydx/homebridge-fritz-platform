@@ -25,12 +25,15 @@ class Accessory {
     let serviceOld = this.accessory.getService(this.api.hap.Service.Switch);
 
     if (serviceOld) {
-      logger.info('Removing Switch service', this.accessory.displayName);
+      logger.info(
+        'Removing Switch service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       this.accessory.removeService(serviceOld);
     }
 
     if (!service) {
-      logger.info('Adding Outlet service', this.accessory.displayName);
+      logger.info('Adding Outlet service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.Outlet,
         this.accessory.displayName,
@@ -71,7 +74,7 @@ class Accessory {
       .on('change', (context) => this.handler.change(context, this.accessory, null, this.historyService));
 
     service.getCharacteristic(this.api.hap.Characteristic.ResetTotal).onSet(() => {
-      logger.info('Resetting FakeGato..', this.accessory.displayName);
+      logger.info('Resetting FakeGato..', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
 
       const now = Math.round(new Date().valueOf() / 1000);
       const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
@@ -91,7 +94,10 @@ class Accessory {
         .onSet((state) => this.handler.set(state, this.accessory));
     } else {
       service.getCharacteristic(this.api.hap.Characteristic.On).onSet((state) => {
-        logger.info('Changing state not allowed - "readOnly" is active!', this.accessory.displayName);
+        logger.info(
+          'Changing state not allowed - "readOnly" is active!',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         setTimeout(() => service.getCharacteristic(this.api.hap.Characteristic.On).updateValue(!state), 1000);
       });
     }

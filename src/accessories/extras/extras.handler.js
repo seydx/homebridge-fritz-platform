@@ -48,7 +48,11 @@ class Handler {
 
       switch (subtype) {
         case 'alarm':
-          Telegram.send('alarm', context.newValue ? 'activated' : 'deactivated', accessory.displayName);
+          Telegram.send(
+            'alarm',
+            context.newValue ? 'activated' : 'deactivated',
+            `${accessory.displayName} (${subtype})`
+          );
           break;
         case 'phoneBook':
           break;
@@ -57,7 +61,10 @@ class Handler {
         case 'wakeup':
           break;
         default:
-          logger.warn(`Can not handle CHANGE event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+          logger.warn(
+            `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
+            `${accessory.displayName} (${subtype})`
+          );
           break;
       }
     }
@@ -119,7 +126,10 @@ class Handler {
       case 'wakeup':
         break;
       default:
-        logger.warn(`Can not handle GET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle GET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
 
@@ -535,7 +545,10 @@ class Handler {
         break;
       }
       default:
-        logger.warn(`Can not handle SET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle SET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
   }

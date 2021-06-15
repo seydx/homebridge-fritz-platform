@@ -21,12 +21,18 @@ class Accessory {
     let serviceOld = this.accessory.getService(this.api.hap.Service.MotionSensor);
 
     if (serviceOld) {
-      logger.info('Removing Motion service', this.accessory.displayName);
+      logger.info(
+        'Removing Motion service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       this.accessory.removeService(serviceOld);
     }
 
     if (!service) {
-      logger.info('Adding Occupancy service', this.accessory.displayName);
+      logger.info(
+        'Adding Occupancy service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.addService(
         this.api.hap.Service.OccupancySensor,
         this.accessory.displayName,

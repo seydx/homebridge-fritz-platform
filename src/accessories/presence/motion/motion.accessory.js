@@ -26,12 +26,15 @@ class Accessory {
     let serviceOld = this.accessory.getService(this.api.hap.Service.OccupancySensor);
 
     if (serviceOld) {
-      logger.info('Removing Occupancy service', this.accessory.displayName);
+      logger.info(
+        'Removing Occupancy service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       this.accessory.removeService(serviceOld);
     }
 
     if (!service) {
-      logger.info('Adding Motion service', this.accessory.displayName);
+      logger.info('Adding Motion service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.MotionSensor,
         this.accessory.displayName,

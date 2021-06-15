@@ -49,7 +49,7 @@ class Handler {
     }
 
     try {
-      logger.info('ON', accessory.displayName);
+      logger.info('ON', `${accessory.displayName} (${subtype})`);
 
       await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', 'X_AVM-DE_WakeOnLANByMACAddress', {
         NewMACAddress: accessory.context.config.address,

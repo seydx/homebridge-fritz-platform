@@ -20,7 +20,7 @@ class Accessory {
     let service = this.accessory.getService(this.api.hap.Service.Switch);
 
     if (!service) {
-      logger.info('Adding Switch service', this.accessory.displayName);
+      logger.info('Adding Switch service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
 
       service = this.accessory.addService(
         this.api.hap.Service.Switch,

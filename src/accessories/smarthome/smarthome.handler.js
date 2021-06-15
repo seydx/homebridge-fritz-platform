@@ -155,7 +155,10 @@ class Handler {
         case 'smarthome-blind':
           break;
         default:
-          logger.warn(`Can not handle CHANGE event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+          logger.warn(
+            `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
+            `${accessory.displayName} (${subtype})`
+          );
           break;
       }
     }
@@ -209,7 +212,7 @@ class Handler {
 
         try {
           let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -348,7 +351,7 @@ class Handler {
             let changed = Math.abs(accessory.context.config.tempValue - temp) > 5;
 
             if (changed) {
-              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', `${accessory.displayName} (${subtype})`);
 
               accessory.adaptiveLightingController.disableAdaptiveLighting(true);
 
@@ -373,7 +376,7 @@ class Handler {
           }
 
           if (hue !== null && hue !== undefined && sat !== null && sat !== undefined) {
-            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', `${accessory.displayName} (${subtype})`);
 
             accessory.adaptiveLightingController.disableAdaptiveLighting(true);
 
@@ -419,7 +422,7 @@ class Handler {
             ? this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain))
             : this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -495,7 +498,7 @@ class Handler {
             let changed = Math.abs(accessory.context.config.tempValue - temp) > 5;
 
             if (changed) {
-              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+              //Logger.debug('Color temperature changed from outside. Disabling AdaptiveLighting.', `${accessory.displayName} (${subtype})`);
 
               accessory.adaptiveLightingController.disableAdaptiveLighting(true);
 
@@ -520,7 +523,7 @@ class Handler {
           }
 
           if (hue !== null && hue !== undefined && sat !== null && sat !== undefined) {
-            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', accessory.displayName);
+            //Logger.debug('Color changed from outside. Disabling AdaptiveLighting.', `${accessory.displayName} (${subtype})`);
 
             accessory.adaptiveLightingController.disableAdaptiveLighting(true);
 
@@ -549,7 +552,7 @@ class Handler {
             ? this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain))
             : this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -627,7 +630,7 @@ class Handler {
 
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -707,7 +710,7 @@ class Handler {
 
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -771,7 +774,7 @@ class Handler {
 
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -850,7 +853,7 @@ class Handler {
             ? this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain))
             : this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
 
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -981,7 +984,7 @@ class Handler {
 
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
-          logger.debug(device, accessory.displayName);
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
 
           if (device) {
             accessory.context.config.ain = device.ain;
@@ -1053,7 +1056,10 @@ class Handler {
         return state;
       }
       default:
-        logger.warn(`Can not handle GET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle GET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
   }
@@ -1094,26 +1100,26 @@ class Handler {
 
             if (accessory.context.config.ain) {
               if (target === 'on') {
-                logger.info(`${state ? 'ON' : 'OFF'}`, accessory.displayName);
+                logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
                   switchcmd: state ? 'setswitchon' : 'setswitchoff',
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               } else if (target === 'brightness') {
-                logger.info(`Brightness ${state}`, accessory.displayName);
+                logger.info(`Brightness ${state}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
                   switchcmd: 'setlevelpercentage',
                   level: state,
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               } else if (target === 'temperature') {
-                logger.info(`${state ? 'ON' : 'OFF'}`, accessory.displayName);
+                logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 let colorTemperatureMired = state;
                 let colorTemperatureKelvin = Math.round(1000000 / colorTemperatureMired);
@@ -1123,7 +1129,10 @@ class Handler {
                 let hue = color.hue;
                 let saturation = color.saturation;
 
-                logger.info(`Color Temperature ${validColorTemperatureKelvin} Kelvin`, accessory.displayName);
+                logger.info(
+                  `Color Temperature ${validColorTemperatureKelvin} Kelvin`,
+                  `${accessory.displayName} (${subtype})`
+                );
 
                 cmd = {
                   switchcmd: 'setcolortemperature',
@@ -1132,7 +1141,7 @@ class Handler {
                 };
 
                 if (bulbState) {
-                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                   await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
 
                   accessory
@@ -1148,7 +1157,10 @@ class Handler {
               } else {
                 //color
                 let validHueSat = getValidColor(accessory, false, state);
-                logger.info(`Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`, accessory.displayName);
+                logger.info(
+                  `Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`,
+                  `${accessory.displayName} (${subtype})`
+                );
 
                 cmd = {
                   switchcmd: 'setcolor',
@@ -1158,12 +1170,12 @@ class Handler {
                 };
 
                 if (bulbState) {
-                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                   await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                 }
               }
             } else {
-              logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -1196,24 +1208,24 @@ class Handler {
 
             if (accessory.context.config.ain) {
               if (target === 'on') {
-                logger.info(`${state ? 'ON' : 'OFF'}`, accessory.displayName);
+                logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
                   switchcmd: 'setsimpleonoff',
                   onoff: state ? 1 : 0,
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               } else if (target === 'brightness') {
-                logger.info(`Brightness ${state}`, accessory.displayName);
+                logger.info(`Brightness ${state}`, `${accessory.displayName} (${subtype})`);
 
                 cmd = {
                   switchcmd: 'setlevelpercentage',
                   level: state,
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               } else if (target === 'temperature') {
                 let colorTemperatureMired = state;
@@ -1224,7 +1236,10 @@ class Handler {
                 let hue = color.hue;
                 let saturation = color.saturation;
 
-                logger.info(`Color Temperature ${validColorTemperatureKelvin} Kelvin`, accessory.displayName);
+                logger.info(
+                  `Color Temperature ${validColorTemperatureKelvin} Kelvin`,
+                  `${accessory.displayName} (${subtype})`
+                );
 
                 cmd = {
                   switchcmd: 'setcolortemperature',
@@ -1233,7 +1248,7 @@ class Handler {
                 };
 
                 if (bulbState) {
-                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                   await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
 
                   accessory
@@ -1249,7 +1264,10 @@ class Handler {
               } else {
                 //color
                 let validHueSat = getValidColor(accessory, false, state);
-                logger.info(`Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`, accessory.displayName);
+                logger.info(
+                  `Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`,
+                  `${accessory.displayName} (${subtype})`
+                );
 
                 cmd = {
                   switchcmd: 'setcolor',
@@ -1259,12 +1277,12 @@ class Handler {
                 };
 
                 if (bulbState) {
-                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                   await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
                 }
               }
             } else {
-              logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -1275,7 +1293,7 @@ class Handler {
       case 'smarthome-switch':
         {
           try {
-            logger.info(`${state ? 'ON' : 'OFF'}`, accessory.displayName);
+            logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
             const response = await this.fritzbox.exec(
               'urn:DeviceConfig-com:serviceId:DeviceConfig1',
@@ -1296,10 +1314,10 @@ class Handler {
             }
 
             if (accessory.context.config.ain) {
-              logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+              logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
               await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
             } else {
-              logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -1337,7 +1355,7 @@ class Handler {
 
             if (accessory.context.config.ain) {
               if (target === 'temperature') {
-                logger.info(`Temperature ${state}`, accessory.displayName);
+                logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
                 let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
 
                 cmd = {
@@ -1345,10 +1363,10 @@ class Handler {
                   param: temp,
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               } else {
-                logger.info(`${state ? 'ON' : 'OFF'}`, accessory.displayName);
+                logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
                 let targetTemp = accessory
                   .getService(this.api.hap.Service.HeaterCooler)
@@ -1361,11 +1379,11 @@ class Handler {
                   param: state ? temp : 253,
                 };
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
                 await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
               }
             } else {
-              logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -1376,7 +1394,7 @@ class Handler {
       case 'smarthome-blind':
         {
           try {
-            logger.info(`Position ${state}`, accessory.displayName);
+            logger.info(`Position ${state}`, `${accessory.displayName} (${subtype})`);
 
             let validTargetPosition = 100 - state;
 
@@ -1433,10 +1451,10 @@ class Handler {
             }
 
             if (accessory.context.config.ain) {
-              logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, accessory.displayName);
+              logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
               await requestAHA(this.fritzbox.url.hostname, accessory.context.config.ain, sid, cmd);
             } else {
-              logger.warn('Can not switch state! No AIN found/defined!', accessory.displayName);
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
 
               accessory
                 .getService(this.api.hap.Service.WindowCovering)
@@ -1455,7 +1473,10 @@ class Handler {
         }
         break;
       default:
-        logger.warn(`Can not handle SET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle SET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
   }

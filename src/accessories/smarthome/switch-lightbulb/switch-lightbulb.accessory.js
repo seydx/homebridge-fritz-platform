@@ -23,12 +23,15 @@ class Accessory {
     let serviceOutlet = this.accessory.getService(this.api.hap.Service.Outlet);
 
     if (serviceOutlet) {
-      logger.info('Removing Outlet service', this.accessory.displayName);
+      logger.info(
+        'Removing Outlet service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       this.accessory.removeService(serviceOutlet);
     }
 
     if (!serviceSwitch) {
-      logger.info('Adding Switch service', this.accessory.displayName);
+      logger.info('Adding Switch service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       serviceSwitch = this.accessory.addService(
         this.api.hap.Service.Switch,
         this.accessory.displayName,
@@ -37,7 +40,10 @@ class Accessory {
     }
 
     if (!serviceLightbulb) {
-      logger.info('Adding Lightbulb service', this.accessory.displayName);
+      logger.info(
+        'Adding Lightbulb service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       serviceLightbulb = this.accessory.addService(
         this.api.hap.Service.Lightbulb,
         this.accessory.displayName,
@@ -47,7 +53,10 @@ class Accessory {
 
     if (this.accessory.context.config.temperature) {
       if (!serviceTemp) {
-        logger.info('Adding Temperature service', this.accessory.displayName);
+        logger.info(
+          'Adding Temperature service',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         serviceTemp = this.accessory.addService(
           this.api.hap.Service.TemperatureSensor,
           this.accessory.displayName,
@@ -134,7 +143,10 @@ class Accessory {
         .onSet((state) => this.handler.set(state, this.accessory, null, 'on'));
     } else {
       serviceSwitch.getCharacteristic(this.api.hap.Characteristic.On).onSet((state) => {
-        logger.info('Changing state not allowed - "readOnly" is active!', this.accessory.displayName);
+        logger.info(
+          'Changing state not allowed - "readOnly" is active!',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         setTimeout(() => serviceSwitch.getCharacteristic(this.api.hap.Characteristic.On).updateValue(!state), 1000);
       });
     }

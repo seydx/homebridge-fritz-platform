@@ -63,7 +63,11 @@ class Handler {
           dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
         }
 
-        Telegram.send('presence', dest, accessory.displayName === 'Anyone' ? false : accessory.displayName);
+        Telegram.send(
+          'presence',
+          dest,
+          accessory.displayName === 'Anyone' ? false : `${accessory.displayName} (${subtype})`
+        );
       }
     }
   }
@@ -123,7 +127,7 @@ class Handler {
       );
 
       if (host) {
-        logger.debug(host, accessory.displayName);
+        logger.debug(host, `${accessory.displayName} (${subtype})`);
 
         newState = host.active;
         const address = host.ip;
@@ -135,13 +139,13 @@ class Handler {
           const res = await ping.promise.probe(address);
 
           if (res.alive != newState) {
-            logger.debug('Ping and FritzBox states are not equal.', accessory.displayName);
+            logger.debug('Ping and FritzBox states are not equal.', `${accessory.displayName} (${subtype})`);
 
             if (res.alive) {
               accessory.context.lastSeen = Date.now();
               newState = res.alive;
 
-              logger.debug('Taking the value of Ping. (DETECTED)', accessory.displayName);
+              logger.debug('Taking the value of Ping. (DETECTED)', `${accessory.displayName} (${subtype})`);
             } else {
               if (accessory.context.lastSeen) {
                 let lastSeenMoment = moment(accessory.context.lastSeen);
@@ -151,7 +155,10 @@ class Handler {
                   newState = true;
                   accessory.context.lastSeen = false;
 
-                  logger.debug('Taking the value of Ping. (DETECTED - THRESHOLD REACHED)', accessory.displayName);
+                  logger.debug(
+                    'Taking the value of Ping. (DETECTED - THRESHOLD REACHED)',
+                    `${accessory.displayName} (${subtype})`
+                  );
                 } else {
                   newState = false;
 
@@ -190,7 +197,10 @@ class Handler {
               accessory.displayName
             );
 
-            logger.info(`Wait ${newState ? onDelay : offDelay}s before switching state!`, accessory.displayName);
+            logger.info(
+              `Wait ${newState ? onDelay : offDelay}s before switching state!`,
+              `${accessory.displayName} (${subtype})`
+            );
           }
         } else {
           if (accessory.context.changedOn) {
@@ -237,7 +247,10 @@ class Handler {
         );
 
         if (!host) {
-          logger.debug('User could not be find in hosts list. Looking for user manually.', accessory.displayName);
+          logger.debug(
+            'User could not be find in hosts list. Looking for user manually.',
+            `${accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
 
           const service = validIP(accessory.context.config.address)
             ? 'X_AVM-DE_GetSpecificHostEntryByIP'

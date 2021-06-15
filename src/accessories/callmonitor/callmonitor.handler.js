@@ -153,7 +153,7 @@ class Handler {
           .updateValue(this.from.called);
       }
     } else {
-      logger.warn(`Can not handle GET event. Unknown subtype (${subtype})`, accessory.displayName);
+      logger.warn(`Can not handle GET event. Unknown subtype (${subtype})`, `${accessory.displayName} (${subtype})`);
     }
 
     accessory
@@ -230,8 +230,11 @@ class Handler {
             accessory.context.config.incomingTo.includes(message.called) ||
             accessory.context.config.incomingTo.includes(this.homeNr)
           ) {
-            logger.debug('"incomingTo" nr matched!', accessory.displayName);
-            logger.info(text, accessory.displayName);
+            logger.debug(
+              '"incomingTo" nr matched!',
+              `${accessory.displayName} (${this.accessory.context.config.subtype})`
+            );
+            logger.info(text, `${accessory.displayName} (${this.accessory.context.config.subtype})`);
 
             if (this.denyCall) {
               logger.debug(
@@ -326,11 +329,17 @@ class Handler {
             accessory.context.config.outgoingFrom.includes(message.caller) ||
             accessory.context.config.outgoingFrom.includes(this.homeNr)
           ) {
-            logger.debug('"outgoingFrom" nr matched!', accessory.displayName);
-            logger.info(text, accessory.displayName);
+            logger.debug(
+              '"outgoingFrom" nr matched!',
+              `${accessory.displayName} (${this.accessory.context.config.subtype})`
+            );
+            logger.info(text, `${accessory.displayName} (${this.accessory.context.config.subtype})`);
 
             if (!this.denyCall) {
-              logger.debug(`Blocking Telegram notification for ${this.homeNr}`, accessory.displayName);
+              logger.debug(
+                `Blocking Telegram notification for ${this.homeNr}`,
+                `${accessory.displayName} (${this.accessory.context.config.subtype})`
+              );
             }
 
             this.from = { called: this.callerNr };

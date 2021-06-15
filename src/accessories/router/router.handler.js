@@ -42,7 +42,7 @@ class Handler {
       case 'dsl':
       case 'cable':
         if (!config.readOnly) {
-          Telegram.send('reboot', context.newValue ? 'finish' : 'start', accessory.displayName);
+          Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
         }
         break;
       case 'repeater':
@@ -62,7 +62,10 @@ class Handler {
       case 'broadband':
         break;
       default:
-        logger.warn(`Can not handle CHANGE event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
   }
@@ -399,7 +402,10 @@ class Handler {
         return maxDl;
       }
       default:
-        logger.warn(`Can not handle GET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle GET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
 
@@ -420,10 +426,10 @@ class Handler {
 
     switch (subtype) {
       case 'dsl': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, accessory.displayName);
+          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
           setTimeout(() => {
             accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
@@ -458,10 +464,10 @@ class Handler {
         break;
       }
       case 'cable': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, accessory.displayName);
+          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
           setTimeout(() => {
             accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
@@ -496,10 +502,10 @@ class Handler {
         break;
       }
       case 'repeater': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, accessory.displayName);
+          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
           setTimeout(() => {
             accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
@@ -519,7 +525,7 @@ class Handler {
         break;
       }
       case 'wifi_2ghz': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'SetEnable', {
@@ -536,7 +542,7 @@ class Handler {
         break;
       }
       case 'wifi_5ghz': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration2', 'SetEnable', {
@@ -553,7 +559,7 @@ class Handler {
         break;
       }
       case 'wifi_guest': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration3', 'SetEnable', {
@@ -570,7 +576,7 @@ class Handler {
         break;
       }
       case 'wps': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
         let status = state ? 'pbc' : 'stop';
 
         try {
@@ -588,7 +594,7 @@ class Handler {
         break;
       }
       case 'dect': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -640,7 +646,7 @@ class Handler {
         break;
       }
       case 'aw': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           await fritzbox.exec('urn:X_AVM-DE_TAM-com:serviceId:X_AVM-DE_TAM1', 'SetEnable', {
@@ -658,7 +664,7 @@ class Handler {
         break;
       }
       case 'deflection': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           let data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetNumberOfDeflections');
@@ -678,7 +684,7 @@ class Handler {
               }, 1000);
             }
           } else {
-            logger.warn('Can not set state, no deflections found', accessory.displayName);
+            logger.warn('Can not set state, no deflections found', `${accessory.displayName} (${subtype})`);
 
             setTimeout(() => {
               accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
@@ -695,7 +701,7 @@ class Handler {
         break;
       }
       case 'led': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -738,7 +744,7 @@ class Handler {
         break;
       }
       case 'lock': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, accessory.displayName);
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -771,7 +777,10 @@ class Handler {
         break;
       }
       default:
-        logger.warn(`Can not handle SET event. Unknown accessory subtype (${subtype})`, accessory.displayName);
+        logger.warn(
+          `Can not handle SET event. Unknown accessory subtype (${subtype})`,
+          `${accessory.displayName} (${subtype})`
+        );
         break;
     }
   }

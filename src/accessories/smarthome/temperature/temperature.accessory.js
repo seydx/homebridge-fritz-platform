@@ -24,7 +24,10 @@ class Accessory {
     let service = this.accessory.getService(this.api.hap.Service.TemperatureSensor);
 
     if (!service) {
-      logger.info('Adding Temperature service', this.accessory.displayName);
+      logger.info(
+        'Adding Temperature service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.addService(
         this.api.hap.Service.TemperatureSensor,
         this.accessory.displayName,
@@ -41,7 +44,10 @@ class Accessory {
       let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
 
       if (!batteryService) {
-        logger.info('Adding Battery service', this.accessory.displayName);
+        logger.info(
+          'Adding Battery service',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
       }
 
@@ -59,7 +65,10 @@ class Accessory {
       let humidityService = this.accessory.getService(this.api.hap.Service.HumiditySensor);
 
       if (!humidityService) {
-        logger.info('Adding Humidity service', this.accessory.displayName);
+        logger.info(
+          'Adding Humidity service',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         humidityService = this.accessory.addService(this.api.hap.Service.HumiditySensor);
       }
     } else {

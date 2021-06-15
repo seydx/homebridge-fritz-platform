@@ -24,7 +24,7 @@ class Accessory {
     const polling = this.accessory.context.config.polling;
 
     if (!service) {
-      logger.info('Adding Switch service', this.accessory.displayName);
+      logger.info('Adding Switch service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.Switch,
         this.accessory.displayName,
@@ -37,7 +37,10 @@ class Accessory {
     //WifiTwo
     if (characteristics.includes('wifi_2ghz')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)) {
-        logger.info('Adding WifiTwo characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding WifiTwo characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.WifiTwo);
       }
 
@@ -52,7 +55,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.WifiTwo)) {
-        logger.info('Removing WifiTwo characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing WifiTwo characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiTwo));
       }
     }
@@ -60,7 +66,10 @@ class Accessory {
     //WifiFive
     if (characteristics.includes('wifi_5ghz')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.WifiFive)) {
-        logger.info('Adding WifiFive characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding WifiFive characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.WifiFive);
       }
 
@@ -75,7 +84,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.WifiFive)) {
-        logger.info('Removing WifiFive characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing WifiFive characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiFive));
       }
     }
@@ -83,7 +95,10 @@ class Accessory {
     //WifiGuest
     if (characteristics.includes('wifi_guest')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.WifiGuest)) {
-        logger.info('Adding WifiGuest characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding WifiGuest characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.WifiGuest);
       }
 
@@ -98,7 +113,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.WifiGuest)) {
-        logger.info('Removing WifiGuest characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing WifiGuest characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiGuest));
       }
     }
@@ -106,7 +124,10 @@ class Accessory {
     //WPS
     if (characteristics.includes('wps')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)) {
-        logger.info('Adding WifiWPS characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding WifiWPS characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.WifiWPS);
       }
 
@@ -121,7 +142,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.WifiWPS)) {
-        logger.info('Removing WifiWPS characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing WifiWPS characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WifiWPS));
       }
     }
@@ -129,7 +153,10 @@ class Accessory {
     //DECT
     if (characteristics.includes('dect') && this.accessory.context.config.master) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.DECT)) {
-        logger.info('Adding DECT characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding DECT characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.DECT);
       }
 
@@ -144,7 +171,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.DECT)) {
-        logger.info('Removing DECT characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing DECT characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DECT));
       }
     }
@@ -152,7 +182,10 @@ class Accessory {
     //AnsweringMachine
     if (characteristics.includes('aw') && this.accessory.context.config.master) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.AnsweringMachine)) {
-        logger.info('Adding AnsweringMachine characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding AnsweringMachine characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.AnsweringMachine);
       }
 
@@ -167,7 +200,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.AnsweringMachine)) {
-        logger.info('Removing AnsweringMachine characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing AnsweringMachine characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.AnsweringMachine));
       }
     }
@@ -175,7 +211,10 @@ class Accessory {
     //Deflection
     if (characteristics.includes('deflection') && this.accessory.context.config.master) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.Deflection)) {
-        logger.info('Adding Deflection characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding Deflection characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.Deflection);
       }
 
@@ -192,7 +231,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.Deflection)) {
-        logger.info('Removing Deflection characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing Deflection characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Deflection));
       }
     }
@@ -200,7 +242,10 @@ class Accessory {
     //DeviceLED
     if (characteristics.includes('led')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.DeviceLED)) {
-        logger.info('Adding DeviceLED characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding DeviceLED characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.DeviceLED);
       }
 
@@ -215,7 +260,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.DeviceLED)) {
-        logger.info('Removing DeviceLED characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing DeviceLED characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLED));
       }
     }
@@ -223,7 +271,10 @@ class Accessory {
     //DeviceLock
     if (characteristics.includes('lock')) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)) {
-        logger.info('Adding DeviceLock characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding DeviceLock characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.DeviceLock);
       }
 
@@ -238,7 +289,10 @@ class Accessory {
       }
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.DeviceLock)) {
-        logger.info('Removing DeviceLock characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing DeviceLock characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DeviceLock));
       }
     }
@@ -246,12 +300,18 @@ class Accessory {
     //Broadband
     if (characteristics.includes('broadband') && this.accessory.context.config.master) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.Download)) {
-        logger.info('Adding Download characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding Download characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.Download);
       }
 
       if (!service.testCharacteristic(this.api.hap.Characteristic.Upload)) {
-        logger.info('Adding Upload characteristic', this.accessory.displayName);
+        logger.info(
+          'Adding Upload characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.addCharacteristic(this.api.hap.Characteristic.Upload);
       }
 
@@ -260,11 +320,17 @@ class Accessory {
         .onGet(() => this.handler.get(this.accessory, 'broadband'));
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.Download)) {
-        logger.info('Removing Download characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing Download characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Download));
       }
       if (service.testCharacteristic(this.api.hap.Characteristic.Upload)) {
-        logger.info('Removing Upload characteristic', this.accessory.displayName);
+        logger.info(
+          'Removing Upload characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Upload));
       }
     }
@@ -275,7 +341,10 @@ class Accessory {
       //Alarm
       if (extrasConfig.alarm.accType === 'characteristic' && extrasConfig.alarm.active && extrasConfig.alarm.telNr) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)) {
-          logger.info('Adding DialAlarm characteristic', this.accessory.displayName);
+          logger.info(
+            'Adding DialAlarm characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.addCharacteristic(this.api.hap.Characteristic.DialAlarm);
         }
 
@@ -286,7 +355,10 @@ class Accessory {
           .on('change', (context) => ExtrasHandler.change(context, this.accessory, 'alarm'));
       } else {
         if (service.testCharacteristic(this.api.hap.Characteristic.DialAlarm)) {
-          logger.info('Removing DialAlarm characteristic', this.accessory.displayName);
+          logger.info(
+            'Removing DialAlarm characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DialAlarm));
         }
       }
@@ -298,7 +370,10 @@ class Accessory {
         extrasConfig.wakeup.internNr
       ) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.WakeUp)) {
-          logger.info('Adding WakeUp characteristic', this.accessory.displayName);
+          logger.info(
+            'Adding WakeUp characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.addCharacteristic(this.api.hap.Characteristic.WakeUp);
         }
 
@@ -308,7 +383,10 @@ class Accessory {
           .onSet((state) => ExtrasHandler.set(state, this.accessory, 'wakeup', this.api.hap.Characteristic.WakeUp));
       } else {
         if (service.testCharacteristic(this.api.hap.Characteristic.WakeUp)) {
-          logger.info('Removing WakeUp characteristic', this.accessory.displayName);
+          logger.info(
+            'Removing WakeUp characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.WakeUp));
         }
       }
@@ -320,7 +398,10 @@ class Accessory {
         extrasConfig.ringlock.DECTphones
       ) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.RingLock)) {
-          logger.info('Adding RingLock characteristic', this.accessory.displayName);
+          logger.info(
+            'Adding RingLock characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.addCharacteristic(this.api.hap.Characteristic.RingLock);
         }
 
@@ -335,14 +416,20 @@ class Accessory {
         }
       } else {
         if (service.testCharacteristic(this.api.hap.Characteristic.RingLock)) {
-          logger.info('Removing RingLock characteristic', this.accessory.displayName);
+          logger.info(
+            'Removing RingLock characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.RingLock));
         }
       }
 
       if (extrasConfig.phoneBook.accType === 'characteristic' && extrasConfig.phoneBook.active) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)) {
-          logger.info('Adding PhoneBook characteristic', this.accessory.displayName);
+          logger.info(
+            'Adding PhoneBook characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.addCharacteristic(this.api.hap.Characteristic.PhoneBook);
         }
 
@@ -354,7 +441,10 @@ class Accessory {
           );
       } else {
         if (service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)) {
-          logger.info('Removing PhoneBook characteristic', this.accessory.displayName);
+          logger.info(
+            'Removing PhoneBook characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.PhoneBook));
         }
       }
@@ -370,7 +460,10 @@ class Accessory {
         .onSet((state) => this.handler.set(state, this.accessory));
     } else {
       service.getCharacteristic(this.api.hap.Characteristic.On).onSet((state) => {
-        logger.info('Changing state not allowed - "readOnly" is active!', this.accessory.displayName);
+        logger.info(
+          'Changing state not allowed - "readOnly" is active!',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         setTimeout(() => service.getCharacteristic(this.api.hap.Characteristic.On).updateValue(!state), 1000);
       });
     }

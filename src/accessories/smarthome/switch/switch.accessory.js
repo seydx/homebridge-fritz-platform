@@ -21,12 +21,15 @@ class Accessory {
     let serviceOld = this.accessory.getService(this.api.hap.Service.Outlet);
 
     if (serviceOld) {
-      logger.info('Removing Outlet service', this.accessory.displayName);
+      logger.info(
+        'Removing Outlet service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       this.accessory.removeService(serviceOld);
     }
 
     if (!service) {
-      logger.info('Adding Switch service', this.accessory.displayName);
+      logger.info('Adding Switch service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.Switch,
         this.accessory.displayName,
@@ -40,7 +43,10 @@ class Accessory {
         .onSet((state) => this.handler.set(state, this.accessory));
     } else {
       service.getCharacteristic(this.api.hap.Characteristic.On).onSet((state) => {
-        logger.info('Changing state not allowed - "readOnly" is active!', this.accessory.displayName);
+        logger.info(
+          'Changing state not allowed - "readOnly" is active!',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         setTimeout(() => service.getCharacteristic(this.api.hap.Characteristic.On).updateValue(!state), 1000);
       });
     }

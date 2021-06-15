@@ -229,7 +229,7 @@ FritzPlatform.prototype = {
   },
 
   removeAccessory: function (accessory) {
-    logger.info('Removing accessory...', accessory.displayName);
+    logger.info('Removing accessory...', `${accessory.displayName} (${this.accessory.context.config.subtype})`);
     this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 
     this.accessories = this.accessories.filter(

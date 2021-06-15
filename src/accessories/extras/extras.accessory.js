@@ -36,7 +36,7 @@ class Accessory {
     ];
 
     if (!service) {
-      logger.info('Adding Switch service', this.accessory.displayName);
+      logger.info('Adding Switch service', `${this.accessory.displayName} (${this.accessory.context.config.subtype})`);
       service = this.accessory.addService(
         this.api.hap.Service.Switch,
         this.accessory.displayName,

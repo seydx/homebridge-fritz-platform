@@ -25,12 +25,18 @@ class Accessory {
     let serviceOld = this.accessory.getService(this.api.hap.Service.Thermostat);
 
     if (serviceOld) {
-      logger.info('Removing Thermostat service', this.accessory.displayName);
+      logger.info(
+        'Removing Thermostat service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.removeService(serviceOld);
     }
 
     if (!service) {
-      logger.info('Adding HeaterCooler service', this.accessory.displayName);
+      logger.info(
+        'Adding HeaterCooler service',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
       service = this.accessory.addService(
         this.api.hap.Service.HeaterCooler,
         this.accessory.displayName,
@@ -42,7 +48,10 @@ class Accessory {
       let batteryService = this.accessory.getService(this.api.hap.Service.BatteryService);
 
       if (!batteryService) {
-        logger.info('Adding Battery service', this.accessory.displayName);
+        logger.info(
+          'Adding Battery service',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
         batteryService = this.accessory.addService(this.api.hap.Service.BatteryService);
       }
 
