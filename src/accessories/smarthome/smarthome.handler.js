@@ -990,8 +990,8 @@ class Handler {
             accessory.context.config.ain = device.ain;
 
             if (device.online) {
-              if (device.position) {
-                validCurrentPosition = 100 - device.position.levelpercentage || 0;
+              if (device.blind.position) {
+                validCurrentPosition = 100 - device.blind.position.levelpercentage || 0;
 
                 if (!device.alert.state) {
                   if (validCurrentPosition === targetPosition) {
