@@ -134,7 +134,8 @@
                     "ain": "11630 0190819",
                     "energy": true,
                     "temperature": true,
-                    "accType": "switch"
+                    "accType": "switch",
+                    "startValue": 3
                 },
                 {
                     "active": true,
@@ -199,7 +200,7 @@
                 "port": 1012,
                 "cityPrefix": "031",
                 "countryPrefix": "+49",
-                "filterIncoming": [
+                "incomingFrom": [
                     "123456780",
                     "998877665"
                 ],
@@ -279,6 +280,10 @@
                     "network": {
                         "on": "@ is in network!",
                         "off": "@ not in network!"
+                    },
+                    "outlet": {
+                        "started": "@ started!",
+                        "finished": "@ finished!"
                     }
                 }
             },

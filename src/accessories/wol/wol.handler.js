@@ -39,7 +39,10 @@ class Handler {
     }
 
     if (!this.configured) {
-      logger.debug('WOL: Handler not configured yet. Skipping SET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping SET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return;
     }
 

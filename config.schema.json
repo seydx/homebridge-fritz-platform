@@ -513,6 +513,15 @@
             },
             "description": "Enable this, if the device(s) has a built in power meter. The switch will be exposed as an outlet accessory instead of a switch accessory with FakeGato functionality to HomeKit."
           },
+          "startValue": {
+            "title": "Start Value",
+            "type": "integer",
+            "condition": {
+              "functionBody": "return (model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb') && model.smarthome[arrayIndices[0]].energy;"
+            },
+            "description": "Current power consumption when the device is active. Used for notification via telegram when started (current power consumption above this value) or ended (current power consumption below this value).",
+            "minimum": 1
+          },
           "temperature": {
             "title": "Temperature Sensor",
             "type": "boolean",
@@ -778,7 +787,7 @@
           },
           "description": "If your FritzBox does not provide VOIP, please enter your city prefix (eg 030)."
         },
-        "filterIncoming": {
+        "incomingFrom": {
           "title": "Filter Incoming From number",
           "type": "array",
           "condition": {
@@ -1222,6 +1231,22 @@
                   "description": "Message if device NOT detected on network. (Hint: @ will be replaced with device name)"
                 }
               }
+            },
+            "outlet": {
+              "title": "Smarthome Outlet",
+              "type": "object",
+              "properties": {
+                "started": {
+                  "title": "Started",
+                  "type": "string",
+                  "description": "Message when device started. (Current consumption above or equal startValue)"
+                },
+                "finished": {
+                  "title": "Finished",
+                  "type": "string",
+                  "description": "Message when device finished. (Current consumption below startValue)"
+                }
+              }
             }
           }
         }
@@ -1480,6 +1505,7 @@
               "items": [
                 "smarthome[].readOnly",
                 "smarthome[].energy",
+                "smarthome[].startValue",
                 "smarthome[].temperature",
                 "smarthome[].humidity",
                 "smarthome[].window",
@@ -1511,13 +1537,13 @@
             "callmonitor.countryPrefix",
             "callmonitor.cityPrefix",
             {
-              "key": "callmonitor.filterIncoming",
+              "key": "callmonitor.incomingFrom",
               "type": "section",
               "orderable": false,
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": ["callmonitor.filterIncoming[]"]
+              "items": ["callmonitor.incomingFrom[]"]
             },
             {
               "key": "callmonitor.incomingTo",
@@ -1684,6 +1710,15 @@
               "expanded": false,
               "orderable": false,
               "items": ["telegram.messages.network.on", "telegram.messages.network.off"]
+            },
+            {
+              "key": "telegram",
+              "type": "section",
+              "title": "Outlet",
+              "expandable": true,
+              "expanded": false,
+              "orderable": false,
+              "items": ["telegram.messages.outlet.started", "telegram.messages.outlet.finished"]
             }
           ]
         }

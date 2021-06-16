@@ -15,6 +15,7 @@ const Config = (smarthomeConfig) => {
     accTypeGroup: validTypesGroup.find((el) => el === smarthomeConfig.accTypeGroup) || false,
     readOnly: smarthomeConfig.readOnly || false,
     energy: smarthomeConfig.energy || false,
+    startValue: parseInt(smarthomeConfig.startValue) > 0 ? parseInt(smarthomeConfig.startValue) : false,
     temperature: smarthomeConfig.temperature || false,
     humidity: smarthomeConfig.humidity || false,
     window: smarthomeConfig.window || false,

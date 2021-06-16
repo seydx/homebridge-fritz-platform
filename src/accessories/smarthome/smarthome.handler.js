@@ -4,6 +4,7 @@ const { requestAHA } = require('@seydx/fritzbox/lib/request');
 const moment = require('moment');
 const logger = require('../../utils/logger');
 const { colortemp2api, getValidColor } = require('./smarthome.utils');
+const Telegram = require('../../lib/telegram');
 
 const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -36,7 +37,10 @@ class Handler {
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
       if (!this.configured) {
-        logger.debug('Smarthome: Handler not configured yet. Skipping CHANGE event.');
+        logger.debug(
+          'Handler not configured yet. Skipping CHANGE event.',
+          `${accessory.displayName} (${accessory.context.config.subtype})`
+        );
         return;
       }
 
@@ -44,12 +48,41 @@ class Handler {
 
       switch (subtype) {
         case 'smarthome-switch-lightbulb':
+          if (historyService) {
+            historyService.addEntry({ time: moment().unix(), power: context.newValue });
+
+            if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
+              logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+              accessory.context.started = true;
+
+              Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
+            } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
+              logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+              accessory.context.started = false;
+
+              Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
+            }
+          }
           break;
         case 'smarthome-lightbulb':
           break;
         case 'smarthome-switch':
           {
-            historyService.addEntry({ time: moment().unix(), power: context.newValue });
+            if (historyService) {
+              historyService.addEntry({ time: moment().unix(), power: context.newValue });
+
+              if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
+                logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                accessory.context.started = true;
+
+                Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
+              } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
+                logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                accessory.context.started = false;
+
+                Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
+              }
+            }
           }
           break;
         case 'smarthome-temperature': {
@@ -167,7 +200,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Smarthome: Handler not configured yet. Skipping GET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping GET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return;
     }
 
@@ -1093,7 +1129,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async set(state, accessory, subtype, ownCharacteristic, target) {
     if (!this.configured) {
-      logger.debug('Smarthome: Handler not configured yet. Skipping SET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping SET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return;
     }
 

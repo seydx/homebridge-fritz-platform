@@ -33,7 +33,10 @@ class Handler {
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
       if (!this.configured) {
-        logger.debug('Router: Handler not configured yet. Skipping CHANGE event.');
+        logger.debug(
+          'Handler not configured yet. Skipping CHANGE event.',
+          `${accessory.displayName} (${accessory.context.config.subtype})`
+        );
         return;
       }
 
@@ -82,7 +85,10 @@ class Handler {
 
   async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Router: Handler not configured yet. Skipping GET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping GET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return false;
     }
 
@@ -460,7 +466,10 @@ class Handler {
 
   async set(state, accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Router: Handler not configured yet. Skipping SET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping SET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return;
     }
 

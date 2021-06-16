@@ -80,12 +80,7 @@ class Accessory {
       const epoch = Math.round(new Date('2001-01-01T00:00:00Z').valueOf() / 1000);
 
       service.getCharacteristic(this.api.hap.Characteristic.ResetTotal).updateValue(now - epoch);
-
-      this.accessory.context.timesOpened = 0;
-
-      service
-        .getCharacteristic(this.api.hap.Characteristic.TimesOpened)
-        .updateValue(this.accessory.context.timesOpened);
+      service.getCharacteristic(this.api.hap.Characteristic.TotalConsumption).updateValue(0);
     });
 
     if (!this.accessory.context.config.readOnly) {

@@ -24,13 +24,17 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
   - Added a new option `wifiUnits` to devices to manually set the available wifi units (support for multiple units like 1x 2.4Ghz and 2x 5Ghz)
   - Added a new option `reconnect` to device options to expose a Reconnect characteristic/switch which interrupt the internet access and reconnect (for changing external ip)
 - **Smarthome**:
-  - Blinds: Added `blind` as a new accessory (`accType`) type (experimental)
+  - Blinds: Added `blind` as a new accessory (`accType`) type
   - Thermostat:
     - Added new `openWindow` option to expose an switch to manually trigger open/close window
+  - Outlet:
+    - Added new `startValue` option which is used for notification via telegram when device started (current power consumption above this value) or ended (current power consumption below this value)
 - **Presence**: 
   - Moved `onDelay` and `offDelay` from options.presence to presence user to allow separate values for each user
 - **Callmonitor**:
-  - Added `filterIncoming` array into callmonitor options to allow trigger callmonitor only for speicifc numbers
+  - Added `incomingFrom` array into callmonitor options to allow trigger callmonitor only for speicifc numbers
+- **Telegram**:
+  - Added `outlet.started` and `outlet.finished` as a new option to notify via Telegram if device is started/finished
 - **Options**: 
   - Removed `onDelay` and `offDelay` from options.presence
 - **Polling**: 
@@ -40,7 +44,7 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
 ## Other Changes
 - The code has been refactored (again)
 - Adjusted config.schema.json to reflect the changes mentioned above
-- Minor bug fixes
+- Bug fixes
 - Updated dependencies
 
 # v5.1.2 - 2021-05-30

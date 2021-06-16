@@ -45,6 +45,7 @@ exports.generateConfig = (config) => {
         alarm: config.telegram?.messages?.alarm || {},
         reboot: config.telegram?.messages?.reboot || {},
         network: config.telegram?.messages?.network || {},
+        outlet: config.telegram?.messages?.outlet || {},
       },
     },
   };

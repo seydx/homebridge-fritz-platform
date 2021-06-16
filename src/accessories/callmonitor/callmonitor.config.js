@@ -13,7 +13,7 @@ const Config = (extrasConfig) => {
     port: extrasConfig.port || 1012,
     cityPrefix: extrasConfig.cityPrefix || false,
     countryPrefix: extrasConfig.countryPrefix || false,
-    filterIncoming: extrasConfig.filterIncoming || [],
+    incomingFrom: extrasConfig.incomingFrom || [],
     incomingTo: extrasConfig.incomingTo || [],
     outgoingFrom: extrasConfig.outgoingFrom || [],
   };

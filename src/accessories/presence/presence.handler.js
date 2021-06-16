@@ -35,7 +35,10 @@ class Handler {
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
       if (!this.configured) {
-        logger.debug('Presence: Handler not configured yet. Skipping CHANGE event.');
+        logger.debug(
+          'Handler not configured yet. Skipping CHANGE event.',
+          `${accessory.displayName} (${accessory.context.config.subtype})`
+        );
         return;
       }
 
@@ -73,7 +76,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Presence: Handler not configured yet. Skipping GET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping GET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return accessory.context.config.subtype === 'motion' ? false : 0;
     }
 

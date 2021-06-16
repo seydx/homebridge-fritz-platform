@@ -32,7 +32,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Child Lock: Handler not configured yet. Skipping GET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping GET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return false;
     }
 
@@ -68,7 +71,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async set(state, accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Child Lock: Handler not configured yet. Skipping SET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping SET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return;
     }
 

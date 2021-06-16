@@ -45,7 +45,10 @@ class Handler {
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
       if (!this.configured) {
-        logger.debug('Callmonitor: Handler not configured yet. Skipping CHANGE event.');
+        logger.debug(
+          'Handler not configured yet. Skipping CHANGE event.',
+          `${accessory.displayName} (${accessory.context.config.subtype})`
+        );
         return;
       }
 
@@ -105,7 +108,10 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
-      logger.debug('Callmonitor: Handler not configured yet. Skipping GET event.');
+      logger.debug(
+        'Handler not configured yet. Skipping GET event.',
+        `${accessory.displayName} (${accessory.context.config.subtype})`
+      );
       return 0;
     }
 
@@ -222,13 +228,13 @@ class Handler {
           this.denyCall = callerToNr ? true : false;
         });
 
-        if (accessory.context.config.filterIncoming.length) {
+        if (accessory.context.config.incomingFrom.length) {
           if (
-            accessory.context.config.filterIncoming.includes(message.caller) ||
-            accessory.context.config.filterIncoming.includes(this.callerNr)
+            accessory.context.config.incomingFrom.includes(message.caller) ||
+            accessory.context.config.incomingFrom.includes(this.callerNr)
           ) {
             logger.debug(
-              '"filterIncoming" nr matched!',
+              '"incomingFrom" nr matched!',
               `${accessory.displayName} (${accessory.context.config.subtype})`
             );
             logger.info(text, `${accessory.displayName} (${accessory.context.config.subtype})`);
@@ -241,10 +247,10 @@ class Handler {
             return await this.get(accessory, 'incoming');
           } else {
             logger.info(
-              `"filterIncoming" nr not matched. Receiving new call from ${
+              `"incomingFrom" nr not matched. Receiving new call from ${
                 this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
               } to ${this.homeNr}`,
-              accessory.displayName
+              `${accessory.displayName} (${accessory.context.config.subtype})`
             );
 
             this.denyCall = true;
@@ -266,7 +272,7 @@ class Handler {
                   `Blocking notification for ${
                     this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
                   }`,
-                  accessory.displayName
+                  `${accessory.displayName} (${accessory.context.config.subtype})`
                 );
 
                 return;
@@ -282,7 +288,7 @@ class Handler {
                 `"incomingTo" nr not matched. Receiving new call from ${
                   this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
                 } to ${this.homeNr}`,
-                accessory.displayName
+                `${accessory.displayName} (${accessory.context.config.subtype})`
               );
             }
           } else {
@@ -290,7 +296,7 @@ class Handler {
               `Receiving new call from ${
                 this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
               } to ${this.homeNr}`,
-              accessory.displayName
+              `${accessory.displayName} (${accessory.context.config.subtype})`
             );
 
             this.from = { caller: this.callerNr };
@@ -382,7 +388,7 @@ class Handler {
               `"outgoingFrom" nr not matched. Calling from ${this.homeNr} to ${
                 this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
               }`,
-              accessory.displayName
+              `${accessory.displayName} (${accessory.context.config.subtype})`
             );
           }
         } else {
@@ -390,7 +396,7 @@ class Handler {
             `Calling from ${this.homeNr} to ${
               this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
             }`,
-            accessory.displayName
+            `${accessory.displayName} (${accessory.context.config.subtype})`
           );
 
           this.from = { called: this.callerNr };
@@ -416,7 +422,7 @@ class Handler {
             `Connection established between: ${this.homeNr} and ${
               this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
             }`,
-            accessory.displayName
+            `${accessory.displayName} (${accessory.context.config.subtype})`
           );
         }
       }
@@ -442,7 +448,7 @@ class Handler {
                 `Call disconnected with ${
                   this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
                 }`,
-                accessory.displayName
+                `${accessory.displayName} (${accessory.context.config.subtype})`
               );
 
               if (this.denyCall) {
@@ -450,7 +456,7 @@ class Handler {
                   `Blocking notification for ${
                     this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
                   }`,
-                  accessory.displayName
+                  `${accessory.displayName} (${accessory.context.config.subtype})`
                 );
 
                 return;
@@ -468,7 +474,7 @@ class Handler {
                 } nr not matched. Call disconnected with ${
                   this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
                 }`,
-                accessory.displayName
+                `${accessory.displayName} (${accessory.context.config.subtype})`
               );
             }
           } else {
@@ -476,7 +482,7 @@ class Handler {
               `Call disconnected with ${
                 this.callerName ? this.callerName + ' (' + this.callerNr + ')' : this.callerNr
               }`,
-              accessory.displayName
+              `${accessory.displayName} (${accessory.context.config.subtype})`
             );
 
             this.from = {};
