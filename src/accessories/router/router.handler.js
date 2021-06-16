@@ -30,43 +30,51 @@ class Handler {
   }
 
   async change(context, accessory, subtype) {
-    subtype = subtype || accessory.context.config.subtype;
-    const config = accessory.context.config;
-
-    if (!this.configured) {
-      logger.debug('Router: Handler not configured yet. Skipping CHANGE event.');
-      return;
-    }
-
-    switch (subtype) {
-      case 'dsl':
-      case 'cable':
-        if (!config.readOnly) {
-          Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
-        }
-        break;
-      case 'repeater':
-        break;
-      case 'wifi_2ghz':
-        break;
-      case 'wifi_5ghz':
-        break;
-      case 'wifi_guest':
-        break;
-      case 'wps':
-        break;
-      case 'led':
-        break;
-      case 'lock':
-        break;
-      case 'broadband':
-        break;
-      default:
-        logger.warn(
-          `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
-          `${accessory.displayName} (${subtype})`
-        );
-        break;
+    if (context.oldValue !== context.newValue) {
+      subtype = subtype || accessory.context.config.subtype;
+      const config = accessory.context.config;
+  
+      if (!this.configured) {
+        logger.debug('Router: Handler not configured yet. Skipping CHANGE event.');
+        return;
+      }
+  
+      switch (subtype) {
+        case 'dsl':
+        case 'cable':
+          if (!config.readOnly) {
+            Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
+          }
+          break;
+        case 'repeater':
+          break;
+        case 'wifi_2ghz':
+          break;
+        case 'wifi_5ghz':
+          break;
+        case 'wifi_guest':
+          break;
+        case 'wps':
+          break;
+        case 'led':
+          break;
+        case 'lock':
+          break;
+        case 'broadband':
+          break;
+        case 'deflection':
+          break;
+        case 'aw':
+          break;
+        case 'dect':
+          break;
+        default:
+          logger.warn(
+            `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
+            `${accessory.displayName} (${subtype})`
+          );
+          break;
+      }
     }
   }
 
