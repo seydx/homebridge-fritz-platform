@@ -9,6 +9,7 @@ module.exports = {
   SHTemperatureAccessory: require('./temperature/temperature.accessory'),
   SHThermostatAccessory: require('./thermostat/thermostat.accessory'),
   SHWindowAccessory: require('./window/window.accessory'),
+  SHWindowSwitchAccessory: require('./window-switch/window-switch.accessory'),
   SHHandler: require('./smarthome.handler'),
   SHConfig: require('./smarthome.config'),
   SHSetup: require('./smarthome.setup'),

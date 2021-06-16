@@ -29,20 +29,20 @@ class Handler {
     return this;
   }
 
-  async change(context, accessory, subtype) {
+  // eslint-disable-next-line no-unused-vars
+  async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
-      subtype = subtype || accessory.context.config.subtype;
-      const config = accessory.context.config;
-  
       if (!this.configured) {
         logger.debug('Router: Handler not configured yet. Skipping CHANGE event.');
         return;
       }
-  
+
+      subtype = subtype || accessory.context.config.subtype;
+
       switch (subtype) {
         case 'dsl':
         case 'cable':
-          if (!config.readOnly) {
+          if (!accessory.context.config.readOnly) {
             Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
           }
           break;
@@ -55,6 +55,8 @@ class Handler {
         case 'wifi_guest':
           break;
         case 'wps':
+          break;
+        case 'reconnect':
           break;
         case 'led':
           break;
@@ -79,15 +81,18 @@ class Handler {
   }
 
   async get(accessory, subtype, ownCharacteristic) {
-    subtype = subtype || accessory.context.config.subtype;
-    const config = accessory.context.config;
+    if (!this.configured) {
+      logger.debug('Router: Handler not configured yet. Skipping GET event.');
+      return false;
+    }
 
-    let fritzbox = config.fritzbox || this.fritzbox;
+    subtype = subtype || accessory.context.config.subtype;
+
+    let fritzbox = accessory.context.config.fritzbox || this.fritzbox;
     let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
     let state = accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).value;
 
-    if (!this.configured) {
-      logger.debug('Router: Handler not configured yet. Skipping GET event.');
+    if (accessory.context.busy) {
       return state;
     }
 
@@ -102,11 +107,11 @@ class Handler {
           if (accessory.context.restart) {
             accessory.context.restart = false;
 
-            if (config.reboot.off && accessory.context.config.master) {
+            if (accessory.context.config.reboot.off && accessory.context.config.master) {
               try {
                 logger.info('Executing OFF script...', `${accessory.displayName} (${subtype})`);
 
-                await initReboot(config.reboot.off);
+                await initReboot(accessory.context.config.reboot.off);
 
                 logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
               } catch (err) {
@@ -134,11 +139,11 @@ class Handler {
           if (accessory.context.restart) {
             accessory.context.restart = false;
 
-            if (config.reboot.off && accessory.context.config.master) {
+            if (accessory.context.config.reboot.off && accessory.context.config.master) {
               try {
                 logger.info('Executing OFF script...', `${accessory.displayName} (${subtype})`);
 
-                await initReboot(config.reboot.off);
+                await initReboot(accessory.context.config.reboot.off);
 
                 logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
               } catch (err) {
@@ -173,7 +178,12 @@ class Handler {
       }
       case 'wifi_2ghz': {
         try {
-          const response = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'GetInfo');
+          let wifiUnit2ghz = 1;
+
+          const response = await fritzbox.exec(
+            `urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnit2ghz}`,
+            'GetInfo'
+          );
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewEnable === '1';
@@ -188,10 +198,30 @@ class Handler {
       }
       case 'wifi_5ghz': {
         try {
-          const response = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration2', 'GetInfo');
-          logger.debug(response, `${accessory.displayName} (${subtype})`);
+          let promises = [];
+          let startUnit = 2;
+          let wifiUnit5ghz = accessory.context.config.wifiUnits - 1;
 
-          state = response.NewEnable === '1';
+          if (wifiUnit5ghz === 0) {
+            logger.warn(
+              'Can not handle GET event, specified wifiUnits too low!',
+              `${accessory.displayName} (${subtype})`
+            );
+            return false;
+          }
+
+          for (let i = 0; i < wifiUnit5ghz; i++) {
+            promises.push(
+              fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${startUnit}`, 'GetInfo')
+            );
+
+            startUnit++;
+          }
+
+          const responses = await Promise.all(promises);
+          logger.debug(responses, `${accessory.displayName} (${subtype})`);
+
+          state = responses.some((response) => response && response.NewEnable === '1');
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -203,7 +233,12 @@ class Handler {
       }
       case 'wifi_guest': {
         try {
-          const response = await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration3', 'GetInfo');
+          let wifiUnitGuest = accessory.context.config.wifiUnits + 1;
+
+          const response = await fritzbox.exec(
+            `urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnitGuest}`,
+            'GetInfo'
+          );
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewEnable === '1';
@@ -233,6 +268,9 @@ class Handler {
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
 
         return state;
+      }
+      case 'reconnect': {
+        return false;
       }
       case 'dect': {
         try {
@@ -421,16 +459,17 @@ class Handler {
   }
 
   async set(state, accessory, subtype, ownCharacteristic) {
-    subtype = subtype || accessory.context.config.subtype;
-    const config = accessory.context.config;
-
-    let fritzbox = config.fritzbox || this.fritzbox;
-    let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
-
     if (!this.configured) {
       logger.debug('Router: Handler not configured yet. Skipping SET event.');
       return;
     }
+
+    subtype = subtype || accessory.context.config.subtype;
+
+    let fritzbox = accessory.context.config.fritzbox || this.fritzbox;
+    let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
+
+    accessory.context.busy = true;
 
     switch (subtype) {
       case 'dsl': {
@@ -439,15 +478,17 @@ class Handler {
         if (state) {
           logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         } else {
-          if (config.reboot.on && config.master) {
+          if (accessory.context.config.reboot.on && accessory.context.config.master) {
             try {
               logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
 
-              await initReboot(config.reboot.off);
+              await initReboot(accessory.context.config.reboot.off);
 
               logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
@@ -464,9 +505,11 @@ class Handler {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
 
-            setTimeout(() => {
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-            }, 1000);
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+              1000
+            );
           }
         }
         break;
@@ -477,15 +520,17 @@ class Handler {
         if (state) {
           logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         } else {
-          if (config.reboot.on && config.master) {
+          if (accessory.context.config.reboot.on && accessory.context.config.master) {
             try {
               logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
 
-              await initReboot(config.reboot.off);
+              await initReboot(accessory.context.config.reboot.off);
 
               logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
@@ -502,9 +547,11 @@ class Handler {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
 
-            setTimeout(() => {
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-            }, 1000);
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+              1000
+            );
           }
         }
         break;
@@ -515,9 +562,11 @@ class Handler {
         if (state) {
           logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         } else {
           try {
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
@@ -525,9 +574,11 @@ class Handler {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
 
-            setTimeout(() => {
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-            }, 1000);
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+              1000
+            );
           }
         }
         break;
@@ -535,17 +586,21 @@ class Handler {
       case 'wifi_2ghz': {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
+        let wifiUnit2ghz = 1;
+
         try {
-          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'SetEnable', {
+          await fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnit2ghz}`, 'SetEnable', {
             NewEnable: state,
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -553,16 +608,45 @@ class Handler {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
-          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration2', 'SetEnable', {
-            NewEnable: state,
-          });
+          let promises = [];
+          let startUnit = 2;
+          let wifiUnit5ghz = accessory.context.config.wifiUnits - 1;
+
+          if (wifiUnit5ghz === 0) {
+            logger.warn(
+              'Can not handle SET event, specified wifiUnits too low!',
+              `${accessory.displayName} (${subtype})`
+            );
+
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+              1000
+            );
+
+            return;
+          }
+
+          for (let i = 0; i < wifiUnit5ghz; i++) {
+            promises.push(
+              fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${startUnit}`, 'SetEnable', {
+                NewEnable: state,
+              })
+            );
+
+            startUnit++;
+          }
+
+          await Promise.all(promises);
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -570,16 +654,20 @@ class Handler {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
-          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration3', 'SetEnable', {
+          let wifiUnitGuest = accessory.context.config.wifiUnits + 1;
+
+          await fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnitGuest}`, 'SetEnable', {
             NewEnable: state,
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -595,9 +683,33 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
+        }
+        break;
+      }
+      case 'reconnect': {
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+
+        try {
+          let isDsl = accessory.context.config.conection === 'dsl';
+          let service = isDsl
+            ? 'urn:WANPPPConnection-com:serviceId:WANPPPConnection1'
+            : 'urn:WANIPConnection-com:serviceId:WANIPConnection1';
+
+          await fritzbox.exec(service, 'ForceTermination');
+        } catch (err) {
+          logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+        } finally {
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(false),
+            1000
+          );
         }
         break;
       }
@@ -647,9 +759,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -665,9 +779,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -687,24 +803,33 @@ class Handler {
               logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
               logger.error(err);
 
-              setTimeout(() => {
-                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-              }, 1000);
+              setTimeout(
+                () =>
+                  accessory
+                    .getService(this.api.hap.Service.Switch)
+                    .getCharacteristic(characteristic)
+                    .updateValue(!state),
+                1000
+              );
             }
           } else {
             logger.warn('Can not set state, no deflections found', `${accessory.displayName} (${subtype})`);
 
-            setTimeout(() => {
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-            }, 1000);
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+              1000
+            );
           }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -729,7 +854,7 @@ class Handler {
             event: '14',
           };
 
-          if (config.oldFW) {
+          if (accessory.context.config.oldFW) {
             formData = {
               xhr: '1',
               led_display: state ? '0' : '2',
@@ -745,9 +870,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -774,9 +901,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -791,6 +920,8 @@ class Handler {
         );
         break;
     }
+
+    accessory.context.busy = false;
   }
 
   async poll() {
@@ -880,7 +1011,7 @@ class Handler {
       logger.warn('An error occurred during polling router/characteristics!');
       logger.error(err);
     } finally {
-      setTimeout(() => this.poll(), (this.polling.timer - 1) * 1000);
+      setTimeout(() => this.poll(), this.polling.timer * 1000);
     }
   }
 }

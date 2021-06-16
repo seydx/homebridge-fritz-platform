@@ -33,6 +33,7 @@ class Accessory {
       'deflection',
       'aw',
       'dect',
+      'reconnect',
     ];
 
     if (!service) {

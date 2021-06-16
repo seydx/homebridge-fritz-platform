@@ -35,14 +35,12 @@ class Handler {
 
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
-      subtype = subtype || accessory.context.config.subtype;
-      // eslint-disable-next-line no-unused-vars
-      const config = accessory.context.config;
-
       if (!this.configured) {
         logger.debug('Smarthome: Handler not configured yet. Skipping CHANGE event.');
         return;
       }
+
+      subtype = subtype || accessory.context.config.subtype;
 
       switch (subtype) {
         case 'smarthome-switch-lightbulb':
@@ -126,6 +124,8 @@ class Handler {
           historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
           break;
         }
+        case 'smarthome-window-switch':
+          break;
         case 'smarthome-thermostat': {
           let currentState = accessory
             .getService(this.api.hap.Service.HeaterCooler)
@@ -164,15 +164,14 @@ class Handler {
     }
   }
 
-  async get(accessory, subtype) {
-    subtype = subtype || accessory.context.config.subtype;
-    // eslint-disable-next-line no-unused-vars
-    const config = accessory.context.config;
-
+  // eslint-disable-next-line no-unused-vars
+  async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
       logger.debug('Smarthome: Handler not configured yet. Skipping GET event.');
       return;
     }
+
+    subtype = subtype || accessory.context.config.subtype;
 
     switch (subtype) {
       case 'smarthome-switch-lightbulb': {
@@ -181,6 +180,10 @@ class Handler {
           : accessory.getService(this.api.hap.Service.Switch);
 
         let state = accessory.getService(service).getCharacteristic(this.api.hap.Characteristic.On).value;
+
+        if (accessory.context.busy) {
+          return state;
+        }
 
         let bulbState = accessory
           .getService(this.api.hap.Service.Lightbulb)
@@ -399,6 +402,10 @@ class Handler {
           .getService(this.api.hap.Service.Lightbulb)
           .getCharacteristic(this.api.hap.Characteristic.On).value;
 
+        if (accessory.context.busy) {
+          return state;
+        }
+
         let brightness, temp, hue, sat;
 
         if (accessory.context.config.brightness) {
@@ -546,6 +553,10 @@ class Handler {
           : accessory.getService(this.api.hap.Service.Switch);
 
         let state = service.getCharacteristic(this.api.hap.Characteristic.On).value;
+
+        if (accessory.context.busy) {
+          return state;
+        }
 
         try {
           let device = !accessory.context.config.group
@@ -831,6 +842,48 @@ class Handler {
 
         return state;
       }
+      case 'smarthome-window-switch': {
+        let state = accessory
+          .getService(this.api.hap.Service.Switch)
+          .getCharacteristic(this.api.hap.Characteristic.On).value;
+
+        try {
+          let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
+
+          if (device) {
+            accessory.context.config.ain = device.ain;
+
+            if (device.online) {
+              if (device.thermostat) {
+                state = device.thermostat.windowOpen ? true : false;
+              } else {
+                logger.warn(
+                  'Can not find thermostat data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
+          }
+        } catch (err) {
+          logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+        }
+
+        accessory
+          .getService(this.api.hap.Service.Switch)
+          .getCharacteristic(this.api.hap.Characteristic.On)
+          .updateValue(state);
+
+        return state;
+      }
       case 'smarthome-thermostat': {
         let active = accessory
           .getService(this.api.hap.Service.HeaterCooler)
@@ -847,6 +900,11 @@ class Handler {
         let targetTemp = accessory
           .getService(this.api.hap.Service.HeaterCooler)
           .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value;
+
+        if (accessory.context.busy) {
+          //assuming we are calling GET event for Characteristic.Active
+          return active;
+        }
 
         try {
           let device = !accessory.context.config.group
@@ -1032,15 +1090,16 @@ class Handler {
     }
   }
 
-  async set(state, accessory, subtype, target) {
-    subtype = subtype || accessory.context.config.subtype;
-    // eslint-disable-next-line no-unused-vars
-    const config = accessory.context.config;
-
+  // eslint-disable-next-line no-unused-vars
+  async set(state, accessory, subtype, ownCharacteristic, target) {
     if (!this.configured) {
       logger.debug('Smarthome: Handler not configured yet. Skipping SET event.');
       return;
     }
+
+    subtype = subtype || accessory.context.config.subtype;
+
+    accessory.context.busy = true;
 
     switch (subtype) {
       case 'smarthome-switch-lightbulb':
@@ -1336,6 +1395,54 @@ class Handler {
       case 'smarthome-window':
         // no SET event
         break;
+      case 'smarthome-window-switch':
+        {
+          try {
+            logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
+
+            const response = await this.fritzbox.exec(
+              'urn:DeviceConfig-com:serviceId:DeviceConfig1',
+              'X_AVM-DE_CreateUrlSID'
+            );
+            const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+
+            if (accessory.context.config.group) {
+              let device = this.smarthomeList.groups.find((device) => device.name.includes(accessory.displayName));
+
+              if (device) {
+                accessory.context.config.ain = device.ain;
+              }
+            }
+
+            let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+
+            if (device) {
+              accessory.context.config.ain = device.ain;
+            }
+
+            const unixTimestampNow = Math.floor(Date.now() / 1000);
+            const maxEndTime = 24 * 60 * 60 - 60;
+            const endTime = unixTimestampNow + maxEndTime;
+
+            let cmd = {
+              ain: accessory.context.config.ain,
+              sid: sid,
+              switchcmd: 'sethkrwindowopen',
+              endtimestamp: state ? endTime : 0,
+            };
+
+            if (accessory.context.config.ain) {
+              logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
+              await requestAHA(this.fritzbox.url.hostname, cmd);
+            } else {
+              logger.warn('Can not switch state! No AIN found/defined!', `${accessory.displayName} (${subtype})`);
+            }
+          } catch (err) {
+            logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+            logger.error(err);
+          }
+        }
+        break;
       case 'smarthome-thermostat':
         {
           try {
@@ -1515,6 +1622,8 @@ class Handler {
         );
         break;
     }
+
+    accessory.context.busy = false;
   }
 
   async poll() {
@@ -1534,7 +1643,7 @@ class Handler {
       logger.warn('An error occurred during polling smarthome devices!');
       logger.error(err);
     } finally {
-      setTimeout(() => this.poll(), (this.polling.timer - 1) * 1000);
+      setTimeout(() => this.poll(), this.polling.timer * 1000);
     }
   }
 }

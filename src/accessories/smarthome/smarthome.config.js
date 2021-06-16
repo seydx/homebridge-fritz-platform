@@ -18,6 +18,7 @@ const Config = (smarthomeConfig) => {
     temperature: smarthomeConfig.temperature || false,
     humidity: smarthomeConfig.humidity || false,
     window: smarthomeConfig.window || false,
+    openWindow: smarthomeConfig.openWindow || false,
     brightness: smarthomeConfig.brightness || false,
     color: smarthomeConfig.color || false,
     battery: smarthomeConfig.battery || false,

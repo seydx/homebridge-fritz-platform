@@ -57,7 +57,6 @@ const Setup = (devices, smarthomeConfig) => {
           name: device.name + ' Temperature',
           type: 'smarthome',
           subtype: 'smarthome-temperature',
-          group: device.group,
           battery: device.battery,
           humidity: device.humidity,
           ain: device.ain,
@@ -79,7 +78,6 @@ const Setup = (devices, smarthomeConfig) => {
           name: device.name + ' Window',
           type: 'smarthome',
           subtype: 'smarthome-window',
-          group: device.group,
           battery: device.battery,
           ain: device.ain,
         };
@@ -95,12 +93,30 @@ const Setup = (devices, smarthomeConfig) => {
         }
       }
 
+      if (!device.group && device.openWindow && device.accType === 'thermostat') {
+        let openWindowDevice = {
+          name: device.name + ' Open Window',
+          type: 'smarthome',
+          subtype: 'smarthome-window-switch',
+          ain: device.ain,
+        };
+
+        const uuidWindow = UUIDgenerate(openWindowDevice.name);
+        if (devices.has(uuidWindow)) {
+          logger.warn(
+            'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+            openWindowDevice.name
+          );
+        } else {
+          devices.set(uuidWindow, openWindowDevice);
+        }
+      }
+
       if (!device.group && device.blind && device.accType === 'blind') {
         let blindDevice = {
           name: device.name + ' Blind',
           type: 'smarthome',
           subtype: 'smarthome-blind',
-          group: device.group,
           ain: device.ain,
         };
 

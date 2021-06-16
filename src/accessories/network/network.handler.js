@@ -1,43 +1,127 @@
-/* eslint-disable no-unused-vars */
 'use strict';
 
+const { validIP } = require('../../utils/utils');
 const logger = require('../../utils/logger');
+const Telegram = require('../../lib/telegram');
 
 const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
 
 class Handler {
-  constructor() {
+  constructor(device, meshMaster) {
     this.configured = false;
-  }
 
-  configure(api, accessories, polling, meshMaster) {
-    if (this.configured) {
-      return this;
-    }
-
-    this.api = api;
-    this.accessories = accessories;
-    this.polling = polling;
+    this.device = device;
     this.fritzbox = meshMaster?.fritzbox;
 
-    this.configured = true;
-
     this.poll();
-
-    return this;
   }
 
+  // eslint-disable-next-line no-unused-vars
+  configure(api, accessories, polling, meshMaster) {}
+
+  // eslint-disable-next-line no-unused-vars
   async change(context, accessory, subtype, historyService) {}
 
-  async get(accessory, subtype) {}
+  // eslint-disable-next-line no-unused-vars
+  async get(accessory, subtype, ownCharacteristic) {}
 
-  async set(state, accessory, subtype) {}
+  // eslint-disable-next-line no-unused-vars
+  async set(state, accessory, subtype, ownCharacteristic) {}
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling NETWORK accessories');
+    logger.debug('Polling NETWORK device');
+
+    try {
+      let service = validIP ? 'X_AVM-DE_GetSpecificHostEntryByIP' : 'GetSpecificHostEntry';
+      let input = validIP ? { NewIPAddress: this.device.address } : { NewMACAddress: this.device.address };
+
+      const response = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
+      logger.debug(response, this.device.name);
+
+      let newState = parseInt(response.NewActive);
+
+      this.device.passed = false;
+
+      if (this.device.state !== undefined) {
+        if (this.device.onDelay || this.device.offDelay) {
+          if (this.device.state !== newState) {
+            if (this.device.changedOn) {
+              let millis = Date.now() - this.device.changedOn;
+              let secElapsed = Math.floor(millis / 1000);
+
+              if (newState) {
+                if (this.device.onDelay) {
+                  if (secElapsed > this.device.onDelay) {
+                    this.device.passed = true;
+                  }
+                } else {
+                  //no onDelay in config
+                  this.device.passed = true;
+                }
+              } else {
+                if (this.device.offDelay) {
+                  if (secElapsed > this.device.offDelay) {
+                    this.device.passed = true;
+                  }
+                } else {
+                  //no offDelay in config
+                  this.device.passed = true;
+                }
+              }
+            } else {
+              if ((newState && this.device.onDelay) || (!newState && this.device.offDelay)) {
+                this.device.changedOn = Date.now();
+              }
+
+              if (this.device.changedOn) {
+                logger.info(`State changed to ${newState ? 'DETECTED' : 'NOT DETECTED'}`, this.device.name);
+                this.device.informed = true;
+
+                logger.info(
+                  `Wait ${newState ? this.device.onDelay : this.device.offDelay}s before switching state!`,
+                  this.device.name
+                );
+              } else {
+                this.device.passed = true;
+              }
+            }
+          } else {
+            if (this.device.informed && this.device.changedOn) {
+              this.device.informed = false;
+              this.device.changedOn = false;
+
+              logger.info(`State switched back to ${newState ? 'DETECTED' : 'NOT DETECTED'}`, this.device.name);
+            }
+          }
+        } else {
+          //no off/on delay in config
+          if (this.device.state !== newState) {
+            this.device.passed = true;
+          }
+        }
+      } else {
+        //first call
+        this.device.state = newState;
+      }
+
+      if (this.device.passed) {
+        this.device.state = newState;
+        this.device.changedOn = false;
+
+        if (newState) {
+          Telegram.send('network', 'on', this.device.name);
+        } else {
+          Telegram.send('network', 'off', this.device.name);
+        }
+      }
+    } catch (err) {
+      logger.error('An error occured during polling network this.device!', this.device.name);
+      logger.error(err);
+    } finally {
+      setTimeout(() => this.start.bind(this), this.device.polling * 1000);
+    }
   }
 }
 
-const handler = new Handler();
-module.exports = handler;
+module.exports = Handler;

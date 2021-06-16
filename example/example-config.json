@@ -30,6 +30,7 @@
                     "readOnly": false,
                     "hide": true,
                     "connection": "dsl",
+                    "wifiUnits": 2,
                     "options": {
                         "wifi_2ghz": "switch",
                         "wifi_5ghz": "switch",
@@ -40,6 +41,7 @@
                         "led": "switch",
                         "lock": "switch",
                         "dect": "switch",
+                        "reconnect": "switch",
                         "broadband": "characteristic"
                     }
                 },
@@ -59,10 +61,12 @@
                     "ssl": true,
                     "tr064": true,
                     "igd": false,
+                    "wifiUnits": 2,
                     "options": {
                         "wifi_2ghz": "characteristic",
                         "wifi_guest": "switch",
                         "led": "switch",
+                        "reconnect": "characteristic",
                         "lock": "characteristic"
                     }
                 },
@@ -83,6 +87,7 @@
                     "oldFW": true,
                     "connection": "repeater",
                     "hide": false,
+                    "wifiUnits": 1,
                     "options": {
                         "led": "characteristic",
                         "lock": "characteristic"
@@ -115,6 +120,13 @@
                     "address": "30:9C:23:A8:7B:23"
                 }
             ],
+            "childLock": [
+                {
+                    "active": true,
+                    "name": "Daughter",
+                    "ip": "192.168.178.99"
+                }
+            ],
             "smarthome": [
                 {
                     "active": true,
@@ -143,6 +155,7 @@
                     "ain": "09995 0692315",
                     "temperature": true,
                     "window": true,
+                    "openWindow": true,
                     "accType": "thermostat",
                     "battery": true
                 },
@@ -186,6 +199,10 @@
                 "port": 1012,
                 "cityPrefix": "031",
                 "countryPrefix": "+49",
+                "filterIncoming": [
+                    "123456780",
+                    "998877665"
+                ],
                 "incomingTo": [
                     "123456780"
                 ],

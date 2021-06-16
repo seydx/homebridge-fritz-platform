@@ -37,14 +37,12 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
-      subtype = subtype || accessory.context.config.subtype;
-      // eslint-disable-next-line no-unused-vars
-      const config = accessory.context.config;
-
       if (!this.configured) {
         logger.debug('Extras: Handler not configured yet. Skipping CHANGE event.');
         return;
       }
+
+      subtype = subtype || accessory.context.config.subtype;
 
       switch (subtype) {
         case 'alarm':
@@ -71,15 +69,18 @@ class Handler {
   }
 
   async get(accessory, subtype, ownCharacteristic) {
-    subtype = subtype || accessory.context.config.subtype;
-    const config = accessory.context.config;
+    if (!this.configured) {
+      logger.debug('Extras: Handler not configured yet. Skipping GET event.');
+      return false;
+    }
 
-    let fritzbox = config.fritzbox || this.fritzbox;
+    subtype = subtype || accessory.context.config.subtype;
+
+    let fritzbox = accessory.context.config.fritzbox || this.fritzbox;
     let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
     let state = accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).value;
 
-    if (!this.configured) {
-      logger.debug('Extras: Handler not configured yet. Skipping GET event.');
+    if (accessory.context.busy) {
       return state;
     }
 
@@ -96,7 +97,7 @@ class Handler {
           let phonesFormData = [];
           let actives = [];
 
-          for (let count = 1; count <= config.extras[subtype].DECTphones; count++)
+          for (let count = 1; count <= accessory.context.config.extras[subtype].DECTphones; count++)
             phonesFormData.push({
               xhr: '1',
               idx: count.toString(),
@@ -137,16 +138,17 @@ class Handler {
   }
 
   async set(state, accessory, subtype, ownCharacteristic) {
-    subtype = subtype || accessory.context.config.subtype;
-    const config = accessory.context.config;
-
-    let fritzbox = config.fritzbox || this.fritzbox;
-    let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
-
     if (!this.configured) {
       logger.debug('Extras: Handler not configured yet. Skipping SET event.');
       return;
     }
+
+    subtype = subtype || accessory.context.config.subtype;
+
+    let fritzbox = accessory.context.config.fritzbox || this.fritzbox;
+    let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
+
+    accessory.context.busy = true;
 
     switch (subtype) {
       case 'alarm': {
@@ -155,12 +157,15 @@ class Handler {
             logger.info('ON', `${accessory.displayName} (${subtype})`);
 
             await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialNumber', {
-              'NewX_AVM-DE_PhoneNumber': config.extras[subtype].telNr,
+              'NewX_AVM-DE_PhoneNumber': accessory.context.config.extras[subtype].telNr,
             });
 
-            let duration = config.extras[subtype].duration || 30;
+            let duration = accessory.context.config.extras[subtype].duration || 30;
 
-            if (config.extras[subtype].duration && parseInt(config.extras[subtype].duration) > 0) {
+            if (
+              accessory.context.config.extras[subtype].duration &&
+              parseInt(accessory.context.config.extras[subtype].duration) > 0
+            ) {
               if (this.alarmTimeout) {
                 clearTimeout(this.alarmTimeout);
                 this.alarmTimeout = null;
@@ -188,17 +193,17 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
       case 'phoneBook': {
         if (!state) {
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(true);
-          }, 1000);
+          return;
         } else {
           try {
             let lkz, okz;
@@ -234,8 +239,9 @@ class Handler {
             const telBook = [];
             const blackBook = [];
             const blacklists =
-              config.extras[subtype].blacklists && config.extras[subtype].blacklists.length
-                ? config.extras[subtype].blacklists
+              accessory.context.config.extras[subtype].blacklists &&
+              accessory.context.config.extras[subtype].blacklists.length
+                ? accessory.context.config.extras[subtype].blacklists
                 : [];
 
             let books = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetPhonebookList');
@@ -424,9 +430,11 @@ class Handler {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err);
           } finally {
-            setTimeout(() => {
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(false);
-            }, 1000);
+            setTimeout(
+              () =>
+                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(false),
+              1000
+            );
           }
         }
         break;
@@ -450,9 +458,9 @@ class Handler {
           }
           */
 
-          if (config.extras[subtype].start && config.extras[subtype].end) {
-            let s = config.extras[subtype].start.split(':');
-            let e = config.extras[subtype].end.split(':');
+          if (accessory.context.config.extras[subtype].start && accessory.context.config.extras[subtype].end) {
+            let s = accessory.context.config.extras[subtype].start.split(':');
+            let e = accessory.context.config.extras[subtype].end.split(':');
 
             hour = s[0];
             minute = s[1];
@@ -475,7 +483,7 @@ class Handler {
           let data = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           let sid = data['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          for (let count = 1; count <= config.extras[subtype].DECTphones; count++) {
+          for (let count = 1; count <= accessory.context.config.extras[subtype].DECTphones; count++) {
             if (state) {
               logger.info('ON', `${accessory.displayName} (${subtype})`);
 
@@ -515,9 +523,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -527,7 +537,7 @@ class Handler {
             logger.info('ON', `${accessory.displayName} (${subtype})`);
 
             await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialNumber', {
-              'NewX_AVM-DE_PhoneNumber': config.extras[subtype].internNr,
+              'NewX_AVM-DE_PhoneNumber': accessory.context.config.extras[subtype].internNr,
             });
           } else {
             logger.info('OFF', `${accessory.displayName} (${subtype})`);
@@ -538,9 +548,11 @@ class Handler {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
 
-          setTimeout(() => {
-            accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state);
-          }, 1000);
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
         }
         break;
       }
@@ -551,6 +563,8 @@ class Handler {
         );
         break;
     }
+
+    accessory.context.busy = false;
   }
 
   async poll() {
@@ -587,7 +601,7 @@ class Handler {
       logger.warn('An error occurred during polling extras!');
       logger.error(err);
     } finally {
-      setTimeout(() => this.poll(), (this.polling.timer - 1) * 1000);
+      setTimeout(() => this.poll(), this.polling.timer * 1000);
     }
   }
 }

@@ -9,6 +9,7 @@ const Callmonitor = require('./lib/callmonitor');
 
 //Accessories
 const { CallmonitorAccessory, CallmonitorSetup } = require('./accessories/callmonitor/callmonitor');
+const { ChildLockAccessory, ChildLockSetup } = require('./accessories/childlock/childlock');
 const { ExtrasAccessory, ExtrasSetup } = require('./accessories/extras/extras');
 const { NetworkSetup } = require('./accessories/network/network');
 const {
@@ -28,6 +29,7 @@ const {
   SHTemperatureAccessory,
   SHThermostatAccessory,
   SHWindowAccessory,
+  SHWindowSwitchAccessory,
   SHSetup,
 } = require('./accessories/smarthome/smarthome');
 const { WolAccessory, WolSetup } = require('./accessories/wol/wol');
@@ -90,6 +92,10 @@ function FritzPlatform(log, config, api) {
 
   if (this.config.presence) {
     PresenceSetup(this.devices, this.config.presence, this.config.options.presence);
+  }
+
+  if (this.config.childLock) {
+    ChildLockSetup(this.devices, this.config.childLock);
   }
 
   if (this.config.wol) {
@@ -196,6 +202,8 @@ FritzPlatform.prototype = {
           new SHContactAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-window')
           new SHWindowAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
+        else if (device.subtype === 'smarthome-window-switch')
+          new SHWindowSwitchAccessory(this.api, accessory, this.accessories, this.meshMaster);
         else if (device.subtype === 'smarthome-lightbulb')
           new SHLightbulbAccessory(this.api, accessory, this.accessories, this.meshMaster);
         else if (device.subtype === 'smarthome-switch-lightbulb' && device.energy)
@@ -208,6 +216,9 @@ FritzPlatform.prototype = {
           new PresenceMotionAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'occupancy')
           new PresenceOccupancyAccessory(this.api, accessory, this.accessories, this.meshMaster);
+        break;
+      case 'childlock':
+        new ChildLockAccessory(this.api, accessory, this.accessories, this.meshMaster);
         break;
       case 'wol':
         new WolAccessory(this.api, accessory, this.accessories, this.meshMaster);
@@ -229,7 +240,7 @@ FritzPlatform.prototype = {
   },
 
   removeAccessory: function (accessory) {
-    logger.info('Removing accessory...', `${accessory.displayName} (${this.accessory.context.config.subtype})`);
+    logger.info('Removing accessory...', `${accessory.displayName} (${accessory.context.config.subtype})`);
     this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
 
     this.accessories = this.accessories.filter(

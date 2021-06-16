@@ -191,7 +191,7 @@ class Accessory {
     if (!this.accessory.context.config.readOnly) {
       serviceOutlet
         .getCharacteristic(this.api.hap.Characteristic.On)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'on'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'on'));
     } else {
       serviceOutlet.getCharacteristic(this.api.hap.Characteristic.On).onSet((state) => {
         logger.info(
@@ -205,17 +205,17 @@ class Accessory {
     if (this.accessory.context.config.brightness) {
       serviceLightbulb
         .getCharacteristic(this.api.hap.Characteristic.Brightness)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'brightness'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'brightness'));
     }
 
     if (this.accessory.context.config.color) {
       serviceLightbulb
         .getCharacteristic(this.api.hap.Characteristic.ColorTemperature)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'temperature'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'temperature'));
 
       serviceLightbulb
         .getCharacteristic(this.api.hap.Characteristic.Saturation)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'color'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'color'));
     }
 
     this.refreshHistory(serviceOutlet);

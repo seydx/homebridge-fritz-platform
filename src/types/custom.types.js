@@ -91,6 +91,20 @@ exports.registerWith = (hap) => {
   Characteristic.WifiWPS.UUID = '991dd58c-7d8c-46b1-acd1-411d8f6902ac';
 
   /*
+   * Characteristic.Reconnect
+   */
+  Characteristic.Reconnect = function () {
+    Characteristic.call(this, 'Reconnect', 'ce1cb310-d2d8-4cd1-9686-c6f2aba6ad15');
+    this.setProps({
+      format: Characteristic.Formats.BOOL,
+      perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY],
+    });
+    this.value = this.getDefaultValue();
+  };
+  inherits(Characteristic.Reconnect, Characteristic);
+  Characteristic.Reconnect.UUID = 'ce1cb310-d2d8-4cd1-9686-c6f2aba6ad15';
+
+  /*
    * Characteristic.DECT
    */
   Characteristic.DECT = function () {

@@ -150,6 +150,30 @@ class Accessory {
       }
     }
 
+    //Reconnect
+    if (characteristics.includes('reconnect')) {
+      if (!service.testCharacteristic(this.api.hap.Characteristic.Reconnect)) {
+        logger.info(
+          'Adding Reconnect characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
+        service.addCharacteristic(this.api.hap.Characteristic.Reconnect);
+      }
+
+      service
+        .getCharacteristic(this.api.hap.Characteristic.Reconnect)
+        .onGet(() => this.handler.get(this.accessory, 'reconnect', this.api.hap.Characteristic.Reconnect))
+        .onSet((state) => this.handler.set(state, this.accessory, 'reconnect', this.api.hap.Characteristic.Reconnect));
+    } else {
+      if (service.testCharacteristic(this.api.hap.Characteristic.Reconnect)) {
+        logger.info(
+          'Removing Reconnect characteristic',
+          `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+        );
+        service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Reconnect));
+      }
+    }
+
     //DECT
     if (characteristics.includes('dect') && this.accessory.context.config.master) {
       if (!service.testCharacteristic(this.api.hap.Characteristic.DECT)) {

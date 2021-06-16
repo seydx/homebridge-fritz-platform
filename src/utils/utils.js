@@ -10,6 +10,7 @@ exports.generateConfig = (config) => {
     debug: config.debug || false,
     devices: config.devices || [],
     presence: config.presence || [],
+    childLock: config.childLock || [],
     wol: config.wol || [],
     smarthome: config.smarthome || [],
     network: config.network || [],

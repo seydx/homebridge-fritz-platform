@@ -34,14 +34,12 @@ class Handler {
   // eslint-disable-next-line no-unused-vars
   async change(context, accessory, subtype, historyService) {
     if (context.oldValue !== context.newValue) {
-      subtype = subtype || accessory.context.config.subtype;
-      // eslint-disable-next-line no-unused-vars
-      const config = accessory.context.config;
-
       if (!this.configured) {
         logger.debug('Presence: Handler not configured yet. Skipping CHANGE event.');
         return;
       }
+
+      subtype = subtype || accessory.context.config.subtype;
 
       if (historyService) {
         const lastActivation = moment().unix() - historyService.getInitialTime();
@@ -73,16 +71,14 @@ class Handler {
   }
 
   // eslint-disable-next-line no-unused-vars
-  async get(accessory, subtype) {
-    // eslint-disable-next-line no-unused-vars
-    subtype = subtype || accessory.context.config.subtype;
-    // eslint-disable-next-line no-unused-vars
-    const config = accessory.context.config;
-
+  async get(accessory, subtype, ownCharacteristic) {
     if (!this.configured) {
       logger.debug('Presence: Handler not configured yet. Skipping GET event.');
-      return;
+      return accessory.context.config.subtype === 'motion' ? false : 0;
     }
+
+    // eslint-disable-next-line no-unused-vars
+    subtype = subtype || accessory.context.config.subtype;
 
     const service =
       accessory.context.config.subtype === 'motion'
@@ -227,7 +223,7 @@ class Handler {
   }
 
   // eslint-disable-next-line no-unused-vars
-  async set(state, accessory, subtype) {}
+  async set(state, accessory, subtype, ownCharacteristic) {}
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
@@ -249,7 +245,7 @@ class Handler {
         if (!host) {
           logger.debug(
             'User could not be find in hosts list. Looking for user manually.',
-            `${accessory.displayName} (${this.accessory.context.config.subtype})`
+            `${accessory.displayName} (${accessory.context.config.subtype})`
           );
 
           const service = validIP(accessory.context.config.address)
@@ -285,7 +281,7 @@ class Handler {
       logger.warn('An error occurred during polling hosts!');
       logger.error(err);
     } finally {
-      setTimeout(() => this.poll(), (this.polling.timer - 1) * 1000);
+      setTimeout(() => this.poll(), this.polling.timer * 1000);
     }
   }
 }

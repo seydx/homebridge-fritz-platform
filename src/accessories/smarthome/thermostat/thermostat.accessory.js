@@ -137,7 +137,7 @@ class Accessory {
 
     service
       .getCharacteristic(this.api.hap.Characteristic.Active)
-      .onSet((state) => this.handler.set(state, this.accessory, null, 'state'));
+      .onSet((state) => this.handler.set(state, this.accessory, null, null, 'state'));
 
     service
       .getCharacteristic(this.api.hap.Characteristic.CurrentTemperature)
@@ -145,12 +145,12 @@ class Accessory {
 
     service
       .getCharacteristic(this.api.hap.Characteristic.CoolingThresholdTemperature)
-      .onSet((state) => this.handler.set(state, this.accessory, null, 'temperature'))
+      .onSet((state) => this.handler.set(state, this.accessory, null, null, 'temperature'))
       .on('change', (context) => this.handler.change(context, this.accessory, null, this.historyService));
 
     service
       .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature)
-      .onSet((state) => this.handler.set(state, this.accessory, null, 'temperature'))
+      .onSet((state) => this.handler.set(state, this.accessory, null, null, 'temperature'))
       .on('change', (context) => this.handler.change(context, this.accessory, null, this.historyService));
 
     service

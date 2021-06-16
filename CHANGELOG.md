@@ -18,10 +18,19 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
   - Added `active` key to `network` to enable/disable the device without removing it from config. Warning: Default value for `active` is false, this means, that if you DON'T adjust your config.json and add `"active": true` to the device, the plugin will not notify you if the device is online/offline!
 
 ## Notable Changes
+- **Child Lock**:
+  - Added new `childLock` array into config to expose child lock switches for given device. Child Lock switches grants/denies acces to the internet for the given ip address.
+- **Devices**: 
+  - Added a new option `wifiUnits` to devices to manually set the available wifi units (support for multiple units like 1x 2.4Ghz and 2x 5Ghz)
+  - Added a new option `reconnect` to device options to expose a Reconnect characteristic/switch which interrupt the internet access and reconnect (for changing external ip)
 - **Smarthome**:
   - Blinds: Added `blind` as a new accessory (`accType`) type (experimental)
+  - Thermostat:
+    - Added new `openWindow` option to expose an switch to manually trigger open/close window
 - **Presence**: 
   - Moved `onDelay` and `offDelay` from options.presence to presence user to allow separate values for each user
+- **Callmonitor**:
+  - Added `filterIncoming` array into callmonitor options to allow trigger callmonitor only for speicifc numbers
 - **Options**: 
   - Removed `onDelay` and `offDelay` from options.presence
 - **Polling**: 

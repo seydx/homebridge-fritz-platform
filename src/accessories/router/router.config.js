@@ -10,6 +10,11 @@ const Config = (routerConfig, extrasConfig, optionsConfig) => {
     validOptionCharacteristics.push('aw', 'broadband', 'dect', 'deflection');
   }
 
+  if (routerConfig.connection !== 'dsl' || routerConfig.connection !== 'cable') {
+    validOptionsSwitches.push('reconnect');
+    validOptionCharacteristics.push('reconnect');
+  }
+
   return {
     active: routerConfig.active || false,
     name: routerConfig.name,
@@ -28,6 +33,7 @@ const Config = (routerConfig, extrasConfig, optionsConfig) => {
     igd: false, //not used
     readOnly: routerConfig.readOnly || false,
     hide: routerConfig.hide || false,
+    wifiUnits: parseInt(routerConfig.wifiUnits) > 0 ? parseInt(routerConfig.wifiUnits) : 2,
     oldFW: routerConfig.hide || false,
     connection: validTypes.find((el) => el === routerConfig.connection) || 'dsl',
     options: routerConfig.options || {},

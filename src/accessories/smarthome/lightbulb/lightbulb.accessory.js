@@ -89,22 +89,22 @@ class Accessory {
 
     service
       .getCharacteristic(this.api.hap.Characteristic.On)
-      .onSet((state) => this.handler.set(state, this.accessory, null, 'on'));
+      .onSet((state) => this.handler.set(state, this.accessory, null, null, 'on'));
 
     if (this.accessory.context.config.brightness) {
       service
         .getCharacteristic(this.api.hap.Characteristic.Brightness)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'brightness'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'brightness'));
     }
 
     if (this.accessory.context.config.color) {
       service
         .getCharacteristic(this.api.hap.Characteristic.ColorTemperature)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'temperature'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'temperature'));
 
       service
         .getCharacteristic(this.api.hap.Characteristic.Saturation)
-        .onSet((state) => this.handler.set(state, this.accessory, null, 'color'));
+        .onSet((state) => this.handler.set(state, this.accessory, null, null, 'color'));
     }
   }
 }

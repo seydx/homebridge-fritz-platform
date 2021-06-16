@@ -28,17 +28,12 @@ class Handler {
   async change(context, accessory, subtype, historyService) {}
 
   // eslint-disable-next-line no-unused-vars
-  async get(accessory, subtype) {
+  async get(accessory, subtype, ownCharacteristic) {
     return false;
   }
 
   // eslint-disable-next-line no-unused-vars
-  async set(state, accessory, subtype) {
-    // eslint-disable-next-line no-unused-vars
-    subtype = subtype || accessory.context.config.subtype;
-    // eslint-disable-next-line no-unused-vars
-    const config = accessory.context.config;
-
+  async set(state, accessory, subtype, ownCharacteristic) {
     if (!state) {
       return;
     }
@@ -47,6 +42,11 @@ class Handler {
       logger.debug('WOL: Handler not configured yet. Skipping SET event.');
       return;
     }
+
+    // eslint-disable-next-line no-unused-vars
+    subtype = subtype || accessory.context.config.subtype;
+
+    accessory.context.busy = true;
 
     try {
       logger.info('ON', `${accessory.displayName} (${subtype})`);
@@ -67,6 +67,8 @@ class Handler {
         1000
       );
     }
+
+    accessory.context.busy = false;
   }
 
   async poll() {

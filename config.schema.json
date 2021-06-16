@@ -104,6 +104,14 @@
             "type": "boolean",
             "description": "If you have problems with device LED turn on this option."
           },
+          "wifiUnits": {
+            "title": "Wifi Units",
+            "type": "integer",
+            "placeholder": 2,
+            "default": 2,
+            "description": "The amount of available wifi units (only 2.4Ghz = 1 unit / 1x 2.4Ghz and 1x 5Ghz = 2 units / 1x 2.4Ghz and 2x 5Ghz = 3 units and so on)",
+            "required": true
+          },
           "master": {
             "title": "Master Device",
             "type": "boolean",
@@ -312,6 +320,24 @@
                   }
                 ],
                 "description": "Enables Broadband as Characteristic. (Only for Master Device)"
+              },
+              "reconnect": {
+                "title": "Reconnect",
+                "type": "string",
+                "condition": {
+                  "functionBody": "return model.devices[arrayIndices[0]].connection !== 'repeater';"
+                },
+                "oneOf": [
+                  {
+                    "title": "Characteristic",
+                    "enum": ["characteristic"]
+                  },
+                  {
+                    "title": "Switch",
+                    "enum": ["switch"]
+                  }
+                ],
+                "description": "Enables Reconnect as Characteristic."
               }
             }
           }
@@ -511,6 +537,14 @@
             },
             "description": "Enable this, if the device has a built in window open function. This exposes an additional window (contact) as an accessory to HomeKit."
           },
+          "openWindow": {
+            "title": "Open Window Switch",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat';"
+            },
+            "description": "Enable this, if the device has a built in window open function. This exposes an additional open window (switch) as an accessory to HomeKit to trigger open/close window."
+          },
           "brightness": {
             "title": "Brightness",
             "type": "boolean",
@@ -659,6 +693,35 @@
         }
       }
     },
+    "childLock": {
+      "type": "array",
+      "items": {
+        "title": "Child Lock",
+        "type": "object",
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean",
+            "description": "If enabled, the device will be exposed to HomeKit."
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "description": "Set the device name for display in the Home app."
+          },
+          "ip": {
+            "title": "IP address",
+            "type": "string",
+            "required": true,
+            "description": "The IP address of the device.",
+            "condition": {
+              "functionBody": "try { return model.childLock[arrayIndices[0]].active } catch(e){ return false }"
+            }
+          }
+        }
+      }
+    },
     "callmonitor": {
       "titel": "Callmonitor",
       "type": "object",
@@ -715,8 +778,8 @@
           },
           "description": "If your FritzBox does not provide VOIP, please enter your city prefix (eg 030)."
         },
-        "incomingTo": {
-          "title": "Incoming To",
+        "filterIncoming": {
+          "title": "Filter Incoming From number",
           "type": "array",
           "condition": {
             "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
@@ -727,8 +790,8 @@
             "description": "Number to filter for incoming calls. (If a number is given, the accessory will only trigger if the number matches)"
           }
         },
-        "outgoingFrom": {
-          "title": "Outgoing From",
+        "incomingTo": {
+          "title": "Filter Incoming To number",
           "type": "array",
           "condition": {
             "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
@@ -736,7 +799,19 @@
           "items": {
             "title": "Number",
             "type": "string",
-            "description": "Number to filter for outgoing calls. (If a number is given, the accessory will only trigger if the number matches)"
+            "description": "Number to filter for incoming calls only to the defined (home) number specified in the array. (If a number is given, the accessory will only trigger if the number matches)"
+          }
+        },
+        "outgoingFrom": {
+          "title": "Filter Outgoing From number",
+          "type": "array",
+          "condition": {
+            "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
+          },
+          "items": {
+            "title": "Number",
+            "type": "string",
+            "description": "Number to filter for outgoing calls only from the defined (home) number specified in the array. (If a number is given, the accessory will only trigger if the number matches)"
           }
         }
       }
@@ -1002,9 +1077,9 @@
             "timer": {
               "title": "Polling Timer",
               "type": "integer",
-              "placeholder": 10,
-              "default": 10,
-              "description": "Timer to refresh data on background. (0 = off)",
+              "placeholder": 15,
+              "default": 15,
+              "description": "Timer to refresh data on background.",
               "required": true
             },
             "exclude": {
@@ -1196,6 +1271,7 @@
                 "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
               },
               "items": [
+                "devices[].wifiUnits",
                 "devices[].oldFW",
                 "devices[].readOnly",
                 "devices[].hide",
@@ -1234,7 +1310,8 @@
                 "devices[].options.deflection",
                 "devices[].options.led",
                 "devices[].options.lock",
-                "devices[].options.broadband"
+                "devices[].options.broadband",
+                "devices[].options.reconnect"
               ]
             }
           ]
@@ -1340,6 +1417,22 @@
       ]
     },
     {
+      "title": "Child Lock",
+      "expandable": true,
+      "expanded": false,
+      "orderable": false,
+      "type": "section",
+      "items": [
+        {
+          "key": "childLock",
+          "type": "array",
+          "orderable": false,
+          "buttonText": "Add Child Lock",
+          "items": ["childLock[].active", "childLock[].name", "childLock[].ip"]
+        }
+      ]
+    },
+    {
       "title": "Wake on LAN",
       "expandable": true,
       "expanded": false,
@@ -1390,6 +1483,7 @@
                 "smarthome[].temperature",
                 "smarthome[].humidity",
                 "smarthome[].window",
+                "smarthome[].openWindow",
                 "smarthome[].brightness",
                 "smarthome[].color",
                 "smarthome[].battery"
@@ -1416,6 +1510,15 @@
             "callmonitor.port",
             "callmonitor.countryPrefix",
             "callmonitor.cityPrefix",
+            {
+              "key": "callmonitor.filterIncoming",
+              "type": "section",
+              "orderable": false,
+              "expandable": true,
+              "expanded": false,
+              "buttonText": "Add Number",
+              "items": ["callmonitor.filterIncoming[]"]
+            },
             {
               "key": "callmonitor.incomingTo",
               "type": "section",
