@@ -36,6 +36,8 @@ This plugin allows almost full control of **AVM** hardware like:
   - Alarm,
   - Wakeup,
   - Broadband
+  - Reconnect
+  - Child Lock
 - **Fritz!Repeater**
   - Repeater status and switch functionality,
   - WLAN 2.4Ghz,
@@ -45,7 +47,7 @@ This plugin allows almost full control of **AVM** hardware like:
   - Device LED,
   - Device Lock
 - **Fritz!Fon**
-  - Callmonitor,
+  - Callmonitor (with adjustable filter for incoming/outgoing numbers),
   - FakeGato support
 - **Fritz!DECT Outlets, Fritz!Powerline Outlets**
   - Switch/Outlet status and switch functionality,
@@ -61,7 +63,10 @@ This plugin allows almost full control of **AVM** hardware like:
   - Thermostat current state, target state, current temperature and target temperature state and switch functionality,
   - Temperature sensor,
   - Window sensor (for window open functionality)
+  - Open Window detection (to trigger manually open window)
   - FakeGato support
+- **Rollotron DECT 1213/Blind/Shutter**
+  - Position adjustment/status
 - **HAN-FUN sensors (e.g. Deutsche Telekom)**
   - Contact state,
   - FakeGato support
@@ -71,7 +76,7 @@ This plugin allows almost full control of **AVM** hardware like:
 - **Watch Network**
   - Control devices if connected or disconnected from network
 - **Telegram**
-  - Receive custom messages for occupancy detection (presence), device detection (watch network), incoming/outgoing calls (callmonitor), alarm and router state
+  - Receive custom messages for occupancy detection (presence), device detection (watch network), incoming/outgoing calls (callmonitor), alarm, router state and outlet usage
 
 Any system capable of running [Homebridge](https://github.com/nfarina/homebridge/) can be used to run **homebridge-fritz-platform**. The only need is network access to the device or program in question.
 
