@@ -36,11 +36,11 @@ class Telegram {
     if (this.messages[target] && this.messages[target][dest]) {
       let message = this.messages[target][dest];
 
-      if (message.includes('@') && replacer) {
+      if (message.includes('@') && replacer !== undefined) {
         message = message.replace('@', replacer);
       }
 
-      if (message.includes('%') && additional) {
+      if (message.includes('%') && additional !== undefined) {
         message = message.replace('%', additional);
       }
 

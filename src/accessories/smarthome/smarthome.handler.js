@@ -51,26 +51,7 @@ class Handler {
           if (historyService) {
             historyService.addEntry({ time: moment().unix(), power: context.newValue });
 
-            if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
-              logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
-              accessory.context.started = true;
-
-              Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
-            } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
-              logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
-              accessory.context.started = false;
-
-              Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
-            }
-          }
-          break;
-        case 'smarthome-lightbulb':
-          break;
-        case 'smarthome-switch':
-          {
-            if (historyService) {
-              historyService.addEntry({ time: moment().unix(), power: context.newValue });
-
+            if (accessory.context.config.startValue) {
               if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
                 logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
                 accessory.context.started = true;
@@ -81,6 +62,29 @@ class Handler {
                 accessory.context.started = false;
 
                 Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
+              }
+            }
+          }
+          break;
+        case 'smarthome-lightbulb':
+          break;
+        case 'smarthome-switch':
+          {
+            if (historyService) {
+              historyService.addEntry({ time: moment().unix(), power: context.newValue });
+
+              if (accessory.context.config.startValue) {
+                if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
+                  logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                  accessory.context.started = true;
+
+                  Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
+                } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
+                  logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                  accessory.context.started = false;
+
+                  Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
+                }
               }
             }
           }
