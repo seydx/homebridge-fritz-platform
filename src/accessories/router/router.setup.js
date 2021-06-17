@@ -47,12 +47,11 @@ const Setup = (devices, routerConfig, extrasConfig, optionsConfig, meshMaster) =
           const formattedName = name.includes('_') ? name.replace('_', ' ') : name;
 
           let extraSwitch = {
+            ...device,
             name: device.name + ' ' + (formattedName[0].toUpperCase() + formattedName.substring(1)),
             type: 'extra',
             subtype: name,
             parent: device.name,
-            fritzbox: device.fritzbox,
-            oldFW: device.oldFW,
           };
 
           const uuidSwitch = UUIDgenerate(extraSwitch.name);
