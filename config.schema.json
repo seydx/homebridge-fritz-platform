@@ -1029,6 +1029,58 @@
               "description": "The accessory type of the device."
             }
           }
+        },
+        "dnsServer": {
+          "title": "DNS Server",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a switch/characteristic will be exposed to Apple Home to toggle between dns from internet provider and own dns server.",
+              "type": "boolean",
+              "required": true,
+              "default": false
+            },
+            "preferredDns": {
+              "title": "Preferred DNS",
+              "type": "string",
+              "placeholder": "8.8.8.8",
+              "condition": {
+                "functionBody": "try { return model.extras.dnsServer.active } catch(e){ return false }"
+              },
+              "required": true,
+              "description": "Preferred DNS Server."
+            },
+            "alternateDns": {
+              "title": "Alternate DNS",
+              "type": "string",
+              "placeholder": "8.8.4.4",
+              "condition": {
+                "functionBody": "try { return model.extras.dnsServer.active } catch(e){ return false }"
+              },
+              "required": true,
+              "description": "Alternate DNS Server."
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "condition": {
+                "functionBody": "try { return model.extras.dnsServer.active } catch(e){ return false }"
+              },
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": ["switch"]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": ["characteristic"]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
         }
       }
     },
@@ -1402,6 +1454,20 @@
               "buttonText": "Add Blacklist",
               "items": ["extras.phoneBook.blacklists[]"]
             }
+          ]
+        },
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "DNS Server",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.dnsServer.active",
+            "extras.dnsServer.preferredDns",
+            "extras.dnsServer.alternateDns",
+            "extras.dnsServer.accType"
           ]
         }
       ]

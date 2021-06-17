@@ -16,6 +16,9 @@ const Config = (extrasName, extrasConfig, meshMaster) => {
     case 'phoneBook':
       name = meshMaster.config.name + ' PhoneBook';
       break;
+    case 'dnsServer':
+      name = meshMaster.config.name + ' DNS';
+      break;
     default:
       //fall through
       break;

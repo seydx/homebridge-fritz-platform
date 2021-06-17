@@ -39,7 +39,7 @@ const Setup = (devices, routerConfig, extrasConfig, optionsConfig, meshMaster) =
         }
 
         if (!device.hide) {
-          logger.info('New device added!', device.name);
+          logger.debug('New device added!', device.name);
           devices.set(uuid, device);
         }
 
@@ -63,6 +63,7 @@ const Setup = (devices, routerConfig, extrasConfig, optionsConfig, meshMaster) =
               extraSwitch.name
             );
           } else {
+            logger.debug('New device added!', extraSwitch.name);
             devices.set(uuidSwitch, extraSwitch);
           }
         });

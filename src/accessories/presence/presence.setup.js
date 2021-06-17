@@ -36,7 +36,7 @@ const Setup = (devices, presenceConfig, presenceOptions) => {
       if (devices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', user.name);
       } else {
-        logger.info('New device added!', user.name);
+        logger.debug('New device added!', user.name);
         devices.set(uuid, user);
 
         exposed = true;
@@ -62,6 +62,7 @@ const Setup = (devices, presenceConfig, presenceOptions) => {
         anyoneConfig.name
       );
     } else {
+      logger.debug('New device added!', anyoneConfig.name);
       devices.set(uuid, anyoneConfig);
     }
   }

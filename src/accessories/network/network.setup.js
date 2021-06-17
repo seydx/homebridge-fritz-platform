@@ -6,6 +6,8 @@ const Config = require('./network.config');
 const Accessory = require('./network.accessory');
 
 const Setup = (networkConfig, meshMaster) => {
+  const networkDevices = new Map();
+
   networkConfig.forEach((config) => {
     let error = false;
     const device = Config(config);
@@ -26,10 +28,11 @@ const Setup = (networkConfig, meshMaster) => {
     if (!error) {
       const uuid = UUIDgenerate(device.name);
 
-      if (this.network.has(uuid)) {
+      if (networkDevices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
       } else {
         logger.info('Configuring network device', device.name);
+        networkDevices.set(uuid, device);
         new Accessory(device, meshMaster);
       }
     }

@@ -5,7 +5,7 @@ const { UUIDgenerate } = require('../../utils/utils');
 const Config = require('./extras.config');
 
 const Setup = (devices, extrasConfig, meshMaster) => {
-  const validExtrasInConfig = ['alarm', 'phoneBook', 'ringlock', 'wakeup'];
+  const validExtrasInConfig = ['alarm', 'phoneBook', 'ringlock', 'wakeup', 'dnsServer'];
 
   let extras = Object.keys(extrasConfig).filter(
     (name) => validExtrasInConfig.includes(name) && extrasConfig[name].active && extrasConfig[name].accType === 'switch'
@@ -48,6 +48,21 @@ const Setup = (devices, extrasConfig, meshMaster) => {
       case 'phoneBook':
         //fall through
         break;
+      case 'dnsServer':
+        if (!device.extras[name].preferredDns) {
+          logger.warn(
+            'There is no "preferredDns" configured for this EXTRAS (dnsServer) device. This device will be skipped.',
+            device.name
+          );
+          error = true;
+        } else if (!device.extras[name].alternateDns) {
+          logger.warn(
+            'There is no "alternateDns" configured for this EXTRAS (dnsServer) device. This device will be skipped.',
+            device.name
+          );
+          error = true;
+        }
+        break;
       default:
         //fall through
         break;
@@ -59,7 +74,7 @@ const Setup = (devices, extrasConfig, meshMaster) => {
       if (devices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
       } else {
-        logger.info('New device added!', device.name);
+        logger.debug('New device added!', device.name);
         devices.set(uuid, device);
       }
     }

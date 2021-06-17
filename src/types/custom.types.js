@@ -203,6 +203,20 @@ exports.registerWith = (hap) => {
   Characteristic.RingLock.UUID = 'cab7d43e-422c-4452-bc9a-11c89454332b';
 
   /*
+   * Characteristic.DNSServer
+   */
+  Characteristic.DNSServer = function () {
+    Characteristic.call(this, 'DNS Server', 'c34f1eb0-92bb-44a8-b399-17f2599639f1');
+    this.setProps({
+      format: Characteristic.Formats.BOOL,
+      perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY],
+    });
+    this.value = this.getDefaultValue();
+  };
+  inherits(Characteristic.DNSServer, Characteristic);
+  Characteristic.DNSServer.UUID = 'c34f1eb0-92bb-44a8-b399-17f2599639f1';
+
+  /*
    * Characteristic.Caller
    */
   Characteristic.Caller = function () {
@@ -259,6 +273,23 @@ exports.registerWith = (hap) => {
   Characteristic.Upload.UUID = '9b2e94f7-a665-4575-9efd-1b37474d758b';
 
   /*
+   * Characteristic.Ping
+   */
+  Characteristic.Ping = function () {
+    Characteristic.call(this, 'Ping', 'ce18aaef-1026-4538-943b-026501599dc0');
+    this.setProps({
+      format: Characteristic.Formats.FLOAT,
+      maxValue: 9999,
+      minValue: 0,
+      minStep: 0.1,
+      perms: [Characteristic.Perms.READ, Characteristic.Perms.NOTIFY],
+    });
+    this.value = this.getDefaultValue();
+  };
+  inherits(Characteristic.Ping, Characteristic);
+  Characteristic.Ping.UUID = 'ce18aaef-1026-4538-943b-026501599dc0';
+
+  /*
    * Service.Switch
    */
   Service.Switch = function (displayName, subtype) {
@@ -283,6 +314,7 @@ exports.registerWith = (hap) => {
     this.addOptionalCharacteristic(Characteristic.RingLock);
     this.addOptionalCharacteristic(Characteristic.Download);
     this.addOptionalCharacteristic(Characteristic.Upload);
+    this.addOptionalCharacteristic(Characteristic.Ping);
 
     // Optional Characteristics
     this.addOptionalCharacteristic(Characteristic.Name);

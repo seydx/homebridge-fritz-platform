@@ -359,6 +359,14 @@ class Accessory {
       }
     }
 
+    if (service.testCharacteristic(this.api.hap.Characteristic.Ping)) {
+      logger.info(
+        'Removing Ping characteristic',
+        `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+      );
+      service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.Ping));
+    }
+
     if (this.accessory.context.config.master) {
       const extrasConfig = this.accessory.context.config.extras;
 
@@ -448,6 +456,7 @@ class Accessory {
         }
       }
 
+      //PhoneBook
       if (extrasConfig.phoneBook.accType === 'characteristic' && extrasConfig.phoneBook.active) {
         if (!service.testCharacteristic(this.api.hap.Characteristic.PhoneBook)) {
           logger.info(
@@ -470,6 +479,42 @@ class Accessory {
             `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
           );
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.PhoneBook));
+        }
+      }
+
+      //DNSServer
+      if (
+        extrasConfig.dnsServer.accType === 'characteristic' &&
+        extrasConfig.dnsServer.active &&
+        extrasConfig.dnsServer.preferredDns &&
+        extrasConfig.dnsServer.alternateDns
+      ) {
+        if (!service.testCharacteristic(this.api.hap.Characteristic.DNSServer)) {
+          logger.info(
+            'Adding DNSServer characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
+          service.addCharacteristic(this.api.hap.Characteristic.DNSServer);
+        }
+
+        service
+          .getCharacteristic(this.api.hap.Characteristic.DNSServer)
+          .onSet((state) =>
+            ExtrasHandler.set(state, this.accessory, 'dnsServer', this.api.hap.Characteristic.DNSServer)
+          );
+
+        if (polling.exclude.includes('dnsServer')) {
+          service
+            .getCharacteristic(this.api.hap.Characteristic.DNSServer)
+            .onGet(() => ExtrasHandler.get(this.accessory, 'dnsServer', this.api.hap.Characteristic.DNSServer));
+        }
+      } else {
+        if (service.testCharacteristic(this.api.hap.Characteristic.DNSServer)) {
+          logger.info(
+            'Removing DNSServer characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
+          service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DNSServer));
         }
       }
     }

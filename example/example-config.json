@@ -237,6 +237,12 @@
                     "blacklists": [
                         "Blacklist"
                     ]
+                },
+                "dnsServer": {
+                    "active": false,
+                    "preferredDns": "8.8.8.8",
+                    "alternateDns": "8.8.4.4",
+                    "accType": "switch"
                 }
             },
             "options": {

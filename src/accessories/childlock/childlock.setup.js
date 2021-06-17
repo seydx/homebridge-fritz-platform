@@ -28,7 +28,7 @@ const Setup = (devices, childlockConfig) => {
       if (devices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
       } else {
-        logger.info('New device added!', device.name);
+        logger.debug('New device added!', device.name);
         devices.set(uuid, device);
       }
     }

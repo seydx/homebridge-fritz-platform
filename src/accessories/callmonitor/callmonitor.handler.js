@@ -181,8 +181,8 @@ class Handler {
 
       if (data[1] === 'ring') {
         accessory =
-          this.accessories.find((accessory) => accessory.context.config?.subtype === 'incoming') ||
-          this.accessories.find((accessory) => accessory.context.config?.subtype === 'group');
+          this.accessories.find((accessory) => accessory.context.config.subtype === 'incoming') ||
+          this.accessories.find((accessory) => accessory.context.config.subtype === 'group');
 
         this.call[data[2]] = {
           type: 'inbound',
@@ -310,8 +310,8 @@ class Handler {
 
       if (data[1] === 'call') {
         accessory =
-          this.accessories.find((accessory) => accessory.context.config?.subtype === 'outgoing') ||
-          this.accessories.find((accessory) => accessory.context.config?.subtype === 'group');
+          this.accessories.find((accessory) => accessory.context.config.subtype === 'outgoing') ||
+          this.accessories.find((accessory) => accessory.context.config.subtype === 'group');
 
         this.call[data[2]] = {
           type: 'outbound',

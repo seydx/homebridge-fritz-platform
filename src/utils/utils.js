@@ -16,36 +16,64 @@ exports.generateConfig = (config) => {
     network: config.network || [],
     callmonitor: config.callmonitor || {},
     extras: {
-      alarm: config.extras?.alarm || {},
-      wakeup: config.extras?.wakeup || {},
-      ringlock: config.extras?.ringlock || {},
-      phoneBook: config.extras?.phoneBook || {},
+      alarm: config.extras && config.extras.alarm ? config.extras.alarm : {},
+      wakeup: config.extras && config.extras.wakeup ? config.extras.wakeup : {},
+      ringlock: config.extras && config.extras.ringlock ? config.extras.ringlock : {},
+      phoneBook: config.extras && config.extras.phoneBook ? config.extras.phoneBook : {},
+      dnsServer: config.extras && config.extras.dnsServer ? config.extras.dnsServer : {},
     },
     options: {
       polling: {
-        timer: config.options?.polling?.timer < 15 ? 15 : config.options?.polling?.timer,
-        exclude: config.options?.polling?.exclude || [],
+        timer:
+          config.options && config.options.polling && parseInt(config.options.polling.timer) > 14
+            ? parseInt(config.options.polling.timer)
+            : 15,
+        exclude:
+          config.options && config.options.polling && config.options.polling.exclude
+            ? config.options.polling.exclude
+            : [],
       },
       presence: {
-        anyone: config.options?.presence?.anyone || false,
-        accType: config.options?.presence?.accType || 'occupancy',
+        anyone: config.options && config.options.presence && config.options.presence.anyone ? true : false,
+        accType:
+          config.options && config.options.presence && config.options.presence.accType
+            ? config.options.presence.accType
+            : 'occupancy',
       },
       reboot: {
-        on: config.options?.reboot?.on || false,
-        off: config.options?.reboot?.off || false,
+        on: config.options && config.options.reboot && config.options.reboot.on ? config.options.reboot.on : false,
+        off: config.options && config.options.reboot && config.options.reboot.off ? config.options.reboot.off : false,
       },
     },
     telegram: {
-      active: config.telegram?.active || false,
-      token: config.telegram?.token || false,
-      chatID: config.telegram?.chatID || false,
+      active: config.telegram && config.telegram.active ? true : false,
+      token: config.telegram && config.telegram.token ? config.telegram.token : false,
+      chatID: config.telegram && config.telegram.chatID ? config.telegram.chatID : false,
       messages: {
-        presence: config.telegram?.messages?.presence || {},
-        callmonitor: config.telegram?.messages?.callmonitor || {},
-        alarm: config.telegram?.messages?.alarm || {},
-        reboot: config.telegram?.messages?.reboot || {},
-        network: config.telegram?.messages?.network || {},
-        outlet: config.telegram?.messages?.outlet || {},
+        presence:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.presence
+            ? config.telegram.messages.presence
+            : {},
+        callmonitor:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.callmonitor
+            ? config.telegram.messages.callmonitor
+            : {},
+        alarm:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.alarm
+            ? config.telegram.messages.alarm
+            : {},
+        reboot:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.reboot
+            ? config.telegram.messages.reboot
+            : {},
+        network:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.network
+            ? config.telegram.messages.network
+            : {},
+        outlet:
+          config.telegram && config.telegram && config.telegram.messages && config.telegram.messages.outlet
+            ? config.telegram.messages.outlet
+            : {},
       },
     },
   };

@@ -35,6 +35,7 @@ This plugin allows almost full control of **AVM** hardware like:
   - Phonebook,
   - Alarm,
   - Wakeup,
+  - DNS Server
   - Broadband
   - Reconnect
   - Child Lock

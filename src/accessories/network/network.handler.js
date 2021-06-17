@@ -11,7 +11,7 @@ class Handler {
     this.configured = false;
 
     this.device = device;
-    this.fritzbox = meshMaster?.fritzbox;
+    this.fritzbox = meshMaster.fritzbox;
 
     this.poll();
   }
@@ -33,8 +33,10 @@ class Handler {
     logger.debug('Polling NETWORK device');
 
     try {
-      let service = validIP ? 'X_AVM-DE_GetSpecificHostEntryByIP' : 'GetSpecificHostEntry';
-      let input = validIP ? { NewIPAddress: this.device.address } : { NewMACAddress: this.device.address };
+      let service = validIP(this.device.address) ? 'X_AVM-DE_GetSpecificHostEntryByIP' : 'GetSpecificHostEntry';
+      let input = validIP(this.device.address)
+        ? { NewIPAddress: this.device.address }
+        : { NewMACAddress: this.device.address };
 
       const response = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
       logger.debug(response, this.device.name);
@@ -119,7 +121,7 @@ class Handler {
       logger.error('An error occured during polling network this.device!', this.device.name);
       logger.error(err);
     } finally {
-      setTimeout(() => this.start.bind(this), this.device.polling * 1000);
+      setTimeout(() => this.poll(), this.device.polling * 1000);
     }
   }
 }

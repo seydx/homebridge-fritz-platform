@@ -45,11 +45,10 @@ class Handler {
       switch (subtype) {
         case 'dsl':
         case 'cable':
+        case 'repeater':
           if (!accessory.context.config.readOnly) {
             Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
           }
-          break;
-        case 'repeater':
           break;
         case 'wifi_2ghz':
           break;
@@ -369,13 +368,13 @@ class Handler {
 
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
-          if (body?.data?.ledSettings) {
-            state = parseInt(body?.data?.ledSettings?.ledDisplay) === 0;
+          if (body && body.data && body.data.ledSettings) {
+            state = parseInt(body.data.ledSettings.ledDisplay) === 0;
           }
 
           //old fw
-          if (body?.data?.led_display) {
-            state = parseInt(body?.data?.led_display) === 0;
+          if (body && body.data && body.data.led_display) {
+            state = parseInt(body.data.led_display) === 0;
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -405,8 +404,8 @@ class Handler {
 
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
-          if (body?.data) {
-            state = body?.data?.keylock_checked || false;
+          if (body && body.data) {
+            state = body.data.keylock_checked || false;
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -994,7 +993,11 @@ class Handler {
         for (const service of accessory.services) {
           if (service.subtype === 'dsl' || service.subtype === 'cable' || service.subtype === 'repeater') {
             for (const characteristic of service.characteristics) {
-              if (!this.polling.exclude.includes(characteristics[characteristic.UUID]?.subtype)) {
+              const subtype = characteristics[characteristic.UUID]
+                ? characteristics[characteristic.UUID].subtype
+                : false;
+
+              if (subtype && this.polling.exclude.includes(subtype)) {
                 if (
                   validUUIDs.includes(characteristic.UUID) &&
                   characteristics[characteristic.UUID].name === 'RingLock'

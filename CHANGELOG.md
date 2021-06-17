@@ -4,8 +4,6 @@
 This update is by far the biggest update for `homebridge-fritz-platform`. To make adding new devices also easier for developers, the complete plugin has been rewritten and made modular. This should give all developers the possibility to read the code more easily and add new devices via PR themselves.
 
 ## Breaking Changes
-- **Node**
-  - Dropped support for node below version 14
 - **Homebridge**
   - Dropped support for homebridge below version 1.3.0
 - **Devices**: 
@@ -29,6 +27,8 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
     - Added new `openWindow` option to expose an switch to manually trigger open/close window
   - Outlet:
     - Added new `startValue` option which is used for notification via telegram when device started (current power consumption above this value) or ended (current power consumption below this value)
+- **Extras**:
+  - Added new `dnsServer` option to `extras` config to expose a switch which toggles the dns server from fritzbox to "internet provider" or "own dns server"
 - **Presence**: 
   - Moved `onDelay` and `offDelay` from options.presence to presence user to allow separate values for each user
 - **Callmonitor**:

@@ -8,7 +8,6 @@ class Accessory {
     this.fritzbox = meshMaster.fritzbox;
 
     this.handler = new Handler(device, meshMaster);
-    this.start();
   }
 }
 

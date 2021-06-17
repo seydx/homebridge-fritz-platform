@@ -31,7 +31,7 @@ const Setup = (devices, callmonitorConfig) => {
           deviceGroup.name
         );
       } else {
-        logger.info('New device added!', deviceGroup.name);
+        logger.debug('New device added!', deviceGroup.name);
         devices.set(uuidGroup, deviceGroup);
       }
     } else {
@@ -56,7 +56,7 @@ const Setup = (devices, callmonitorConfig) => {
           deviceIncoming.name
         );
       } else {
-        logger.info('New device added!', deviceIncoming.name);
+        logger.debug('New device added!', deviceIncoming.name);
         devices.set(uuidIncoming, deviceIncoming);
       }
 
@@ -66,7 +66,7 @@ const Setup = (devices, callmonitorConfig) => {
           deviceOutgoing.name
         );
       } else {
-        logger.info('New device added!', deviceOutgoing.name);
+        logger.debug('New device added!', deviceOutgoing.name);
         devices.set(uuidOutgoing, deviceOutgoing);
       }
     }

@@ -61,6 +61,8 @@ class Handler {
           break;
         case 'wakeup':
           break;
+        case 'dnsServer':
+          break;
         default:
           logger.warn(
             `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
@@ -132,6 +134,36 @@ class Handler {
       }
       case 'wakeup':
         break;
+      case 'dnsServer': {
+        try {
+          const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
+          const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+
+          const body = await requestLUA(
+            {
+              xhr: '1',
+              xhrId: 'all',
+              sid: sid,
+              page: 'dnsSrv',
+            },
+            fritzbox.url.hostname,
+            '/data.lua'
+          );
+
+          logger.debug(body, `${accessory.displayName} (${subtype})`);
+
+          if (body && body.data && body.data.vars && body.data.vars.ipv4 && body.data.vars.ipv4.userdns) {
+            state = parseInt(body.data.vars.ipv4.userdns.value) === 1;
+          }
+        } catch (err) {
+          logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+        }
+
+        accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
+
+        return state;
+      }
       default:
         logger.warn(
           `Can not handle GET event. Unknown accessory subtype (${subtype})`,
@@ -553,6 +585,56 @@ class Handler {
 
             await fritzbox.exec('urn:X_VoIP-com:serviceId:X_VoIP1', 'X_AVM-DE_DialHangup');
           }
+        } catch (err) {
+          logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
+        }
+        break;
+      }
+      case 'dnsServer': {
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+
+        try {
+          const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
+          const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+
+          const preferredDns = accessory.context.config.extras[subtype].preferredDns.split('.');
+          const alternateDns = accessory.context.config.extras[subtype].alternateDns.split('.');
+
+          let formData = {
+            xhr: '1',
+            ipv4_use_user_dns: '0',
+            dot_enabled: '0',
+            dot_strict: '1',
+            dot_udp_fallback: '1',
+            dot_fqdn_list: '',
+            apply: '',
+            sid: sid,
+            page: 'dnsSrv',
+          };
+
+          if (state) {
+            formData = {
+              ...formData,
+              ipv4_use_user_dns: '1',
+              ipv4_user_firstdns0: preferredDns[0],
+              ipv4_user_firstdns1: preferredDns[1],
+              ipv4_user_firstdns2: preferredDns[2],
+              ipv4_user_firstdns3: preferredDns[3],
+              ipv4_user_seconddns0: alternateDns[0],
+              ipv4_user_seconddns1: alternateDns[1],
+              ipv4_user_seconddns2: alternateDns[2],
+              ipv4_user_seconddns3: alternateDns[3],
+            };
+          }
+
+          await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
