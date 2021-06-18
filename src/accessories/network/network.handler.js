@@ -4,12 +4,8 @@ const { validIP } = require('../../utils/utils');
 const logger = require('../../utils/logger');
 const Telegram = require('../../lib/telegram');
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-
 class Handler {
   constructor(device, meshMaster) {
-    this.configured = false;
-
     this.device = device;
     this.fritzbox = meshMaster.fritzbox;
 
@@ -29,8 +25,6 @@ class Handler {
   async set(state, accessory, subtype, ownCharacteristic) {}
 
   async poll() {
-    await timeout(1000); //wait for accessories to fully load
-
     try {
       let service = validIP(this.device.address) ? 'X_AVM-DE_GetSpecificHostEntryByIP' : 'GetSpecificHostEntry';
       let input = validIP(this.device.address)

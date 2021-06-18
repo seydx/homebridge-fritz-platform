@@ -181,6 +181,20 @@
                     "accType": "lightbulb",
                     "brightness": true,
                     "color": true
+                },
+                {
+                    "active": true,
+                    "name": "DECT 400",
+                    "ain": "09995 0692315",
+                    "accType": "button",
+                    "buttons": 1
+                },
+                {
+                    "active": true,
+                    "name": "DECT 440",
+                    "ain": "09995 0692315",
+                    "accType": "button",
+                    "buttons": 4
                 }
             ],
             "network": [
@@ -247,7 +261,8 @@
             },
             "options": {
                 "polling": {
-                    "timer": 10,
+                    "timer": 15,
+                    "timerSmarthomeButtons": 5,
                     "exclude": []
                 },
                 "presence": {

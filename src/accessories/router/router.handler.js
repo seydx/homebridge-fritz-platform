@@ -5,8 +5,6 @@ const logger = require('../../utils/logger');
 const { initReboot } = require('./router.utils');
 const Telegram = require('../../lib/telegram');
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-
 class Handler {
   constructor() {
     this.configured = false;
@@ -24,7 +22,7 @@ class Handler {
 
     this.configured = true;
 
-    this.poll();
+    setTimeout(() => this.poll(), 1000);
 
     return this;
   }
@@ -994,7 +992,6 @@ class Handler {
   }
 
   async poll() {
-    await timeout(1000); //wait for accessories to fully load
     const ExtrasHandler = require('../extras/extras.handler');
 
     try {

@@ -6,8 +6,6 @@ const logger = require('../../utils/logger');
 const { colortemp2api, getValidColor } = require('./smarthome.utils');
 const Telegram = require('../../lib/telegram');
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-
 class Handler {
   constructor() {
     this.smarthomeList = {
@@ -29,7 +27,7 @@ class Handler {
 
     this.configured = true;
 
-    this.poll();
+    setTimeout(() => this.poll(), 1000);
 
     return this;
   }
@@ -1670,13 +1668,14 @@ class Handler {
   }
 
   async poll() {
-    await timeout(1000); //wait for accessories to fully load
-
     try {
       this.smarthomeList = await this.fritzbox.getSmarthomeDevices();
       //logger.debug(this.smarthomeList, 'Smarthome');
 
-      const accessories = this.accessories.filter((accessory) => accessory.context.config.type === 'smarthome');
+      const accessories = this.accessories.filter(
+        (accessory) =>
+          accessory.context.config.type === 'smarthome' && accessory.context.config.subtype !== 'smarthome-button'
+      ); //buttons have its own handler
 
       for (const accessory of accessories) {
         await this.get(accessory);

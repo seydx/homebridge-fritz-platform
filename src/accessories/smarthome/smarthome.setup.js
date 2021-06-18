@@ -27,6 +27,12 @@ const Setup = (devices, smarthomeConfig) => {
           device.name
         );
         error = true;
+      } else if (device.accType === 'button' && !device.buttons) {
+        logger.warn(
+          'There is no or no valid "buttons" configured for this SMARTHOME device. This device will be skipped.',
+          device.name
+        );
+        error = true;
       }
     } else {
       if (!device.active) {
@@ -113,26 +119,6 @@ const Setup = (devices, smarthomeConfig) => {
         } else {
           logger.debug('New device added!', openWindowDevice.name);
           devices.set(uuidWindow, openWindowDevice);
-        }
-      }
-
-      if (!device.group && device.blind && device.accType === 'blind') {
-        let blindDevice = {
-          name: device.name + ' Blind',
-          type: 'smarthome',
-          subtype: 'smarthome-blind',
-          ain: device.ain,
-        };
-
-        const uuidBlind = UUIDgenerate(blindDevice.name);
-        if (devices.has(uuidBlind)) {
-          logger.warn(
-            'Multiple devices are configured with this name. Duplicate devices will be skipped.',
-            blindDevice.name
-          );
-        } else {
-          logger.debug('New device added!', blindDevice.name);
-          devices.set(uuidBlind, blindDevice);
         }
       }
     }

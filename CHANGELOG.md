@@ -23,6 +23,7 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
   - Added a new option `reconnect` to device options to expose a Reconnect characteristic/switch which interrupt the internet access and reconnect (for changing external ip)
 - **Smarthome**:
   - Blinds: Added `blind` as a new accessory (`accType`) type
+  - Buttons: Added `button` as a new accessory (`accType`) type with 1/4 button support with oen polling timer (`timerSmarthomeButtons`) configurable under `options.polling.timerSmarthomeButtons`
   - Thermostat:
     - Added new `openWindow` option to expose an switch to manually trigger open/close window
   - Outlet:
@@ -37,6 +38,7 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
   - Added `outlet.started` and `outlet.finished` as a new option to notify via Telegram if device is started/finished
 - **Options**: 
   - Removed `onDelay` and `offDelay` from options.presence
+  - Added `timerSmarthomeButtons` to options.polling
 - **Polling**: 
   - Refactored `exclude` list. Now, only following type of accessories/characteristics can be excluded from polling: `dsl` (accessory name), `cable` (accessory name), `repeater` (accessory name), `wifi_2ghz`, `wifi_5ghz`, `wifi_guest`, `wps`, `led`, `lock`, `aw`, `dect`, `deflection`, `ringlock`
   - Minimum/Default polling timer (seconds) increased to 15 seconds

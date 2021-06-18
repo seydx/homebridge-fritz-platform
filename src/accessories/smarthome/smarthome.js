@@ -1,5 +1,6 @@
 module.exports = {
   SHBlindAccessory: require('./blind/blind.accessory'),
+  SHButtonAccessory: require('./button/button.accessory'),
   SHContactAccessory: require('./contact/contact.accessory'),
   SHLightbulbAccessory: require('./lightbulb/lightbulb.accessory'),
   SHOutletAccessory: require('./outlet/outlet.accessory'),

@@ -6,8 +6,6 @@ const { getPhonebook, getBlackbook, parseMessage } = require('./callmonitor.util
 const Callmonitor = require('../../lib/callmonitor');
 const Telegram = require('../../lib/telegram');
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-
 class Handler {
   constructor() {
     this.call = {};
@@ -37,7 +35,7 @@ class Handler {
 
     this.configured = true;
 
-    this.poll();
+    setTimeout(() => this.poll(), 1000);
 
     return this;
   }
@@ -171,7 +169,6 @@ class Handler {
   async set(state, accessory, subtype, ownCharacteristic) {}
 
   async poll() {
-    await timeout(1000); //wait for accessories to fully load
     let accessory, text, message;
 
     Callmonitor.client.on('data', async (chunk) => {

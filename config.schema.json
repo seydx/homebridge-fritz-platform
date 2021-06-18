@@ -526,7 +526,7 @@
             "title": "Temperature Sensor",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button' || model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
             "description": "Enable this, if the device(s) has a built in temperature sensor. This exposes an additional temperature sensor as an accessory to HomeKit."
           },
@@ -534,7 +534,7 @@
             "title": "Humidity Sensor",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].temperature === true || model.smarthome[arrayIndices[0]].accType === 'temperature';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button' || model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
             "description": "Enable this, if the device(s) has a built in humidity sensor. This adds an additional humidity sensor to the temperature sensor."
           },
@@ -578,6 +578,24 @@
             },
             "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
           },
+          "buttons": {
+            "title": "Available Button",
+            "type": "integer",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button';"
+            },
+            "description": "Amount of available buttons.",
+            "oneOf": [
+              {
+                "title": "1",
+                "enum": [1]
+              },
+              {
+                "title": "4",
+                "enum": [4]
+              }
+            ]
+          },
           "accTypeGroup": {
             "title": "Accessory Types (Group)",
             "type": "string",
@@ -612,6 +630,10 @@
               "functionBody": "try { return model.smarthome[arrayIndices[0]].active && !model.smarthome[arrayIndices[0]].group } catch(e){ return false }"
             },
             "oneOf": [
+              {
+                "title": "Button",
+                "enum": ["button"]
+              },
               {
                 "title": "Switch",
                 "enum": ["switch"]
@@ -1143,6 +1165,12 @@
               "description": "Timer to refresh data on background.",
               "required": true
             },
+            "timerSmarthomeButtons": {
+              "title": "Polling Timer for Smarthome Buttons",
+              "type": "integer",
+              "placeholder": 5,
+              "description": "Timer to refresh data on background."
+            },
             "exclude": {
               "title": "Exclude",
               "type": "array",
@@ -1578,7 +1606,8 @@
                 "smarthome[].openWindow",
                 "smarthome[].brightness",
                 "smarthome[].color",
-                "smarthome[].battery"
+                "smarthome[].battery",
+                "smarthome[].buttons"
               ]
             }
           ]
@@ -1690,6 +1719,7 @@
           "orderable": false,
           "items": [
             "options.polling.timer",
+            "options.polling.timerSmarthomeButtons",
             {
               "key": "options.polling.exclude",
               "type": "section",

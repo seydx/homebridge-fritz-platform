@@ -1,8 +1,9 @@
 'use strict';
 
 const Config = (smarthomeConfig) => {
-  const validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window', 'blind'];
+  const validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window', 'blind', 'button'];
   const validTypesGroup = ['switch', 'lightbulb', 'thermostat', 'switch-lightbulb'];
+  const validButtons = [1, 4];
 
   return {
     active: smarthomeConfig.active || false,
@@ -23,6 +24,7 @@ const Config = (smarthomeConfig) => {
     brightness: smarthomeConfig.brightness || false,
     color: smarthomeConfig.color || false,
     battery: smarthomeConfig.battery || false,
+    buttons: validButtons.find((el) => el === smarthomeConfig.buttons) || false,
   };
 };
 

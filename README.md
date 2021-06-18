@@ -50,6 +50,11 @@ This plugin allows almost full control of **AVM** hardware like:
 - **Fritz!Fon**
   - Callmonitor (with adjustable filter for incoming/outgoing numbers),
   - FakeGato support
+- **Fritz!DECT Buttons**
+  - Support for buttons with 1/4 channels (Fritz DECT 400/440)
+  - Temperature sensor with FakeGato,
+  - Humidity sensor with FakeGato,
+  - FakeGato support
 - **Fritz!DECT Outlets, Fritz!Powerline Outlets**
   - Switch/Outlet status and switch functionality,
   - Power meter,
@@ -63,6 +68,7 @@ This plugin allows almost full control of **AVM** hardware like:
 - **Fritz!DECT Thermostats, Comet!DECT Thermostats**
   - Thermostat current state, target state, current temperature and target temperature state and switch functionality,
   - Temperature sensor,
+  - Humidity sensor with FakeGato,
   - Window sensor (for window open functionality)
   - Open Window detection (to trigger manually open window)
   - FakeGato support

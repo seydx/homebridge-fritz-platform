@@ -20,6 +20,7 @@ const {
 const { RouterAccessory, RouterSetup } = require('./accessories/router/router');
 const {
   SHBlindAccessory,
+  SHButtonAccessory,
   SHContactAccessory,
   SHLightbulbAccessory,
   SHOutletAccessory,
@@ -198,6 +199,8 @@ FritzPlatform.prototype = {
           new SHThermostatAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-blind')
           new SHBlindAccessory(this.api, accessory, this.accessories, this.meshMaster);
+        else if (device.subtype === 'smarthome-button')
+          new SHButtonAccessory(this.api, accessory, this.accessories, this.meshMaster);
         else if (device.subtype === 'smarthome-contact')
           new SHContactAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-window')

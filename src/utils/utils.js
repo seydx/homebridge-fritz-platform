@@ -28,6 +28,10 @@ exports.generateConfig = (config) => {
           config.options && config.options.polling && parseInt(config.options.polling.timer) > 14
             ? parseInt(config.options.polling.timer)
             : 15,
+        timerSmarthomeButtons:
+          config.options && config.options.polling && parseInt(config.options.polling.timerSmarthomeButtons) > 0
+            ? parseInt(config.options.polling.timerSmarthomeButtons)
+            : 5,
         exclude:
           config.options && config.options.polling && config.options.polling.exclude
             ? config.options.polling.exclude
