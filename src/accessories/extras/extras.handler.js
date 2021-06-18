@@ -115,8 +115,9 @@ class Handler {
               oldpage: '/fon_devices/edit_dect_ring_block.lua',
             });
 
-          for (const formdata of phonesFormData) {
-            const body = await requestLUA(formdata, fritzbox.url.hostname, '/data.lua', 'nightsetting');
+          for (const formData of phonesFormData) {
+            logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+            const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua', 'nightsetting');
             logger.debug(body, `${accessory.displayName} (${subtype})`);
 
             actives.push(body.checked && body.checked === 'checked' ? 1 : 0);
@@ -139,17 +140,15 @@ class Handler {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          const body = await requestLUA(
-            {
-              xhr: '1',
-              xhrId: 'all',
-              sid: sid,
-              page: 'dnsSrv',
-            },
-            fritzbox.url.hostname,
-            '/data.lua'
-          );
+          let formData = {
+            xhr: '1',
+            xhrId: 'all',
+            sid: sid,
+            page: 'dnsSrv',
+          };
 
+          logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
           if (body && body.data && body.data.vars && body.data.vars.ipv4 && body.data.vars.ipv4.userdns) {
@@ -558,8 +557,10 @@ class Handler {
             }
           }
 
-          for (const formdata of phonesFormData)
-            await requestLUA(formdata, fritzbox.url.hostname, '/data.lua', 'nightsetting', true);
+          for (const formData of phonesFormData) {
+            logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+            await requestLUA(formData, fritzbox.url.hostname, '/data.lua', 'nightsetting', true);
+          }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -634,6 +635,7 @@ class Handler {
             };
           }
 
+          logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -660,8 +662,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling EXTRAS accessories');
-
     const RouterHandler = require('../router/router.handler');
 
     const validOptionsSwitches = [

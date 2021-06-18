@@ -2,8 +2,6 @@
 
 const logger = require('../../utils/logger');
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-
 class Handler {
   constructor() {
     this.configured = false;
@@ -74,10 +72,7 @@ class Handler {
     accessory.context.busy = false;
   }
 
-  async poll() {
-    await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling WOL accessories');
-  }
+  async poll() {}
 }
 
 const handler = new Handler();

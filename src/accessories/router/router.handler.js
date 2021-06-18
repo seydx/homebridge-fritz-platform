@@ -282,18 +282,15 @@ class Handler {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          const body = await requestLUA(
-            {
-              xhr: '1',
-              sid: sid,
-              page: 'dectSet',
-              no_sidrenew: '',
-            },
-            fritzbox.url.hostname,
-            '/data.lua',
-            'dect_activ'
-          );
+          let formData = {
+            xhr: '1',
+            sid: sid,
+            page: 'dectSet',
+            no_sidrenew: '',
+          };
 
+          logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua', 'dect_activ');
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
           state = body.checked || body.checked === '';
@@ -355,17 +352,15 @@ class Handler {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          const body = await requestLUA(
-            {
-              xhr: '1',
-              xhrId: 'all',
-              sid: sid,
-              page: 'led',
-            },
-            fritzbox.url.hostname,
-            '/data.lua'
-          );
+          let formData = {
+            xhr: '1',
+            xhrId: 'all',
+            sid: sid,
+            page: 'led',
+          };
 
+          logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
           if (body && body.data && body.data.ledSettings) {
@@ -390,18 +385,16 @@ class Handler {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          const body = await requestLUA(
-            {
-              xhr: '1',
-              xhrId: 'all',
-              sid: sid,
-              page: 'keyLo',
-              no_sidrenew: '',
-            },
-            fritzbox.url.hostname,
-            '/data.lua'
-          );
+          let formData = {
+            xhr: '1',
+            xhrId: 'all',
+            sid: sid,
+            page: 'keyLo',
+            no_sidrenew: '',
+          };
 
+          logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
           if (body && body.data) {
@@ -506,6 +499,10 @@ class Handler {
           }
 
           try {
+            logger.debug(
+              'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
+              `${accessory.displayName} (${subtype})`
+            );
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
 
             accessory.context.restart = true;
@@ -548,6 +545,10 @@ class Handler {
           }
 
           try {
+            logger.debug(
+              'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
+              `${accessory.displayName} (${subtype})`
+            );
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
 
             accessory.context.restart = true;
@@ -577,6 +578,10 @@ class Handler {
           );
         } else {
           try {
+            logger.debug(
+              'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
+              `${accessory.displayName} (${subtype})`
+            );
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -597,6 +602,14 @@ class Handler {
         let wifiUnit2ghz = 1;
 
         try {
+          logger.debug(
+            `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnit2ghz} - Command: SetEnable - Actions: ${JSON.stringify(
+              {
+                NewEnable: state,
+              }
+            )}`,
+            `${accessory.displayName} (${subtype})`
+          );
           await fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnit2ghz}`, 'SetEnable', {
             NewEnable: state,
           });
@@ -636,6 +649,14 @@ class Handler {
           }
 
           for (let i = 0; i < wifiUnit5ghz; i++) {
+            logger.debug(
+              `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration${startUnit} - Command: SetEnable - Actions: ${JSON.stringify(
+                {
+                  NewEnable: state,
+                }
+              )}`,
+              `${accessory.displayName} (${subtype})`
+            );
             promises.push(
               fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${startUnit}`, 'SetEnable', {
                 NewEnable: state,
@@ -664,6 +685,14 @@ class Handler {
         try {
           let wifiUnitGuest = accessory.context.config.wifiUnits + 1;
 
+          logger.debug(
+            `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnitGuest} - Command: SetEnable - Actions: ${JSON.stringify(
+              {
+                NewEnable: state,
+              }
+            )}`,
+            `${accessory.displayName} (${subtype})`
+          );
           await fritzbox.exec(`urn:WLANConfiguration-com:serviceId:WLANConfiguration${wifiUnitGuest}`, 'SetEnable', {
             NewEnable: state,
           });
@@ -684,6 +713,14 @@ class Handler {
         let status = state ? 'pbc' : 'stop';
 
         try {
+          logger.debug(
+            `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration1 - Command: X_AVM-DE_SetWPSConfig - Actions: ${JSON.stringify(
+              {
+                'NewX_AVM-DE_WPSMode': status,
+              }
+            )}`,
+            `${accessory.displayName} (${subtype})`
+          );
           await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'X_AVM-DE_SetWPSConfig', {
             'NewX_AVM-DE_WPSMode': status,
           });
@@ -708,6 +745,10 @@ class Handler {
             ? 'urn:WANPPPConnection-com:serviceId:WANPPPConnection1'
             : 'urn:WANIPConnection-com:serviceId:WANIPConnection1';
 
+          logger.debug(
+            `Service: ${service} - Command: ForceTermination - Actions: null`,
+            `${accessory.displayName} (${subtype})`
+          );
           await fritzbox.exec(service, 'ForceTermination');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -762,6 +803,7 @@ class Handler {
             };
           }
 
+          logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -779,6 +821,13 @@ class Handler {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
+          logger.debug(
+            `Service: urn:X_AVM-DE_TAM-com:serviceId:X_AVM-DE_TAM1 - Command: SetEnable - Actions: ${JSON.stringify({
+              NewIndex: 0,
+              NewEnable: state ? '1' : '0',
+            })}`,
+            `${accessory.displayName} (${subtype})`
+          );
           await fritzbox.exec('urn:X_AVM-DE_TAM-com:serviceId:X_AVM-DE_TAM1', 'SetEnable', {
             NewIndex: 0,
             NewEnable: state ? '1' : '0',
@@ -799,10 +848,24 @@ class Handler {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
+          logger.debug(
+            'Service: urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1 - Command: GetNumberOfDeflections - Actions: null',
+            `${accessory.displayName} (${subtype})`
+          );
           let data = await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'GetNumberOfDeflections');
+          logger.debug(data, `${accessory.displayName} (${subtype})`);
 
           if (parseInt(data.NewNumberOfDeflections)) {
             try {
+              logger.debug(
+                `Service: urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1 - Command: SetDeflectionEnable - Actions: ${JSON.stringify(
+                  {
+                    NewDeflectionId: 0,
+                    NewEnable: state ? 1 : 0,
+                  }
+                )}`,
+                `${accessory.displayName} (${subtype})`
+              );
               await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'SetDeflectionEnable', {
                 NewDeflectionId: 0,
                 NewEnable: state ? 1 : 0,
@@ -859,7 +922,6 @@ class Handler {
             apply: '',
             sid: sid,
             page: 'led',
-            event: '14',
           };
 
           if (accessory.context.config.oldFW) {
@@ -869,10 +931,10 @@ class Handler {
               apply: '',
               sid: sid,
               page: 'led',
-              event: '14',
             };
           }
 
+          logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
@@ -893,18 +955,17 @@ class Handler {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
           const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
 
-          await requestLUA(
-            {
-              xhr: '1',
-              keylock_enabled: state ? '1' : '0',
-              sid: sid,
-              menu_active_page: 'keyLo',
-              apply: '',
-              page: 'keyLo',
-            },
-            fritzbox.url.hostname,
-            '/data.lua'
-          );
+          let formData = {
+            xhr: '1',
+            keylock_enabled: state ? '1' : '0',
+            sid: sid,
+            menu_active_page: 'keyLo',
+            apply: '',
+            page: 'keyLo',
+          };
+
+          logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -934,8 +995,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling ROUTER accessories');
-
     const ExtrasHandler = require('../extras/extras.handler');
 
     try {

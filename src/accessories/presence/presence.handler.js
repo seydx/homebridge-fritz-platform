@@ -233,7 +233,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling PRESENCE accessories');
 
     try {
       this.hosts = await this.fritzbox.getAllHostsV2();

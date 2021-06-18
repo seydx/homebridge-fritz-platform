@@ -1671,7 +1671,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling SMARTHOME accessories');
 
     try {
       this.smarthomeList = await this.fritzbox.getSmarthomeDevices();

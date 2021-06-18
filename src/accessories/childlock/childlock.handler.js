@@ -97,7 +97,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling CHILDLOCK accessories');
 
     try {
       const accessories = this.accessories.filter((accessory) => accessory.context.config.type === 'childlock');

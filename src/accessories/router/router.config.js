@@ -34,7 +34,7 @@ const Config = (routerConfig, extrasConfig, optionsConfig) => {
     readOnly: routerConfig.readOnly || false,
     hide: routerConfig.hide || false,
     wifiUnits: parseInt(routerConfig.wifiUnits) > 0 ? parseInt(routerConfig.wifiUnits) : 2,
-    oldFW: routerConfig.hide || false,
+    oldFW: routerConfig.oldFW || false,
     connection: validTypes.find((el) => el === routerConfig.connection) || 'dsl',
     options: routerConfig.options || {},
     extras: extrasConfig,

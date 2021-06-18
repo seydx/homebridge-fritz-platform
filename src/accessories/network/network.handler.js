@@ -30,7 +30,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling NETWORK device');
 
     try {
       let service = validIP(this.device.address) ? 'X_AVM-DE_GetSpecificHostEntryByIP' : 'GetSpecificHostEntry';

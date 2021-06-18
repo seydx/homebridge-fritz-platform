@@ -172,8 +172,6 @@ class Handler {
 
   async poll() {
     await timeout(1000); //wait for accessories to fully load
-    logger.debug('Polling CALLMONITOR accessories');
-
     let accessory, text, message;
 
     Callmonitor.client.on('data', async (chunk) => {
