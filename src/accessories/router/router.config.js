@@ -10,7 +10,7 @@ const Config = (routerConfig, extrasConfig, optionsConfig) => {
     validOptionCharacteristics.push('aw', 'broadband', 'dect', 'deflection');
   }
 
-  if (routerConfig.connection !== 'dsl' || routerConfig.connection !== 'cable') {
+  if (routerConfig.connection !== 'repeater') {
     validOptionsSwitches.push('reconnect');
     validOptionCharacteristics.push('reconnect');
   }

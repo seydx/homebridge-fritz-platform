@@ -80,6 +80,8 @@ class Handler {
 
     accessory.context.busy = true;
 
+    logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+
     try {
       await this.fritzbox.exec('urn:X_AVM-DE_HostFilter-com:serviceId:X_AVM-DE_HostFilter1', 'DisallowWANAccessByIP', {
         NewIPv4Address: accessory.context.config.ip,

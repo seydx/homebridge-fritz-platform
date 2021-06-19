@@ -671,6 +671,7 @@ class Handler {
       'dect',
       'aw',
       'deflection',
+      'reconnect',
     ];
 
     try {

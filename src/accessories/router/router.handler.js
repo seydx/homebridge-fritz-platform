@@ -738,7 +738,7 @@ class Handler {
         logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
         try {
-          let isDsl = accessory.context.config.conection === 'dsl';
+          let isDsl = accessory.context.config.connection === 'dsl';
           let service = isDsl
             ? 'urn:WANPPPConnection-com:serviceId:WANPPPConnection1'
             : 'urn:WANIPConnection-com:serviceId:WANIPConnection1';
