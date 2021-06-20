@@ -220,7 +220,7 @@ exports.registerWith = (hap) => {
    * Characteristic.FallbackInternet
    */
   Characteristic.FallbackInternet = function () {
-    Characteristic.call(this, 'DNS Server', 'ef088934-4ec8-4174-b550-e8a8faaed88c');
+    Characteristic.call(this, 'Internet Fallback', 'ef088934-4ec8-4174-b550-e8a8faaed88c');
     this.setProps({
       format: Characteristic.Formats.BOOL,
       perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY],

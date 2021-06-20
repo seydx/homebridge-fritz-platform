@@ -66,7 +66,7 @@ class Handler {
         states.push(active);
       }
 
-      state = states.includes(1);
+      state = !states.includes(1);
     } catch (err) {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
       logger.error(err);
@@ -105,7 +105,7 @@ class Handler {
           'DisallowWANAccessByIP',
           {
             NewIPv4Address: ip,
-            NewDisallow: state ? 0 : 1, //0: allow - 1: disallow
+            NewDisallow: state ? 1 : 0, //0: allow - 1: disallow
           }
         );
       }
