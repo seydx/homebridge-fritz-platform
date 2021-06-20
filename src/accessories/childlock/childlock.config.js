@@ -6,7 +6,7 @@ const Config = (childlockConfig) => {
   return {
     active: childlockConfig.active || false,
     name: childlockConfig.name,
-    ip: validIP(childlockConfig.ip),
+    ips: (childlockConfig.ips || []).filter((ip) => validIP(ip)),
     type: 'childlock',
     subtype: 'childlock',
   };

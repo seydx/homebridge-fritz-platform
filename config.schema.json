@@ -741,13 +741,16 @@
             "required": true,
             "description": "Set the device name for display in the Home app."
           },
-          "ip": {
-            "title": "IP address",
-            "type": "string",
-            "required": true,
-            "description": "The IP address of the device.",
+          "ips": {
+            "title": "IP addresses",
+            "type": "array",
             "condition": {
               "functionBody": "try { return model.childLock[arrayIndices[0]].active } catch(e){ return false }"
+            },
+            "items": {
+              "title": "IP Address",
+              "type": "string",
+              "description": "An array of ip adresses of the target."
             }
           }
         }
@@ -1087,6 +1090,103 @@
               "title": "Accessory Type",
               "condition": {
                 "functionBody": "try { return model.extras.dnsServer.active } catch(e){ return false }"
+              },
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "Switch",
+                  "enum": ["switch"]
+                },
+                {
+                  "title": "Characteristic",
+                  "enum": ["characteristic"]
+                }
+              ],
+              "required": true,
+              "description": "The accessory type of the device."
+            }
+          }
+        },
+        "fallbackInternet": {
+          "title": "Fallback Internet",
+          "type": "object",
+          "properties": {
+            "active": {
+              "title": "Active",
+              "description": "If enabled, a switch/characteristic will be exposed to Apple Home to toggle target fallback internet option.",
+              "type": "boolean",
+              "required": true,
+              "default": false
+            },
+            "provider": {
+              "title": "Provider",
+              "type": "string",
+              "condition": {
+                "functionBody": "try { return model.extras.fallbackInternet.active } catch(e){ return false }"
+              },
+              "required": true,
+              "description": "Fallback Internet (mobile) provider."
+            },
+            "onState": {
+              "title": "On State",
+              "condition": {
+                "functionBody": "try { return model.extras.fallbackInternet.active } catch(e){ return false }"
+              },
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "Internet access via mobile active",
+                  "enum": [1]
+                },
+                {
+                  "title": "Fallback Mode for DSL",
+                  "enum": [2]
+                },
+                {
+                  "title": "Fallback Mode for DSL/WAN",
+                  "enum": [3]
+                },
+                {
+                  "title": "Internet access via mobile deactive",
+                  "enum": [4]
+                }
+              ],
+              "required": true,
+              "default": 1,
+              "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned on OR when the status 'ON' should be detected."
+            },
+            "offState": {
+              "title": "Off State",
+              "condition": {
+                "functionBody": "try { return model.extras.fallbackInternet.active } catch(e){ return false }"
+              },
+              "type": "string",
+              "oneOf": [
+                {
+                  "title": "Internet access via mobile active",
+                  "enum": [1]
+                },
+                {
+                  "title": "Fallback Mode for DSL",
+                  "enum": [2]
+                },
+                {
+                  "title": "Fallback Mode for DSL/WAN",
+                  "enum": [3]
+                },
+                {
+                  "title": "Internet access via mobile deactive",
+                  "enum": [4]
+                }
+              ],
+              "required": true,
+              "default": 4,
+              "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned off OR when the status 'OFF' should be detected."
+            },
+            "accType": {
+              "title": "Accessory Type",
+              "condition": {
+                "functionBody": "try { return model.extras.fallbackInternet.active } catch(e){ return false }"
               },
               "type": "string",
               "oneOf": [
@@ -1497,6 +1597,21 @@
             "extras.dnsServer.alternateDns",
             "extras.dnsServer.accType"
           ]
+        },
+        {
+          "key": "extras",
+          "type": "section",
+          "title": "Fallback Internet",
+          "expandable": true,
+          "expanded": false,
+          "orderable": false,
+          "items": [
+            "extras.fallbackInternet.active",
+            "extras.fallbackInternet.provider",
+            "extras.fallbackInternet.onState",
+            "extras.fallbackInternet.offState",
+            "extras.fallbackInternet.accType"
+          ]
         }
       ]
     },
@@ -1547,7 +1662,20 @@
           "type": "array",
           "orderable": false,
           "buttonText": "Add Child Lock",
-          "items": ["childLock[].active", "childLock[].name", "childLock[].ip"]
+          "items": [
+            "childLock[].active",
+            "childLock[].name",
+            "childLock[].ips",
+            {
+              "key": "childLock[].ips",
+              "type": "section",
+              "orderable": false,
+              "expandable": true,
+              "expanded": true,
+              "buttonText": "Add IP",
+              "items": ["childLock[].ips[]"]
+            }
+          ]
         }
       ]
     },

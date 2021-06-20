@@ -61,6 +61,8 @@ class Handler {
           break;
         case 'dnsServer':
           break;
+        case 'fallbackInternet':
+          break;
         default:
           logger.warn(
             `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
@@ -118,7 +120,7 @@ class Handler {
             const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua', 'nightsetting');
             logger.debug(body, `${accessory.displayName} (${subtype})`);
 
-            actives.push(body.checked && body.checked === 'checked' ? 1 : 0);
+            actives.push(body.length && body[0].checked && body[0].checked === 'checked' ? 1 : 0);
           }
 
           state = actives.includes(1) ? true : false;
@@ -152,6 +154,47 @@ class Handler {
           if (body && body.data && body.data.vars && body.data.vars.ipv4 && body.data.vars.ipv4.userdns) {
             state = parseInt(body.data.vars.ipv4.userdns.value) === 1;
           }
+        } catch (err) {
+          logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+        }
+
+        accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
+
+        return state;
+      }
+      case 'fallbackInternet': {
+        try {
+          const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
+          const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+
+          let formData = {
+            xhr: '1',
+            xhrId: 'all',
+            sid: sid,
+            page: 'mobile',
+          };
+
+          const validStates = [1, 2, 3, 4];
+
+          const values = {
+            enabled: 1,
+            fallback: 2,
+            advanced_fallback: 3,
+            disabled: 4,
+          };
+
+          const onState = validStates.find((el) => el === accessory.context.config.extras[subtype].onState) || 1;
+          //const offState = validStates.find((el) => el === accessory.context.config.extras[subtype].offState) || 4;
+
+          logger.debug(`GET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          const body = await requestLUA(formData, fritzbox.url.hostname, '/data.lua', 'activation');
+          logger.debug(body, `${accessory.displayName} (${subtype})`);
+
+          const checkedElement = body.find((el) => el.attribs.checked === '');
+          const activeValue = values[checkedElement.attribs.value];
+
+          state = onState === activeValue;
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err);
@@ -632,6 +675,58 @@ class Handler {
               ipv4_user_seconddns3: alternateDns[3],
             };
           }
+
+          logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
+          await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
+        } catch (err) {
+          logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err);
+
+          setTimeout(
+            () =>
+              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
+            1000
+          );
+        }
+        break;
+      }
+      case 'fallbackInternet': {
+        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+
+        try {
+          const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
+          const sid = response['NewX_AVM-DE_UrlSID'].split('sid=')[1];
+
+          const validStates = [1, 2, 3, 4];
+
+          const onState = validStates.find((el) => el === accessory.context.config.extras[subtype].onState) || 1;
+          const offState = validStates.find((el) => el === accessory.context.config.extras[subtype].offState) || 4;
+          const provider = accessory.context.config.extras[subtype].provider;
+
+          const generateFormdata = (targetState) => {
+            if (targetState !== 4) {
+              return {
+                xhr: '1',
+                activation: targetState === 1 ? 'enabled' : targetState === 2 ? 'fallback' : 'advanced_fallback',
+                account: provider,
+                idle: '60',
+                on_demand: '0',
+                apply: '',
+                oldpage: '/internet/umts_settings.lua',
+                sid: sid,
+              };
+            } else {
+              return {
+                xhr: '1',
+                activation: 'disabled',
+                apply: '',
+                oldpage: '/internet/umts_settings.lua',
+                sid: sid,
+              };
+            }
+          };
+
+          let formData = generateFormdata(state ? onState : offState);
 
           logger.debug(`SET CMD: ${JSON.stringify(formData)}`, `${accessory.displayName} (${subtype})`);
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');

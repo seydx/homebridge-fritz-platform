@@ -17,7 +17,7 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
 
 ## Notable Changes
 - **Child Lock**:
-  - Added new `childLock` array into config to expose child lock switches for given device. Child Lock switches grants/denies acces to the internet for the given ip address.
+  - Added new `childLock` array into config to expose child lock switches for given device. Child Lock switches grants/denies acces to the internet for the given ip addresses.
 - **Devices**: 
   - Added a new option `wifiUnits` to devices to manually set the available wifi units (support for multiple units like 1x 2.4Ghz and 2x 5Ghz)
   - Added a new option `reconnect` to device options to expose a Reconnect characteristic/switch which interrupt the internet access and reconnect (for changing external ip)
@@ -30,6 +30,7 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
     - Added new `startValue` option which is used for notification via telegram when device started (current power consumption above this value) or ended (current power consumption below this value)
 - **Extras**:
   - Added new `dnsServer` option to `extras` config to expose a switch which toggles the dns server from fritzbox to "internet provider" or "own dns server"
+  - Added new `fallbackInternet` option to `extras` config to expose a switch which toggles the fallback internet option from fritzbox
 - **Presence**: 
   - Moved `onDelay` and `offDelay` from options.presence to presence user to allow separate values for each user
 - **Callmonitor**:

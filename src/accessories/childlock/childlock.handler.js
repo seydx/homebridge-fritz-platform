@@ -48,20 +48,34 @@ class Handler {
     }
 
     try {
-      const response = await this.fritzbox.exec(
-        'urn:X_AVM-DE_HostFilter-com:serviceId:X_AVM-DE_HostFilter1',
-        'GetWANAccessByIP',
-        {
-          NewIPv4Address: accessory.context.config.ip,
-        }
-      );
-      logger.debug(response, `${accessory.displayName} (${subtype})`);
+      const states = [];
+      const ipList = accessory.context.config.ips;
 
-      state = response.NewWANAccess === 'granted' || response.NewDisallow === '0';
+      for (const ip of ipList) {
+        const response = await this.fritzbox.exec(
+          'urn:X_AVM-DE_HostFilter-com:serviceId:X_AVM-DE_HostFilter1',
+          'GetWANAccessByIP',
+          {
+            NewIPv4Address: ip,
+          }
+        );
+        response.ip = ip;
+        logger.debug(response, `${accessory.displayName} (${subtype})`);
+
+        const active = response.NewWANAccess === 'granted' && response.NewDisallow === '0' ? 1 : 0;
+        states.push(active);
+      }
+
+      state = states.includes(1);
     } catch (err) {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
       logger.error(err);
     }
+
+    accessory
+      .getService(this.api.hap.Service.Switch)
+      .getCharacteristic(this.api.hap.Characteristic.On)
+      .updateValue(state);
 
     return state;
   }
@@ -83,10 +97,18 @@ class Handler {
     logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
 
     try {
-      await this.fritzbox.exec('urn:X_AVM-DE_HostFilter-com:serviceId:X_AVM-DE_HostFilter1', 'DisallowWANAccessByIP', {
-        NewIPv4Address: accessory.context.config.ip,
-        NewDisallow: state ? 0 : 1, //0: allow - 1: disallow
-      });
+      const ipList = accessory.context.config.ips;
+
+      for (const ip of ipList) {
+        await this.fritzbox.exec(
+          'urn:X_AVM-DE_HostFilter-com:serviceId:X_AVM-DE_HostFilter1',
+          'DisallowWANAccessByIP',
+          {
+            NewIPv4Address: ip,
+            NewDisallow: state ? 0 : 1, //0: allow - 1: disallow
+          }
+        );
+      }
     } catch (err) {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
       logger.error(err);

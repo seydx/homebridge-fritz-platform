@@ -63,6 +63,15 @@ const Setup = (devices, extrasConfig, meshMaster) => {
           error = true;
         }
         break;
+      case 'fallbackInternet':
+        if (!device.extras[name].provider) {
+          logger.warn(
+            'There is no "provider" configured for this EXTRAS (fallbackInternet) device. This device will be skipped.',
+            device.name
+          );
+          error = true;
+        }
+        break;
       default:
         //fall through
         break;

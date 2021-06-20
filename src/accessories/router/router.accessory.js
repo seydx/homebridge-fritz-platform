@@ -517,6 +517,43 @@ class Accessory {
           service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.DNSServer));
         }
       }
+
+      //FallbackInternet
+      if (
+        extrasConfig.fallbackInternet.accType === 'characteristic' &&
+        extrasConfig.fallbackInternet.active &&
+        extrasConfig.fallbackInternet.provider
+      ) {
+        if (!service.testCharacteristic(this.api.hap.Characteristic.FallbackInternet)) {
+          logger.info(
+            'Adding FallbackInternet characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
+          service.addCharacteristic(this.api.hap.Characteristic.FallbackInternet);
+        }
+
+        service
+          .getCharacteristic(this.api.hap.Characteristic.FallbackInternet)
+          .onSet((state) =>
+            ExtrasHandler.set(state, this.accessory, 'fallbackInternet', this.api.hap.Characteristic.FallbackInternet)
+          );
+
+        if (polling.exclude.includes('fallbackInternet')) {
+          service
+            .getCharacteristic(this.api.hap.Characteristic.FallbackInternet)
+            .onGet(() =>
+              ExtrasHandler.get(this.accessory, 'fallbackInternet', this.api.hap.Characteristic.FallbackInternet)
+            );
+        }
+      } else {
+        if (service.testCharacteristic(this.api.hap.Characteristic.FallbackInternet)) {
+          logger.info(
+            'Removing FallbackInternet characteristic',
+            `${this.accessory.displayName} (${this.accessory.context.config.subtype})`
+          );
+          service.removeCharacteristic(service.getCharacteristic(this.api.hap.Characteristic.FallbackInternet));
+        }
+      }
     }
 
     service

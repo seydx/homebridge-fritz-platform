@@ -54,7 +54,8 @@ yarn.lock
 .yarn-integrity
 
 # dotenv environment variables file
-.envtest/
+.env
+test/
 .github
 .vscode
 demo

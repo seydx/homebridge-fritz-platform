@@ -217,6 +217,20 @@ exports.registerWith = (hap) => {
   Characteristic.DNSServer.UUID = 'c34f1eb0-92bb-44a8-b399-17f2599639f1';
 
   /*
+   * Characteristic.FallbackInternet
+   */
+  Characteristic.FallbackInternet = function () {
+    Characteristic.call(this, 'DNS Server', 'ef088934-4ec8-4174-b550-e8a8faaed88c');
+    this.setProps({
+      format: Characteristic.Formats.BOOL,
+      perms: [Characteristic.Perms.READ, Characteristic.Perms.WRITE, Characteristic.Perms.NOTIFY],
+    });
+    this.value = this.getDefaultValue();
+  };
+  inherits(Characteristic.FallbackInternet, Characteristic);
+  Characteristic.FallbackInternet.UUID = 'ef088934-4ec8-4174-b550-e8a8faaed88c';
+
+  /*
    * Characteristic.Caller
    */
   Characteristic.Caller = function () {

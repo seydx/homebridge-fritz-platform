@@ -124,7 +124,10 @@
                 {
                     "active": true,
                     "name": "Daughter",
-                    "ip": "192.168.178.99"
+                    "ips": [
+                        "192.168.178.99", 
+                        "192.168.178.11"
+                    ]
                 }
             ],
             "smarthome": [
@@ -256,6 +259,13 @@
                     "active": false,
                     "preferredDns": "8.8.8.8",
                     "alternateDns": "8.8.4.4",
+                    "accType": "switch"
+                },
+                "fallbackInternet": {
+                    "active": false,
+                    "provider": "Vodafone",
+                    "onState": 1,
+                    "offState": 4,
                     "accType": "switch"
                 }
             },

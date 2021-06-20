@@ -19,6 +19,9 @@ const Config = (extrasName, extrasConfig, meshMaster) => {
     case 'dnsServer':
       name = meshMaster.config.name + ' DNS';
       break;
+    case 'fallbackInternet':
+      name = meshMaster.config.name + ' Fallback';
+      break;
     default:
       //fall through
       break;

@@ -21,6 +21,7 @@ exports.generateConfig = (config) => {
       ringlock: config.extras && config.extras.ringlock ? config.extras.ringlock : {},
       phoneBook: config.extras && config.extras.phoneBook ? config.extras.phoneBook : {},
       dnsServer: config.extras && config.extras.dnsServer ? config.extras.dnsServer : {},
+      fallbackInternet: config.extras && config.extras.fallbackInternet ? config.extras.fallbackInternet : {},
     },
     options: {
       polling: {
