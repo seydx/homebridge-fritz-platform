@@ -1,11 +1,11 @@
 # Changelog
 
-# NEXT
+# v6.0.0 - 2021-06-21
 This update is by far the biggest update for `homebridge-fritz-platform`. To make adding new devices also easier for developers, the complete plugin has been rewritten and made modular. This should give all developers the possibility to read the code more easily and add new devices via PR themselves.
 
 ## Breaking Changes
 - **Homebridge**
-  - Dropped support for homebridge below version 1.3.0
+  - Dropped support for homebridge below v1.3.0
 - **Devices**: 
   - Added `active` key to `devices` to enable/disable the device without removing it from config. Warning: Default value for `active` is false, this means, that if you DON'T adjust your config.json and add `"active": true` to the device, the device will be removed from HomeKit!
 - **Smarthome**: 
