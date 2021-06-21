@@ -1,6 +1,6 @@
 # Changelog
 
-# NEXT
+# 6.0.2 - 2021-06-22
 
 ## Other Changes
 - Better error handling in the backend
