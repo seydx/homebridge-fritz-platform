@@ -45,7 +45,7 @@ class Handler {
         case 'cable':
         case 'repeater':
           if (!accessory.context.config.readOnly) {
-            Telegram.send('reboot', context.newValue ? 'finish' : 'start', `${accessory.displayName} (${subtype})`);
+            Telegram.send('reboot', context.newValue ? 'finish' : 'start', accessory.displayName);
           }
           break;
         case 'wifi_2ghz':

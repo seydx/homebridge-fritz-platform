@@ -62,11 +62,7 @@ class Handler {
           dest = accessory.displayName === 'Anyone' ? 'anyone_out' : 'user_out';
         }
 
-        Telegram.send(
-          'presence',
-          dest,
-          accessory.displayName === 'Anyone' ? false : `${accessory.displayName} (${subtype})`
-        );
+        Telegram.send('presence', dest, accessory.displayName === 'Anyone' ? false : accessory.displayName);
       }
     }
   }

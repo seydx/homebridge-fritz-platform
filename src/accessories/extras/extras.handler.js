@@ -47,11 +47,7 @@ class Handler {
 
       switch (subtype) {
         case 'alarm':
-          Telegram.send(
-            'alarm',
-            context.newValue ? 'activated' : 'deactivated',
-            `${accessory.displayName} (${subtype})`
-          );
+          Telegram.send('alarm', context.newValue ? 'activated' : 'deactivated', accessory.displayName);
           break;
         case 'phoneBook':
           break;

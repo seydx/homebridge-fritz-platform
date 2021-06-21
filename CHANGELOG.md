@@ -1,5 +1,12 @@
 # Changelog
 
+# NEXT
+
+## Other Changes
+- Better error handling in the backend
+- Fixed an issue with Telegram where also the subtypes of an accessory was shown in the message
+- Minor bug fixes
+
 # 6.0.1 - 2021-06-21
 
 ## Other Changes
