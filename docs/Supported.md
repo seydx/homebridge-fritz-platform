@@ -1,8 +1,10 @@
 # Tested devices & OS version
 
 ## Fritz!OS
-- [ ] Fritz!OS 7.24 Beta (partial support)
+- [x] Fritz!OS 7.27
+- [x] Fritz!OS 7.21
 - [x] Fritz!OS 7.2
+- [x] Fritz!OS 7.13
 - [ ] Fritz!OS 7.1 (partial support)
 - [ ] Fritz!OS 7.0 (partial support)
 
@@ -20,14 +22,16 @@
 
 ## Fritz!Repeater
 - [x] Fritz!Repeater 3000
+- [x] FRITZ!Repeater 2400
 - [x] Fritz!Repeater 1750E
+- [x] Fritz!DECT Repeater 1000
 - [x] Fritz!Wlan Repeater 450E
 - [x] Fritz!Wlan Repeater 310
 
 ## Fritz!DECT Smart Home
-- [x] Fritz!DECT Repeater 1000
 - [x] Fritz!DECT 500
 - [x] Fritz!DECT 404
+- [x] Fritz!DECT 400
 - [x] Fritz!DECT 301
 - [x] Fritz!DECT 210
 - [x] Fritz!DECT 200
