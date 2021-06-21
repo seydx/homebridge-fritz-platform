@@ -1672,13 +1672,16 @@ class Handler {
       this.smarthomeList = await this.fritzbox.getSmarthomeDevices();
       //logger.debug(this.smarthomeList, 'Smarthome');
 
-      const accessories = this.accessories.filter(
-        (accessory) =>
-          accessory.context.config.type === 'smarthome' && accessory.context.config.subtype !== 'smarthome-button'
-      ); //buttons have its own handler
+      if (this.smarthomeList.devices.length) {
+        //buttons have its own handler
+        const accessories = this.accessories.filter(
+          (accessory) =>
+            accessory.context.config.type === 'smarthome' && accessory.context.config.subtype !== 'smarthome-button'
+        );
 
-      for (const accessory of accessories) {
-        await this.get(accessory);
+        for (const accessory of accessories) {
+          await this.get(accessory);
+        }
       }
     } catch (err) {
       logger.warn('An error occurred during polling smarthome devices!');

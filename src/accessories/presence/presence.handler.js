@@ -234,49 +234,51 @@ class Handler {
       this.hosts = await this.fritzbox.getAllHostsV2();
       //logger.debug(this.hosts, 'Hosts');
 
-      const userAccessories = this.accessories.filter(
-        (accessory) => accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone'
-      );
-
-      for (const accessory of userAccessories) {
-        const host = this.hosts.find(
-          (host) => host.ip === accessory.context.config.address || host.mac === accessory.context.config.address
+      if (this.hosts.length) {
+        const userAccessories = this.accessories.filter(
+          (accessory) => accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone'
         );
 
-        if (!host) {
-          logger.debug(
-            'User could not be find in hosts list. Looking for user manually.',
-            `${accessory.displayName} (${accessory.context.config.subtype})`
+        for (const accessory of userAccessories) {
+          const host = this.hosts.find(
+            (host) => host.ip === accessory.context.config.address || host.mac === accessory.context.config.address
           );
 
-          const service = validIP(accessory.context.config.address)
-            ? 'X_AVM-DE_GetSpecificHostEntryByIP'
-            : 'GetSpecificHostEntry';
+          if (!host) {
+            logger.debug(
+              'User could not be find in hosts list. Looking for user manually.',
+              `${accessory.displayName} (${accessory.context.config.subtype})`
+            );
 
-          const input = validIP(accessory.context.config.address)
-            ? { NewIPAddress: accessory.context.config.address }
-            : { NewMACAddress: accessory.context.config.address };
+            const service = validIP(accessory.context.config.address)
+              ? 'X_AVM-DE_GetSpecificHostEntryByIP'
+              : 'GetSpecificHostEntry';
 
-          const user = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
+            const input = validIP(accessory.context.config.address)
+              ? { NewIPAddress: accessory.context.config.address }
+              : { NewMACAddress: accessory.context.config.address };
 
-          this.hosts.push({
-            mac: user.NewMACAddress,
-            ip: user.NewIPAddress,
-            active: user.NewActive === '1',
-            name: user.NewHostName,
-            interface: user.NewInterfaceType,
-          });
+            const user = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
+
+            this.hosts.push({
+              mac: user.NewMACAddress,
+              ip: user.NewIPAddress,
+              active: user.NewActive === '1',
+              name: user.NewHostName,
+              interface: user.NewInterfaceType,
+            });
+          }
+
+          await this.get(accessory);
         }
 
-        await this.get(accessory);
-      }
+        const AnyoneAccessory = this.accessories.find(
+          (accessory) => accessory.context.config.type === 'presence' && accessory.displayName === 'Anyone'
+        );
 
-      const AnyoneAccessory = this.accessories.find(
-        (accessory) => accessory.context.config.type === 'presence' && accessory.displayName === 'Anyone'
-      );
-
-      if (AnyoneAccessory) {
-        await this.get(AnyoneAccessory);
+        if (AnyoneAccessory) {
+          await this.get(AnyoneAccessory);
+        }
       }
     } catch (err) {
       logger.warn('An error occurred during polling hosts!');
