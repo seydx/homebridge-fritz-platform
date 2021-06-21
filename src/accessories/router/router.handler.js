@@ -1053,7 +1053,7 @@ class Handler {
                 ? characteristics[characteristic.UUID].subtype
                 : false;
 
-              if (subtype && this.polling.exclude.includes(subtype)) {
+              if (subtype && !this.polling.exclude.includes(subtype)) {
                 if (
                   validUUIDs.includes(characteristic.UUID) &&
                   characteristics[characteristic.UUID].name === 'RingLock'

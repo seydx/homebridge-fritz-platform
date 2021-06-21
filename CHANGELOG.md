@@ -4,6 +4,7 @@
 
 ## Other Changes
 - Better error handling in the backend
+- Fixed an issue where extra characteristics was not polling
 - Fixed an issue with Telegram where also the subtypes of an accessory was shown in the message
 - Minor bug fixes
 
