@@ -10,7 +10,9 @@ const Setup = (devices, callmonitorConfig) => {
   let error = false;
   const device = Config(callmonitorConfig);
 
-  if (!device.ip) {
+  if (!device.active) {
+    error = true;
+  } else if (!device.ip) {
     logger.warn('Callmonitor: There is no or no valid IP address configured this device. This device will be skipped.');
     error = true;
   }

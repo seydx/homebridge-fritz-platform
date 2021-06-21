@@ -111,7 +111,7 @@ function FritzPlatform(log, config, api) {
     ExtrasSetup(this.devices, this.config.extras, this.meshMaster);
   }
 
-  if (this.config.callmonitor.active) {
+  if (this.config.callmonitor) {
     CallmonitorSetup(this.devices, this.config.callmonitor);
   }
 

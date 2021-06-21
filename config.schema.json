@@ -78,7 +78,6 @@
             "title": "IGD",
             "type": "boolean",
             "description": "Enables IGD endpoint on requests. Please disable if device seems to be offline in Apple Home.",
-            "required": true,
             "default": false
           },
           "manufacturer": {
@@ -109,15 +108,13 @@
             "type": "integer",
             "placeholder": 2,
             "default": 2,
-            "description": "The amount of available wifi units (only 2.4Ghz = 1 unit / 1x 2.4Ghz and 1x 5Ghz = 2 units / 1x 2.4Ghz and 2x 5Ghz = 3 units and so on)",
-            "required": true
+            "description": "The amount of available wifi units (only 2.4Ghz = 1 unit / 1x 2.4Ghz and 1x 5Ghz = 2 units / 1x 2.4Ghz and 2x 5Ghz = 3 units and so on)"
           },
           "master": {
             "title": "Master Device",
             "type": "boolean",
             "description": "Enables this device as master device. Only ONE device can be checked as master device!",
             "required": true,
-            "default": false,
             "condition": {
               "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
             }
@@ -136,7 +133,6 @@
             "title": "Connection",
             "type": "string",
             "description": "Type of your connection",
-            "default": "dsl",
             "oneOf": [
               {
                 "title": "DSL",
@@ -400,7 +396,6 @@
           "ping": {
             "title": "Ping",
             "type": "boolean",
-            "default": false,
             "description": "Enable this, to additionally ping the device if the status is not recognized correctly by the FritzBox."
           },
           "threshold": {
@@ -750,7 +745,8 @@
             "items": {
               "title": "IP Address",
               "type": "string",
-              "description": "An array of ip adresses of the target."
+              "description": "An array of ip adresses of the target.",
+              "required": true
             }
           }
         }
@@ -763,9 +759,7 @@
         "active": {
           "title": "Active",
           "description": "Activates Callmonitor.",
-          "type": "boolean",
-          "required": true,
-          "default": false
+          "type": "boolean"
         },
         "group": {
           "title": "Group",
@@ -789,7 +783,6 @@
           "title": "Callmonitor Port",
           "type": "integer",
           "placeholder": 1012,
-          "default": 1012,
           "condition": {
             "functionBody": "try { return model.callmonitor.active } catch(e){ return false }"
           },
@@ -861,9 +854,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a Alarm switch/characteristic will be exposed to Apple Home. (Your FritzBox must support VOIP to use this function)",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "duration": {
               "title": "Duration",
@@ -911,9 +902,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a WakeUp switch/characteristic will be exposed to Apple Home. (Your FritzBox must support VOIP to use this function)",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "duration": {
               "title": "Duration",
@@ -961,9 +950,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a RingLock switch/characteristic will be exposed to Apple Home.",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "DECTphones": {
               "title": "DECT phones",
@@ -1018,9 +1005,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a PhoneBook switch/characteristic will be exposed to Apple Home.",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "blacklists": {
               "title": "Blacklists",
@@ -1062,9 +1047,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a switch/characteristic will be exposed to Apple Home to toggle between dns from internet provider and own dns server.",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "preferredDns": {
               "title": "Preferred DNS",
@@ -1114,9 +1097,7 @@
             "active": {
               "title": "Active",
               "description": "If enabled, a switch/characteristic will be exposed to Apple Home to toggle target fallback internet option.",
-              "type": "boolean",
-              "required": true,
-              "default": false
+              "type": "boolean"
             },
             "provider": {
               "title": "Provider",
@@ -1151,8 +1132,6 @@
                   "enum": [4]
                 }
               ],
-              "required": true,
-              "default": 1,
               "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned on OR when the status 'ON' should be detected."
             },
             "offState": {
@@ -1179,8 +1158,6 @@
                   "enum": [4]
                 }
               ],
-              "required": true,
-              "default": 4,
               "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned off OR when the status 'OFF' should be detected."
             },
             "accType": {
@@ -1232,7 +1209,6 @@
                   "enum": ["motion"]
                 }
               ],
-              "required": true,
               "description": "The accessory type of the anyone sensor."
             }
           }
@@ -1291,9 +1267,7 @@
         "active": {
           "title": "Active",
           "description": "Activates Telegram.",
-          "type": "boolean",
-          "required": true,
-          "default": false
+          "type": "boolean"
         },
         "token": {
           "title": "Token",

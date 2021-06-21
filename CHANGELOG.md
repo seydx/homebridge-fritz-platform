@@ -1,5 +1,11 @@
 # Changelog
 
+# 6.0.1 - 2021-06-21
+
+## Other Changes
+- Minor bug fixes
+- Cleaned up config.schema.json
+
 # v6.0.0 - 2021-06-21
 This update is by far the biggest update for `homebridge-fritz-platform`. To make adding new devices also easier for developers, the complete plugin has been rewritten and made modular. This should give all developers the possibility to read the code more easily and add new devices via PR themselves.
 

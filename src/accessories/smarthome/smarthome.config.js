@@ -11,7 +11,7 @@ const Config = (smarthomeConfig) => {
     type: 'smarthome',
     subtype: `smarthome-${smarthomeConfig.group ? smarthomeConfig.accTypeGroup : smarthomeConfig.accType}`,
     group: smarthomeConfig.group || false,
-    ain: smarthomeConfig.ain.replace(/\s/g, ''),
+    ain: smarthomeConfig.ain ? smarthomeConfig.ain.replace(/\s/g, '') : false,
     accType: validTypes.find((el) => el === smarthomeConfig.accType) || false,
     accTypeGroup: validTypesGroup.find((el) => el === smarthomeConfig.accTypeGroup) || false,
     readOnly: smarthomeConfig.readOnly || false,
