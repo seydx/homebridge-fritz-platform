@@ -60,6 +60,7 @@ This plugin allows almost full control of **AVM** hardware like:
   - Switch/Outlet status and switch functionality,
   - Power meter,
   - Temperature sensor with FakeGato,
+  - Telegram notification when device is in use/not in use
   - FakeGato support
 - **Fritz!DECT Lights**
   - Light status and switch functionality,
