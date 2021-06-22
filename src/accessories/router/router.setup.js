@@ -29,13 +29,11 @@ const Setup = (devices, routerConfig, extrasConfig, optionsConfig, meshMaster) =
         device.fritzbox = new Fritzbox(device);
 
         if (device.master && !meshMaster.configured) {
-          if (device.master && !meshMaster.configured) {
-            meshMaster.config = device;
-            meshMaster.configured = true;
-            meshMaster.fritzbox = device.fritzbox;
+          meshMaster.config = device;
+          meshMaster.configured = true;
+          meshMaster.fritzbox = device.fritzbox;
 
-            delete meshMaster.config.fritzbox;
-          }
+          delete meshMaster.config.fritzbox;
         }
 
         if (!device.hide) {
