@@ -51,8 +51,8 @@ This plugin allows almost full control of **AVM** hardware like:
 - **Fritz!Fon**
   - Callmonitor (with adjustable filter for incoming/outgoing numbers),
   - FakeGato support
-- **Fritz!DECT Buttons**
-  - Support for buttons with 1/4 channels (Fritz DECT 400/440)
+- **Fritz!DECT Buttons, Telekom Wandtaster**
+  - Support for buttons with 1/4 channels
   - Temperature sensor with FakeGato,
   - Humidity sensor with FakeGato,
   - FakeGato support
