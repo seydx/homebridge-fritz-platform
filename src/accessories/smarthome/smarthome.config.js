@@ -25,6 +25,7 @@ const Config = (smarthomeConfig) => {
     color: smarthomeConfig.color || false,
     battery: smarthomeConfig.battery || false,
     buttons: validButtons.find((el) => el === smarthomeConfig.buttons) || false,
+    longPress: smarthomeConfig.longPress || false,
   };
 };
 
