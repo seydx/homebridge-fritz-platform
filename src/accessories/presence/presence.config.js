@@ -8,7 +8,7 @@ const Config = (userConfig) => {
   return {
     active: userConfig.active || false,
     name: userConfig.name,
-    address: validIP((el) => el === userConfig.address) || validMAC(userConfig.address),
+    address: validIP(userConfig.address) || validMAC(userConfig.address),
     type: 'presence',
     subtype: validTypes.find((el) => el === userConfig.accType) || 'occupancy',
     blockTelegram: userConfig.blockTelegram || false,

@@ -11,9 +11,30 @@
       "description": "Name for the log."
     },
     "debug": {
-      "title": "Debug",
+      "title": "Debug Log",
       "type": "boolean",
-      "description": "Enables additional output in the log."
+      "description": "Enables additional output (debug) in the log."
+    },
+    "warn": {
+      "title": "Warn Log",
+      "type": "boolean",
+      "description": "Enables additional output (warn) in the log.",
+      "default": true
+    },
+    "error": {
+      "title": "Error Log",
+      "type": "boolean",
+      "description": "Enables additional output (error) in the log.",
+      "default": true
+    },
+    "extendedError": {
+      "title": "Extended Error Log",
+      "type": "boolean",
+      "description": "Enables additional output (detailed error) in the log.",
+      "default": true,
+      "condition": {
+        "functionBody": "try { return model.error } catch(e){ return false }"
+      }
     },
     "devices": {
       "type": "array",
@@ -1409,7 +1430,14 @@
   },
   "layout": [
     "name",
-    "debug",
+    {
+      "title": "Log",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "type": "section",
+      "items": ["debug", "warn", "error", "extendedError"]
+    },
     {
       "title": "Devices",
       "expandable": true,

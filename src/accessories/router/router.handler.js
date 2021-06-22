@@ -472,10 +472,10 @@ class Handler {
 
     switch (subtype) {
       case 'dsl': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
+          logger.info('ON not supported!', `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -518,10 +518,10 @@ class Handler {
         break;
       }
       case 'cable': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
+          logger.info('ON not supported!', `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -564,10 +564,10 @@ class Handler {
         break;
       }
       case 'repeater': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         if (state) {
-          logger.info(`ON not supported! (${subtype})`, `${accessory.displayName} (${subtype})`);
+          logger.info('ON not supported!', `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -595,7 +595,7 @@ class Handler {
         break;
       }
       case 'wifi_2ghz': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         let wifiUnit2ghz = 1;
 
@@ -624,7 +624,7 @@ class Handler {
         break;
       }
       case 'wifi_5ghz': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           let promises = [];
@@ -678,7 +678,7 @@ class Handler {
         break;
       }
       case 'wifi_guest': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           let wifiUnitGuest = accessory.context.config.wifiUnits + 1;
@@ -707,7 +707,7 @@ class Handler {
         break;
       }
       case 'wps': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
         let status = state ? 'pbc' : 'stop';
 
         try {
@@ -735,7 +735,7 @@ class Handler {
         break;
       }
       case 'reconnect': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           let isDsl = accessory.context.config.connection === 'dsl';
@@ -761,7 +761,7 @@ class Handler {
         break;
       }
       case 'dect': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -816,7 +816,7 @@ class Handler {
         break;
       }
       case 'aw': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           logger.debug(
@@ -843,7 +843,7 @@ class Handler {
         break;
       }
       case 'deflection': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           logger.debug(
@@ -903,7 +903,7 @@ class Handler {
         break;
       }
       case 'led': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -947,7 +947,7 @@ class Handler {
         break;
       }
       case 'lock': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');

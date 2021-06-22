@@ -1,5 +1,15 @@
 # Changelog
 
+# NEXT
+
+## Notable Changes
+- **Log**: Added multiple logging functions to config to allow adjusting the logging output.
+
+## Other Changes
+- Fixed an issue where presence devices with an ip address in the config could not be exposed to HomeKit.
+- Minor bug fixes
+- Updated dependencies
+
 # 6.0.2 - 2021-06-22
 
 ## Other Changes

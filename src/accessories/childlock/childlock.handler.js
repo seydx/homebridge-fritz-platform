@@ -94,7 +94,7 @@ class Handler {
 
     accessory.context.busy = true;
 
-    logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+    logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
     try {
       const ipList = accessory.context.config.ips;

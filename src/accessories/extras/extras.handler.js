@@ -636,7 +636,7 @@ class Handler {
         break;
       }
       case 'dnsServer': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
@@ -687,7 +687,7 @@ class Handler {
         break;
       }
       case 'fallbackInternet': {
-        logger.info(`${state ? 'ON' : 'OFF'} (${subtype})`, `${accessory.displayName} (${subtype})`);
+        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
         try {
           const response = await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'X_AVM-DE_CreateUrlSID');
