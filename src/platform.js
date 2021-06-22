@@ -52,7 +52,7 @@ module.exports = function (homebridge) {
 function FritzPlatform(log, config, api) {
   if (!api || !config) return;
 
-  logger.configure(log, config.debug);
+  logger.configure(log, config);
 
   CustomTypes.registerWith(api.hap);
   EveTypes.registerWith(api.hap);
