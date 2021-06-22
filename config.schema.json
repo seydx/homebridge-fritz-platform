@@ -613,7 +613,7 @@
             ]
           },
           "longPress": {
-            "title": "Long Press Support",
+            "title": "Long Press",
             "type": "boolean",
             "condition": {
               "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button';"
