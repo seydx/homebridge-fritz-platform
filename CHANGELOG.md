@@ -1,5 +1,10 @@
 # Changelog
 
+# 6.0.4 - 2021-06-22
+
+## Other Changes
+- Bug fixes
+
 # 6.0.3 - 2021-06-22
 
 ## Notable Changes
