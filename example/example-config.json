@@ -190,14 +190,16 @@
                     "name": "DECT 400",
                     "ain": "09995 0692315",
                     "accType": "button",
-                    "buttons": 1
+                    "buttons": 1,
+                    "longPress": true
                 },
                 {
                     "active": true,
                     "name": "DECT 440",
                     "ain": "09995 0692315",
                     "accType": "button",
-                    "buttons": 4
+                    "buttons": 4,
+                    "longPress": false
                 }
             ],
             "network": [

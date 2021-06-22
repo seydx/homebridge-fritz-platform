@@ -1,9 +1,13 @@
 # Changelog
 
-# NEXT
+# 6.0.3 - 2021-06-22
 
 ## Notable Changes
 - **Log**: Added multiple logging functions to config to allow adjusting the logging output.
+- **Smarthome**:
+  - **Buttons**: Added support for Telekom Wandtaster
+- **Config**:
+  - **Buttons**: Added `longPress` option to smarthome buttons
 
 ## Other Changes
 - Fixed an issue where presence devices with an ip address in the config could not be exposed to HomeKit.

@@ -612,6 +612,14 @@
               }
             ]
           },
+          "longPress": {
+            "title": "Long Press Support",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button';"
+            },
+            "description": "Enable this if your button also supports 'long press'."
+          },
           "accTypeGroup": {
             "title": "Accessory Types (Group)",
             "type": "string",
@@ -1737,7 +1745,8 @@
                 "smarthome[].brightness",
                 "smarthome[].color",
                 "smarthome[].battery",
-                "smarthome[].buttons"
+                "smarthome[].buttons",
+                "smarthome[].longPress"
               ]
             }
           ]

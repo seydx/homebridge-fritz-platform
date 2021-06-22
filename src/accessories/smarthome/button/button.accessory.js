@@ -57,7 +57,7 @@ class Accessory {
       }
 
       service.getCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent).setProps({
-        validValues: this.accessory.context.config.buttons > 1 ? [0] : [0, 2],
+        validValues: this.accessory.context.config.longPress ? [0, 2] : [0],
       });
 
       service.setCharacteristic(this.api.hap.Characteristic.ServiceLabelIndex, identifier);
