@@ -75,7 +75,7 @@ class Handler {
                   }
                 }
 
-                if (device.button.long) {
+                if (device.button.long && accessory.context.config.longPress) {
                   if (accessory.context.lastpressedLong) {
                     const oldTimestamp = accessory.context.lastpressedLong;
                     const newTimestamp = parseInt(device.button.long.lastpressedtimestamp) * 1000;

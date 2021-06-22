@@ -1745,8 +1745,8 @@
                 "smarthome[].brightness",
                 "smarthome[].color",
                 "smarthome[].battery",
-                "smarthome[].buttons",
-                "smarthome[].longPress"
+                "smarthome[].longPress",
+                "smarthome[].buttons"
               ]
             }
           ]
