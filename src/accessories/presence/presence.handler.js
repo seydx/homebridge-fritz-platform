@@ -160,7 +160,7 @@ class Handler {
 
                   logger.debug(
                     'Taking the value of Ping. (NOT DETECTED - THRESHOLD NOT REACHED)',
-                    accessory.displayName
+                    `${accessory.displayName} (${subtype})`
                   );
                 }
               }
@@ -190,7 +190,7 @@ class Handler {
 
             logger.info(
               `Occupancy state switched back to ${newState ? 'DETECTED' : 'NOT DETECTED'}`,
-              accessory.displayName
+              `${accessory.displayName} (${subtype})`
             );
 
             logger.info(
@@ -204,7 +204,7 @@ class Handler {
 
             logger.info(
               `Occupancy state switched back to ${newState ? 'DETECTED' : 'NOT DETECTED'}`,
-              accessory.displayName
+              `${accessory.displayName} (${subtype})`
             );
           }
         }

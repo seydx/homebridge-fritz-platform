@@ -179,7 +179,7 @@ FritzPlatform.prototype = {
   setupAccessory: function (accessory, device) {
     this.setupAccessoryInformation(accessory, device);
 
-    accessory.on('identify', () => logger.info('Identify requested.', accessory.displayName));
+    accessory.on('identify', () => logger.info('Identify requested.', `${accessory.displayName} (${device.subtype})`));
 
     accessory.context.config = device;
     accessory.context.config.polling = this.polling;
