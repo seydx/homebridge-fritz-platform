@@ -364,7 +364,7 @@ class Handler {
             );
             logger.info(text, `${accessory.displayName} (${accessory.context.config.subtype})`);
 
-            if (!this.denyCall) {
+            if (this.denyCall) {
               logger.debug(
                 `Blocking notification for ${this.homeNr}`,
                 `${accessory.displayName} (${accessory.context.config.subtype})`
