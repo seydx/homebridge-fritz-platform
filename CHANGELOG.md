@@ -1,5 +1,11 @@
 # Changelog
 
+# 6.0.5 - 2021-06-23
+
+## Other Changes
+- Fixed an issue where callmonitor (outgoing) not triggered correctly
+- Improved logging
+  
 # 6.0.4 - 2021-06-22
 
 ## Other Changes
