@@ -57,7 +57,7 @@ class Handler {
       });
     } catch (err) {
       logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-      logger.error(err);
+      logger.error(err, `${accessory.displayName} (${subtype})`);
     } finally {
       setTimeout(
         () =>

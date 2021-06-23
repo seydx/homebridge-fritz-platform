@@ -112,7 +112,7 @@ class Handler {
       }
     } catch (err) {
       logger.error('An error occured during polling network this.device!', this.device.name);
-      logger.error(err);
+      logger.error(err, this.device.name);
     } finally {
       setTimeout(() => this.poll(), this.device.polling * 1000);
     }

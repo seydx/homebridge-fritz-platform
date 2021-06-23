@@ -132,7 +132,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
         break;
       case 4:
@@ -262,7 +262,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
         break;
       default:
@@ -290,7 +290,7 @@ class Handler {
         await this.get(accessory);
       }
     } catch (err) {
-      logger.warn('An error occurred during polling smarthome devices!');
+      logger.warn('An error occurred during polling smarthome (button) devices!');
       logger.error(err);
     } finally {
       setTimeout(() => this.poll(), this.polling.timerSmarthomeButtons * 1000);

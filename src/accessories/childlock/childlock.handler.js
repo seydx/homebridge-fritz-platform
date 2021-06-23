@@ -69,7 +69,7 @@ class Handler {
       state = !states.includes(1);
     } catch (err) {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-      logger.error(err);
+      logger.error(err, `${accessory.displayName} (${subtype})`);
     }
 
     accessory
@@ -111,7 +111,7 @@ class Handler {
       }
     } catch (err) {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-      logger.error(err);
+      logger.error(err, `${accessory.displayName} (${subtype})`);
     }
 
     accessory.context.busy = false;

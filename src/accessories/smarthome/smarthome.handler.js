@@ -358,7 +358,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         service.getCharacteristic(this.api.hap.Characteristic.On).updateValue(state);
@@ -518,7 +518,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -665,7 +665,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         service.getCharacteristic(this.api.hap.Characteristic.On).updateValue(state);
@@ -742,7 +742,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -806,7 +806,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -870,7 +870,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -912,7 +912,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -1061,7 +1061,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         return active;
@@ -1104,7 +1104,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -1260,7 +1260,7 @@ class Handler {
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           }
         }
         break;
@@ -1380,7 +1380,7 @@ class Handler {
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           }
         }
         break;
@@ -1423,7 +1423,7 @@ class Handler {
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           }
         }
         break;
@@ -1480,7 +1480,7 @@ class Handler {
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           }
         }
         break;
@@ -1548,7 +1548,7 @@ class Handler {
             }
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           }
         }
         break;
@@ -1647,7 +1647,7 @@ class Handler {
               .updateValue(2);
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
 
             accessory
               .getService(this.api.hap.Service.WindowCovering)

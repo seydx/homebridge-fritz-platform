@@ -122,7 +122,7 @@ class Handler {
           state = actives.includes(1) ? true : false;
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -152,7 +152,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -193,7 +193,7 @@ class Handler {
           state = onState === activeValue;
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -268,7 +268,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -505,7 +505,7 @@ class Handler {
             logger.info('Done!', `${accessory.displayName} (${subtype})`);
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
           } finally {
             setTimeout(
               () =>
@@ -600,7 +600,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -625,7 +625,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -676,7 +676,7 @@ class Handler {
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -728,7 +728,7 @@ class Handler {
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>

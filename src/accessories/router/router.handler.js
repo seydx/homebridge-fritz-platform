@@ -119,13 +119,13 @@ class Handler {
                 logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
               } catch (err) {
                 logger.error('An error occured during executing OFF script!', `${accessory.displayName} (${subtype})`);
-                logger.error(err);
+                logger.error(err, `${accessory.displayName} (${subtype})`);
               }
             }
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -151,13 +151,13 @@ class Handler {
                 logger.info('OFF script executed successfully!', `${accessory.displayName} (${subtype})`);
               } catch (err) {
                 logger.error('An error occured during executing OFF script!', `${accessory.displayName} (${subtype})`);
-                logger.error(err);
+                logger.error(err, `${accessory.displayName} (${subtype})`);
               }
             }
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -172,7 +172,7 @@ class Handler {
           state = response.NewEnable === '1';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -192,7 +192,7 @@ class Handler {
           state = response.NewEnable === '1';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -227,7 +227,7 @@ class Handler {
           state = responses.some((response) => response && response.NewEnable === '1');
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -247,7 +247,7 @@ class Handler {
           state = response.NewEnable === '1';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -265,7 +265,7 @@ class Handler {
           state = response['NewX_AVM-DE_WPSStatus'] === 'on';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -294,7 +294,7 @@ class Handler {
           state = body.checked || body.checked === '';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -311,7 +311,7 @@ class Handler {
           state = response.NewEnable === '1';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -338,7 +338,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -371,7 +371,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -400,7 +400,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(state);
@@ -428,7 +428,7 @@ class Handler {
           maxUl = `${(parseInt(response.Newmax_us) / 125000).toFixed(2)} Mbit/s`;
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         }
 
         accessory
@@ -492,7 +492,7 @@ class Handler {
               logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
               logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
-              logger.error(err);
+              logger.error(err, `${accessory.displayName} (${subtype})`);
             }
           }
 
@@ -506,7 +506,7 @@ class Handler {
             accessory.context.restart = true;
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
 
             setTimeout(
               () =>
@@ -538,7 +538,7 @@ class Handler {
               logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
             } catch (err) {
               logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
-              logger.error(err);
+              logger.error(err, `${accessory.displayName} (${subtype})`);
             }
           }
 
@@ -552,7 +552,7 @@ class Handler {
             accessory.context.restart = true;
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
 
             setTimeout(
               () =>
@@ -583,7 +583,7 @@ class Handler {
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err);
+            logger.error(err, `${accessory.displayName} (${subtype})`);
 
             setTimeout(
               () =>
@@ -613,7 +613,7 @@ class Handler {
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -667,7 +667,7 @@ class Handler {
           await Promise.all(promises);
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -696,7 +696,7 @@ class Handler {
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -724,7 +724,7 @@ class Handler {
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -750,7 +750,7 @@ class Handler {
           await fritzbox.exec(service, 'ForceTermination');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
         } finally {
           setTimeout(
             () =>
@@ -805,7 +805,7 @@ class Handler {
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -832,7 +832,7 @@ class Handler {
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -870,7 +870,7 @@ class Handler {
               });
             } catch (err) {
               logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-              logger.error(err);
+              logger.error(err, `${accessory.displayName} (${subtype})`);
 
               setTimeout(
                 () =>
@@ -892,7 +892,7 @@ class Handler {
           }
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -936,7 +936,7 @@ class Handler {
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
@@ -966,7 +966,7 @@ class Handler {
           await requestLUA(formData, fritzbox.url.hostname, '/data.lua');
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-          logger.error(err);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
 
           setTimeout(
             () =>
