@@ -84,10 +84,6 @@ class Handler {
     let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
     let state = accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).value;
 
-    if (accessory.context.busy) {
-      return state;
-    }
-
     switch (subtype) {
       case 'alarm':
         break;
@@ -224,8 +220,6 @@ class Handler {
 
     let fritzbox = accessory.context.config.fritzbox || this.fritzbox;
     let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
-
-    accessory.context.busy = true;
 
     switch (subtype) {
       case 'alarm': {
@@ -745,8 +739,6 @@ class Handler {
         );
         break;
     }
-
-    accessory.context.busy = false;
   }
 
   async poll() {

@@ -341,7 +341,7 @@ class Accessory {
 
       service
         .getCharacteristic(this.api.hap.Characteristic.Download)
-        .onGet(() => this.handler.get(this.accessory, 'broadband'));
+        .onGet(() => this.handler.get(this.accessory, 'broadband', this.api.hap.Characteristic.Download));
     } else {
       if (service.testCharacteristic(this.api.hap.Characteristic.Download)) {
         logger.info(

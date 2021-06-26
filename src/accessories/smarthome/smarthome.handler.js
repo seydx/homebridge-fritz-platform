@@ -219,10 +219,6 @@ class Handler {
 
         let state = accessory.getService(service).getCharacteristic(this.api.hap.Characteristic.On).value;
 
-        if (accessory.context.busy) {
-          return state;
-        }
-
         let bulbState = accessory
           .getService(this.api.hap.Service.Lightbulb)
           .getCharacteristic(this.api.hap.Characteristic.On).value;
@@ -440,10 +436,6 @@ class Handler {
           .getService(this.api.hap.Service.Lightbulb)
           .getCharacteristic(this.api.hap.Characteristic.On).value;
 
-        if (accessory.context.busy) {
-          return state;
-        }
-
         let brightness, temp, hue, sat;
 
         if (accessory.context.config.brightness) {
@@ -591,10 +583,6 @@ class Handler {
           : accessory.getService(this.api.hap.Service.Switch);
 
         let state = service.getCharacteristic(this.api.hap.Characteristic.On).value;
-
-        if (accessory.context.busy) {
-          return state;
-        }
 
         try {
           let device = !accessory.context.config.group
@@ -939,11 +927,6 @@ class Handler {
           .getService(this.api.hap.Service.HeaterCooler)
           .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value;
 
-        if (accessory.context.busy) {
-          //assuming we are calling GET event for Characteristic.Active
-          return active;
-        }
-
         try {
           let device = !accessory.context.config.group
             ? this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain))
@@ -1139,8 +1122,6 @@ class Handler {
     }
 
     subtype = subtype || accessory.context.config.subtype;
-
-    accessory.context.busy = true;
 
     switch (subtype) {
       case 'smarthome-switch-lightbulb':
@@ -1663,8 +1644,6 @@ class Handler {
         );
         break;
     }
-
-    accessory.context.busy = false;
   }
 
   async poll() {

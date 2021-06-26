@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   ExtrasAccessory: require('./extras.accessory'),
   ExtrasHandler: require('./extras.handler'),

@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   ChildLockAccessory: require('./childlock.accessory'),
   ChildLockHandler: require('./childlock.handler'),

@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   NetworkAccessory: require('./network.accessory'),
   NetworkHandler: require('./network.handler'),

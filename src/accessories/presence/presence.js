@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   PresenceMotionAccessory: require('./motion/motion.accessory'),
   PresenceOccupancyAccessory: require('./occupancy/occupancy.accessory'),

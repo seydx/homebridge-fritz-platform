@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   RouterAccessory: require('./router.accessory'),
   RouterHandler: require('./router.handler'),

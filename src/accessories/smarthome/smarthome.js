@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   SHBlindAccessory: require('./blind/blind.accessory'),
   SHButtonAccessory: require('./button/button.accessory'),

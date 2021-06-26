@@ -47,8 +47,6 @@ class Handler {
     // eslint-disable-next-line no-unused-vars
     subtype = subtype || accessory.context.config.subtype;
 
-    accessory.context.busy = true;
-
     try {
       logger.info('ON', `${accessory.displayName} (${subtype})`);
 
@@ -68,8 +66,6 @@ class Handler {
         1000
       );
     }
-
-    accessory.context.busy = false;
   }
 
   async poll() {}

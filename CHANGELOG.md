@@ -1,5 +1,11 @@
 # Changelog
 
+# 6.0.6 - 2021-06-27
+
+## Other Changes
+- Fixed an issue where broadband received wrong state/value
+- Updated dependencies
+
 # 6.0.5 - 2021-06-23
 
 ## Other Changes

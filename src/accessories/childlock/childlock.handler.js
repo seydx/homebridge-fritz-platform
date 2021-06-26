@@ -43,10 +43,6 @@ class Handler {
       .getService(this.api.hap.Service.Switch)
       .getCharacteristic(this.api.hap.Characteristic.On).value;
 
-    if (accessory.context.busy) {
-      return state;
-    }
-
     try {
       const states = [];
       const ipList = accessory.context.config.ips;
@@ -92,8 +88,6 @@ class Handler {
 
     subtype = subtype || accessory.context.config.subtype;
 
-    accessory.context.busy = true;
-
     logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
     try {
@@ -113,8 +107,6 @@ class Handler {
       logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
       logger.error(err, `${accessory.displayName} (${subtype})`);
     }
-
-    accessory.context.busy = false;
   }
 
   async poll() {
