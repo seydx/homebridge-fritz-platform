@@ -24,7 +24,7 @@ const Setup = (devices, presenceConfig, presenceOptions) => {
       error = true;
     } else if (!user.address) {
       logger.warn(
-        'There is no or no valid address configured for this PRESENCE device. This device will be skipped.',
+        'There is no or no valid IP/MAC address configured for this PRESENCE device. This device will be skipped.',
         user.name
       );
       error = true;

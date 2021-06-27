@@ -237,7 +237,9 @@ class Handler {
 
         for (const accessory of userAccessories) {
           const host = this.hosts.find(
-            (host) => host.ip === accessory.context.config.address || host.mac === accessory.context.config.address
+            (host) =>
+              host.ip === accessory.context.config.address ||
+              host.mac.toLowerCase() === accessory.context.config.address.toLowerCase()
           );
 
           if (!host) {

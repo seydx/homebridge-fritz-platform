@@ -118,10 +118,14 @@ exports.validIP = (ip) => {
   ) {
     return ip;
   }
+
+  return false;
 };
 
 exports.validMAC = (mac) => {
   if (/^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(mac)) {
     return mac;
   }
+
+  return false;
 };

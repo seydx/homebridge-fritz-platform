@@ -1,5 +1,10 @@
 # Changelog
 
+# NEXT
+
+## Other Changes
+- Minor bug fixes
+  
 # 6.0.6 - 2021-06-27
 
 ## Other Changes
