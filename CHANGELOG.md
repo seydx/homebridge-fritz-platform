@@ -1,6 +1,6 @@
 # Changelog
 
-# NEXT
+# 6.0.7 - 2021-06-27
 
 ## Other Changes
 - Fixed an issue where presence user throw an erorr if it could not be found manually or in the hosts list
