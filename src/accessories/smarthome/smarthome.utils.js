@@ -13,6 +13,7 @@ exports.colortemp2api = (param) => {
 };
 
 exports.getValidColor = (hue, sat) => {
+  hue = Math.round(hue);
   sat = Math.round(sat);
 
   let hues = [35, 52, 92, 120, 160, 195, 212, 225, 266, 296, 335, 358];

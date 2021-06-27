@@ -1217,9 +1217,15 @@ class Handler {
                 }
               } else {
                 //color
-                let validHueSat = getValidColor(accessory, false, state);
+                //state = saturation
+                const hue = accessory
+                  .getService(this.api.hap.Service.Lightbulb)
+                  .getCharacteristic(this.api.hap.Characteristic.Hue).value;
+
+                const validHueSat = getValidColor(hue, state);
+
                 logger.info(
-                  `Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`,
+                  `Hue ${hue} (${validHueSat.hue}) - Saturation ${state} (${validHueSat.sat})`,
                   `${accessory.displayName} (${subtype})`
                 );
 
@@ -1337,9 +1343,15 @@ class Handler {
                 }
               } else {
                 //color
-                let validHueSat = getValidColor(accessory, false, state);
+                //state = saturation
+                const hue = accessory
+                  .getService(this.api.hap.Service.Lightbulb)
+                  .getCharacteristic(this.api.hap.Characteristic.Hue).value;
+
+                const validHueSat = getValidColor(hue, state);
+
                 logger.info(
-                  `Hue ${validHueSat.hue} - Saturation ${validHueSat.sat}`,
+                  `Hue ${hue} (${validHueSat.hue}) - Saturation ${state} (${validHueSat.sat})`,
                   `${accessory.displayName} (${subtype})`
                 );
 

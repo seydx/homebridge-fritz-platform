@@ -1,5 +1,10 @@
 # Changelog
 
+# v6.0.9 - 2021-06-28
+
+## Other Changes
+- Fixed an issue where changing lightbulb color didnt work
+
 # v6.0.8 - 2021-06-27
 
 ## Other Changes
