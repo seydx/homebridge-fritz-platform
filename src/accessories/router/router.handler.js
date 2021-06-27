@@ -103,7 +103,7 @@ class Handler {
 
           state = response.NewConnectionStatus === 'Connected';
 
-          if (accessory.context.restart){
+          if (accessory.context.restart) {
             accessory.context.restart = false;
 
             if (accessory.context.config.master && accessory.context.config.reboot.off) {
@@ -166,7 +166,7 @@ class Handler {
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewEnable === '1';
-          
+
           if (accessory.context.restart) {
             accessory.context.restart = false;
           }
