@@ -103,10 +103,10 @@ class Handler {
 
           state = response.NewConnectionStatus === 'Connected';
 
-          if (accessory.context.restart) {
+          if (accessory.context.restart){
             accessory.context.restart = false;
 
-            if (accessory.context.config.reboot.off && accessory.context.config.master) {
+            if (accessory.context.config.master && accessory.context.config.reboot.off) {
               try {
                 logger.info('Executing OFF script...', `${accessory.displayName} (${subtype})`);
 
@@ -166,6 +166,10 @@ class Handler {
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
           state = response.NewEnable === '1';
+          
+          if (accessory.context.restart) {
+            accessory.context.restart = false;
+          }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err, `${accessory.displayName} (${subtype})`);
@@ -465,98 +469,8 @@ class Handler {
     let characteristic = ownCharacteristic ? ownCharacteristic : this.api.hap.Characteristic.On;
 
     switch (subtype) {
-      case 'dsl': {
-        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
-
-        if (state) {
-          logger.info('ON not supported!', `${accessory.displayName} (${subtype})`);
-
-          setTimeout(
-            () =>
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
-            1000
-          );
-        } else {
-          if (accessory.context.config.reboot.on && accessory.context.config.master) {
-            try {
-              logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
-
-              await initReboot(accessory.context.config.reboot.off);
-
-              logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
-            } catch (err) {
-              logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
-              logger.error(err, `${accessory.displayName} (${subtype})`);
-            }
-          }
-
-          try {
-            logger.debug(
-              'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
-              `${accessory.displayName} (${subtype})`
-            );
-            await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
-
-            accessory.context.restart = true;
-          } catch (err) {
-            logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err, `${accessory.displayName} (${subtype})`);
-
-            setTimeout(
-              () =>
-                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
-              1000
-            );
-          }
-        }
-        break;
-      }
-      case 'cable': {
-        logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
-
-        if (state) {
-          logger.info('ON not supported!', `${accessory.displayName} (${subtype})`);
-
-          setTimeout(
-            () =>
-              accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
-            1000
-          );
-        } else {
-          if (accessory.context.config.reboot.on && accessory.context.config.master) {
-            try {
-              logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
-
-              await initReboot(accessory.context.config.reboot.off);
-
-              logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
-            } catch (err) {
-              logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
-              logger.error(err, `${accessory.displayName} (${subtype})`);
-            }
-          }
-
-          try {
-            logger.debug(
-              'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
-              `${accessory.displayName} (${subtype})`
-            );
-            await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
-
-            accessory.context.restart = true;
-          } catch (err) {
-            logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
-            logger.error(err, `${accessory.displayName} (${subtype})`);
-
-            setTimeout(
-              () =>
-                accessory.getService(this.api.hap.Service.Switch).getCharacteristic(characteristic).updateValue(!state),
-              1000
-            );
-          }
-        }
-        break;
-      }
+      case 'dsl':
+      case 'cable':
       case 'repeater': {
         logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
@@ -569,12 +483,27 @@ class Handler {
             1000
           );
         } else {
+          if (accessory.context.config.master && accessory.context.config.reboot.on) {
+            try {
+              logger.info('Executing ON script...', `${accessory.displayName} (${subtype})`);
+
+              await initReboot(accessory.context.config.reboot.on);
+
+              logger.info('ON script executed successfully!', `${accessory.displayName} (${subtype})`);
+            } catch (err) {
+              logger.error('An error occured during executing ON script!', `${accessory.displayName} (${subtype})`);
+              logger.error(err, `${accessory.displayName} (${subtype})`);
+            }
+          }
+
           try {
             logger.debug(
               'Service: urn:DeviceConfig-com:serviceId:DeviceConfig1 - Command: Reboot - Actions: null',
               `${accessory.displayName} (${subtype})`
             );
             await fritzbox.exec('urn:DeviceConfig-com:serviceId:DeviceConfig1', 'Reboot');
+
+            accessory.context.restart = true;
           } catch (err) {
             logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
             logger.error(err, `${accessory.displayName} (${subtype})`);

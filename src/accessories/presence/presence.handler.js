@@ -189,7 +189,7 @@ class Handler {
             accessory.context.changedOn = Date.now();
 
             logger.info(
-              `Occupancy state switched back to ${newState ? 'DETECTED' : 'NOT DETECTED'}`,
+              `Occupancy state changed to ${newState ? 'DETECTED' : 'NOT DETECTED'}`,
               `${accessory.displayName} (${subtype})`
             );
 

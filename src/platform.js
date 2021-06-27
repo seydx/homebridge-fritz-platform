@@ -79,7 +79,7 @@ function FritzPlatform(log, config, api) {
   }
 
   if (this.config.devices) {
-    RouterSetup(this.devices, this.config.devices, this.config.extras, config.options, this.meshMaster);
+    RouterSetup(this.devices, this.config.devices, this.config.extras, this.config.options, this.meshMaster);
   }
 
   if (!this.meshMaster.configured) {

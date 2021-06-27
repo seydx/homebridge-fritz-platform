@@ -1,29 +1,35 @@
 # Changelog
 
-# 6.0.7 - 2021-06-27
+# v6.0.8 - 2021-06-27
+
+## Other Changes
+- Fixed an issue where restarting a router failed
+- Minor bug fixes
+
+# v6.0.7 - 2021-06-27
 
 ## Other Changes
 - Fixed an issue where presence user throw an erorr if it could not be found manually or in the hosts list
 - Minor bug fixes
   
-# 6.0.6 - 2021-06-27
+# v6.0.6 - 2021-06-27
 
 ## Other Changes
 - Fixed an issue where broadband received wrong state/value
 - Updated dependencies
 
-# 6.0.5 - 2021-06-23
+# v6.0.5 - 2021-06-23
 
 ## Other Changes
 - Fixed an issue where callmonitor (outgoing) not triggered correctly
 - Improved logging
   
-# 6.0.4 - 2021-06-22
+# v6.0.4 - 2021-06-22
 
 ## Other Changes
 - Bug fixes
 
-# 6.0.3 - 2021-06-22
+# v6.0.3 - 2021-06-22
 
 ## Notable Changes
 - **Log**: Added multiple logging functions to config to allow adjusting the logging output.
@@ -37,7 +43,7 @@
 - Minor bug fixes
 - Updated dependencies
 
-# 6.0.2 - 2021-06-22
+# v6.0.2 - 2021-06-22
 
 ## Other Changes
 - Better error handling in the backend
@@ -45,7 +51,7 @@
 - Fixed an issue with Telegram where also the subtypes of an accessory was shown in the message
 - Minor bug fixes
 
-# 6.0.1 - 2021-06-21
+# v6.0.1 - 2021-06-21
 
 ## Other Changes
 - Minor bug fixes
