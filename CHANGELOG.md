@@ -3,6 +3,7 @@
 # NEXT
 
 ## Other Changes
+- Fixed an issue where presence user throw an erorr if it could not be found manually or in the hosts list
 - Minor bug fixes
   
 # 6.0.6 - 2021-06-27

@@ -244,38 +244,57 @@ class Handler {
 
           if (!host) {
             logger.debug(
-              'User could not be find in hosts list. Looking for user manually.',
+              'User could not be found in hosts list. Looking for user manually.',
               `${accessory.displayName} (${accessory.context.config.subtype})`
             );
 
-            const service = validIP(accessory.context.config.address)
-              ? 'X_AVM-DE_GetSpecificHostEntryByIP'
-              : 'GetSpecificHostEntry';
+            try {
+              const service = validIP(accessory.context.config.address)
+                ? 'X_AVM-DE_GetSpecificHostEntryByIP'
+                : 'GetSpecificHostEntry';
 
-            const input = validIP(accessory.context.config.address)
-              ? { NewIPAddress: accessory.context.config.address }
-              : { NewMACAddress: accessory.context.config.address };
+              const input = validIP(accessory.context.config.address)
+                ? { NewIPAddress: accessory.context.config.address }
+                : { NewMACAddress: accessory.context.config.address };
 
-            const user = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
+              const user = await this.fritzbox.exec('urn:LanDeviceHosts-com:serviceId:Hosts1', service, input);
 
-            this.hosts.push({
-              mac: user.NewMACAddress,
-              ip: user.NewIPAddress,
-              active: user.NewActive === '1',
-              name: user.NewHostName,
-              interface: user.NewInterfaceType,
-            });
+              this.hosts.push({
+                mac: user.NewMACAddress,
+                ip: user.NewIPAddress,
+                active: user.NewActive === '1',
+                name: user.NewHostName,
+                interface: user.NewInterfaceType,
+              });
+            } catch (err) {
+              if (err.soap && err.soap.errorDescription === 'NoSuchEntryInArray') {
+                logger.debug(
+                  'User could not be found manually. Setting user to inactive.',
+                  `${accessory.displayName} (${accessory.context.config.subtype})`
+                );
+
+                this.hosts.push({
+                  mac: accessory.context.config.address,
+                  ip: accessory.context.config.address,
+                  active: false,
+                  name: accessory.displayName,
+                  interface: '802.11',
+                });
+              } else {
+                throw new Error(err);
+              }
+            }
           }
 
           await this.get(accessory);
         }
 
-        const AnyoneAccessory = this.accessories.find(
+        const anyoneAccessory = this.accessories.find(
           (accessory) => accessory.context.config.type === 'presence' && accessory.displayName === 'Anyone'
         );
 
-        if (AnyoneAccessory) {
-          await this.get(AnyoneAccessory);
+        if (anyoneAccessory) {
+          await this.get(anyoneAccessory);
         }
       }
     } catch (err) {
