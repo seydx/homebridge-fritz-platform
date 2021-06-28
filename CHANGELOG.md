@@ -1,5 +1,10 @@
 # Changelog
 
+# v6.0.10 - 2021-06-28
+
+## Other Changes
+- Fixed an issue where authentication with a complex password didnt work
+
 # v6.0.9 - 2021-06-28
 
 ## Other Changes
