@@ -1,5 +1,11 @@
 # Changelog
 
+# v6.0.11 - 2021-07-04
+
+## Other Changes
+- Fixed an issue where buttons with 4 channels didnt work properly
+- Updated dependencies
+
 # v6.0.10 - 2021-06-28
 
 ## Other Changes

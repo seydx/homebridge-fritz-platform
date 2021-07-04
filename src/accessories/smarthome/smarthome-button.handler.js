@@ -155,7 +155,10 @@ class Handler {
                       accessory.context.lastpressedTopLeft = newTimestamp;
 
                       accessory
-                        .getServiceById(`${accessory.context.config.subtype}-${1}`)
+                        .getServiceById(
+                          this.api.hap.Service.StatelessProgrammableSwitch,
+                          `${accessory.context.config.subtype}-1`
+                        )
                         .getCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent)
                         .updateValue(0);
                     }
@@ -174,7 +177,10 @@ class Handler {
                       accessory.context.lastpressedTopRight = newTimestamp;
 
                       accessory
-                        .getServiceById(`${accessory.context.config.subtype}-${2}`)
+                        .getServiceById(
+                          this.api.hap.Service.StatelessProgrammableSwitch,
+                          `${accessory.context.config.subtype}-2`
+                        )
                         .getCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent)
                         .updateValue(0);
                     }
@@ -194,7 +200,10 @@ class Handler {
                       accessory.context.lastpressedBottomLeft = newTimestamp;
 
                       accessory
-                        .getServiceById(`${accessory.context.config.subtype}-${3}`)
+                        .getServiceById(
+                          this.api.hap.Service.StatelessProgrammableSwitch,
+                          `${accessory.context.config.subtype}-3`
+                        )
                         .getCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent)
                         .updateValue(0);
                     }
@@ -214,7 +223,10 @@ class Handler {
                       accessory.context.lastpressedBottomRight = newTimestamp;
 
                       accessory
-                        .getServiceById(`${accessory.context.config.subtype}-${4}`)
+                        .getServiceById(
+                          this.api.hap.Service.StatelessProgrammableSwitch,
+                          `${accessory.context.config.subtype}-4`
+                        )
                         .getCharacteristic(this.api.hap.Characteristic.ProgrammableSwitchEvent)
                         .updateValue(0);
                     }
