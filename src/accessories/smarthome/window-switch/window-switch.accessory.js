@@ -30,7 +30,6 @@ class Accessory {
 
     service
       .getCharacteristic(this.api.hap.Characteristic.On)
-      .onGet(() => this.handler.get(this.accessory))
       .onSet((state) => this.handler.set(state, this.accessory))
       .on('change', (context) => this.handler.change(context, this.accessory));
   }

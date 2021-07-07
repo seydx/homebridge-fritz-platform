@@ -59,66 +59,96 @@ const Setup = (devices, smarthomeConfig) => {
         devices.set(uuid, device);
       }
 
-      if (!device.group && device.temperature && device.accType === 'switch') {
-        let tempDevice = {
-          name: device.name + ' Temperature',
-          type: 'smarthome',
-          subtype: 'smarthome-temperature',
-          battery: device.battery,
-          humidity: device.humidity,
-          ain: device.ain,
-        };
+      if (!device.group) {
+        if (
+          device.temperature &&
+          (device.accType === 'switch' || device.accType === 'button' || device.accType === 'thermostat')
+        ) {
+          let tempDevice = {
+            name: device.name + ' Temperature',
+            type: 'smarthome',
+            subtype: 'smarthome-temperature',
+            battery: device.battery,
+            ain: device.ain,
+          };
 
-        const uuidTemp = UUIDgenerate(tempDevice.name);
-        if (devices.has(uuidTemp)) {
-          logger.warn(
-            'Multiple devices are configured with this name. Duplicate devices will be skipped.',
-            tempDevice.name
-          );
-        } else {
-          logger.debug('New device added!', tempDevice.name);
-          devices.set(uuidTemp, tempDevice);
+          const uuidTemp = UUIDgenerate(tempDevice.name);
+          if (devices.has(uuidTemp)) {
+            logger.warn(
+              'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+              tempDevice.name
+            );
+          } else {
+            logger.debug('New device added!', tempDevice.name);
+            devices.set(uuidTemp, tempDevice);
+          }
         }
-      }
 
-      if (!device.group && device.window && device.accType === 'thermostat') {
-        let windowDevice = {
-          name: device.name + ' Window',
-          type: 'smarthome',
-          subtype: 'smarthome-window',
-          battery: device.battery,
-          ain: device.ain,
-        };
+        if (
+          device.humidity &&
+          (device.accType === 'switch' || device.accType === 'button' || device.accType === 'thermostat')
+        ) {
+          let humidityDevice = {
+            name: device.name + ' Humidity',
+            type: 'smarthome',
+            subtype: 'smarthome-humidity',
+            battery: device.battery,
+            ain: device.ain,
+          };
 
-        const uuidWindow = UUIDgenerate(windowDevice.name);
-        if (devices.has(uuidWindow)) {
-          logger.warn(
-            'Multiple devices are configured with this name. Duplicate devices will be skipped.',
-            windowDevice.name
-          );
-        } else {
-          logger.debug('New device added!', windowDevice.name);
-          devices.set(uuidWindow, windowDevice);
+          const uuidTemp = UUIDgenerate(humidityDevice.name);
+          if (devices.has(uuidTemp)) {
+            logger.warn(
+              'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+              humidityDevice.name
+            );
+          } else {
+            logger.debug('New device added!', humidityDevice.name);
+            devices.set(uuidTemp, humidityDevice);
+          }
         }
-      }
 
-      if (!device.group && device.openWindow && device.accType === 'thermostat') {
-        let openWindowDevice = {
-          name: device.name + ' Open Window',
-          type: 'smarthome',
-          subtype: 'smarthome-window-switch',
-          ain: device.ain,
-        };
+        if (device.accType === 'thermostat') {
+          if (device.window) {
+            let windowDevice = {
+              name: device.name + ' Window',
+              type: 'smarthome',
+              subtype: 'smarthome-window',
+              battery: device.battery,
+              ain: device.ain,
+            };
 
-        const uuidWindow = UUIDgenerate(openWindowDevice.name);
-        if (devices.has(uuidWindow)) {
-          logger.warn(
-            'Multiple devices are configured with this name. Duplicate devices will be skipped.',
-            openWindowDevice.name
-          );
-        } else {
-          logger.debug('New device added!', openWindowDevice.name);
-          devices.set(uuidWindow, openWindowDevice);
+            const uuidWindow = UUIDgenerate(windowDevice.name);
+            if (devices.has(uuidWindow)) {
+              logger.warn(
+                'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+                windowDevice.name
+              );
+            } else {
+              logger.debug('New device added!', windowDevice.name);
+              devices.set(uuidWindow, windowDevice);
+            }
+          }
+
+          if (device.openWindow) {
+            let openWindowDevice = {
+              name: device.name + ' Open Window',
+              type: 'smarthome',
+              subtype: 'smarthome-window-switch',
+              ain: device.ain,
+            };
+
+            const uuidWindow = UUIDgenerate(openWindowDevice.name);
+            if (devices.has(uuidWindow)) {
+              logger.warn(
+                'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+                openWindowDevice.name
+              );
+            } else {
+              logger.debug('New device added!', openWindowDevice.name);
+              devices.set(uuidWindow, openWindowDevice);
+            }
+          }
         }
       }
     }

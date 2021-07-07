@@ -45,7 +45,7 @@ class Handler {
       subtype = subtype || accessory.context.config.subtype;
 
       switch (subtype) {
-        case 'smarthome-switch-lightbulb':
+        case 'smarthome-switch-lightbulb': {
           if (historyService) {
             historyService.addEntry({ time: moment().unix(), power: context.newValue });
 
@@ -64,127 +64,141 @@ class Handler {
             }
           }
           break;
+        }
         case 'smarthome-lightbulb':
           break;
-        case 'smarthome-switch':
-          {
-            if (historyService) {
-              historyService.addEntry({ time: moment().unix(), power: context.newValue });
+        case 'smarthome-switch': {
+          if (historyService) {
+            historyService.addEntry({ time: moment().unix(), power: context.newValue });
 
-              if (accessory.context.config.startValue) {
-                if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
-                  logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
-                  accessory.context.started = true;
+            if (accessory.context.config.startValue) {
+              if (context.newValue >= accessory.context.config.startValue && !accessory.context.started) {
+                logger.info('Started!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                accessory.context.started = true;
 
-                  Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
-                } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
-                  logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
-                  accessory.context.started = false;
+                Telegram.send('outlet', 'started', accessory.displayName, context.newValue);
+              } else if (context.newValue < accessory.context.config.startValue && accessory.context.started) {
+                logger.info('Finished!', `${accessory.displayName} (${accessory.context.config.subtype})`);
+                accessory.context.started = false;
 
-                  Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
-                }
+                Telegram.send('outlet', 'finished', accessory.displayName, context.newValue);
               }
             }
           }
           break;
+        }
+        case 'smarthome-humidity': {
+          if (historyService) {
+            historyService.addEntry({ time: moment().unix(), temp: 0, humidity: context.newValue, ppm: 0 });
+          }
+          break;
+        }
         case 'smarthome-temperature': {
-          historyService.addEntry({ time: moment().unix(), temp: context.newValue, humidity: 0, ppm: 0 });
+          if (historyService) {
+            historyService.addEntry({ time: moment().unix(), temp: context.newValue, humidity: 0, ppm: 0 });
+          }
           break;
         }
         case 'smarthome-contact': {
-          if (context.newValue) {
-            accessory.context.timesOpened = accessory.context.timesOpened || 0;
-            accessory.context.timesOpened += 1;
+          if (historyService) {
+            if (context.newValue) {
+              accessory.context.timesOpened = accessory.context.timesOpened || 0;
+              accessory.context.timesOpened += 1;
 
-            let lastActivation = moment().unix() - historyService.getInitialTime();
-            let closeDuration = moment().unix() - historyService.getInitialTime();
+              let lastActivation = moment().unix() - historyService.getInitialTime();
+              let closeDuration = moment().unix() - historyService.getInitialTime();
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.LastActivation)
-              .updateValue(lastActivation);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.LastActivation)
+                .updateValue(lastActivation);
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.TimesOpened)
-              .updateValue(accessory.context.timesOpened);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.TimesOpened)
+                .updateValue(accessory.context.timesOpened);
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-              .updateValue(closeDuration);
-          } else {
-            let openDuration = moment().unix() - historyService.getInitialTime();
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+                .updateValue(closeDuration);
+            } else {
+              let openDuration = moment().unix() - historyService.getInitialTime();
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-              .updateValue(openDuration);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+                .updateValue(openDuration);
+            }
+
+            historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
           }
-
-          historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
           break;
         }
         case 'smarthome-window': {
-          if (context.newValue) {
-            accessory.context.timesOpened = accessory.context.timesOpened || 0;
-            accessory.context.timesOpened += 1;
+          if (historyService) {
+            if (context.newValue) {
+              accessory.context.timesOpened = accessory.context.timesOpened || 0;
+              accessory.context.timesOpened += 1;
 
-            let lastActivation = moment().unix() - historyService.getInitialTime();
-            let closeDuration = moment().unix() - historyService.getInitialTime();
+              let lastActivation = moment().unix() - historyService.getInitialTime();
+              let closeDuration = moment().unix() - historyService.getInitialTime();
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.LastActivation)
-              .updateValue(lastActivation);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.LastActivation)
+                .updateValue(lastActivation);
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.TimesOpened)
-              .updateValue(accessory.context.timesOpened);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.TimesOpened)
+                .updateValue(accessory.context.timesOpened);
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-              .updateValue(closeDuration);
-          } else {
-            let openDuration = moment().unix() - historyService.getInitialTime();
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+                .updateValue(closeDuration);
+            } else {
+              let openDuration = moment().unix() - historyService.getInitialTime();
 
-            accessory
-              .getService(this.api.hap.Service.ContactSensor)
-              .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
-              .updateValue(openDuration);
+              accessory
+                .getService(this.api.hap.Service.ContactSensor)
+                .getCharacteristic(this.api.hap.Characteristic.ClosedDuration)
+                .updateValue(openDuration);
+            }
+
+            historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
           }
-
-          historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
           break;
         }
         case 'smarthome-window-switch':
           break;
         case 'smarthome-thermostat': {
-          let currentState = accessory
-            .getService(this.api.hap.Service.HeaterCooler)
-            .getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState).value;
+          if (historyService) {
+            let currentState = accessory
+              .getService(this.api.hap.Service.HeaterCooler)
+              .getCharacteristic(this.api.hap.Characteristic.CurrentHeaterCoolerState).value;
 
-          let currentTemp = accessory
-            .getService(this.api.hap.Service.HeaterCooler)
-            .getCharacteristic(this.api.hap.Characteristic.CurrentTemperature).value;
+            let currentTemp = accessory
+              .getService(this.api.hap.Service.HeaterCooler)
+              .getCharacteristic(this.api.hap.Characteristic.CurrentTemperature).value;
 
-          let targetTemp = accessory
-            .getService(this.api.hap.Service.HeaterCooler)
-            .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value;
+            let targetTemp = accessory
+              .getService(this.api.hap.Service.HeaterCooler)
+              .getCharacteristic(this.api.hap.Characteristic.HeatingThresholdTemperature).value;
 
-          let valvePos =
-            currentTemp <= targetTemp && currentState !== 0
-              ? Math.round(targetTemp - currentTemp >= 5 ? 100 : (targetTemp - currentTemp) * 20)
-              : 0;
+            let valvePos =
+              currentTemp <= targetTemp && currentState !== 0
+                ? Math.round(targetTemp - currentTemp >= 5 ? 100 : (targetTemp - currentTemp) * 20)
+                : 0;
 
-          historyService.addEntry({
-            time: moment().unix(),
-            currentTemp: currentTemp,
-            setTemp: targetTemp,
-            valvePosition: valvePos,
-          });
+            historyService.addEntry({
+              time: moment().unix(),
+              currentTemp: currentTemp,
+              setTemp: targetTemp,
+              valvePosition: valvePos,
+            });
+          }
           break;
         }
         case 'smarthome-blind':
@@ -660,6 +674,75 @@ class Handler {
 
         return state;
       }
+      case 'smarthome-humidity': {
+        let state = accessory
+          .getService(this.api.hap.Service.HumiditySensor)
+          .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity).value;
+
+        try {
+          let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
+
+          if (device) {
+            accessory.context.config.ain = device.ain;
+
+            if (device.online) {
+              if (device.humidity) {
+                state = device.humidity.value || 0;
+
+                accessory
+                  .getService(this.api.hap.Service.HumiditySensor)
+                  .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity)
+                  .updateValue(state);
+              } else {
+                logger.warn(
+                  'Can not find humidity data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
+
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
+
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
+          }
+        } catch (err) {
+          logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
+        }
+
+        accessory
+          .getService(this.api.hap.Service.HumiditySensor)
+          .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity)
+          .updateValue(state);
+
+        return state;
+      }
       case 'smarthome-temperature': {
         let state = accessory
           .getService(this.api.hap.Service.TemperatureSensor)
@@ -680,22 +763,6 @@ class Handler {
                   'Can not find temperature data - "accType" and/or options correct?',
                   `${accessory.displayName} (${subtype})`
                 );
-              }
-
-              if (accessory.context.config.humidity) {
-                if (device.humidity) {
-                  let humidity = device.humidity.value || 0;
-
-                  accessory
-                    .getService(this.api.hap.Service.HumiditySensor)
-                    .getCharacteristic(this.api.hap.Characteristic.CurrentRelativeHumidity)
-                    .updateValue(humidity);
-                } else {
-                  logger.warn(
-                    'Can not find humidity data - "accType" and/or options correct?',
-                    `${accessory.displayName} (${subtype})`
-                  );
-                }
               }
 
               if (accessory.context.config.battery) {
@@ -942,15 +1009,17 @@ class Handler {
                 currentTemp = device.thermostat.current;
                 targetTemp = device.thermostat.target;
 
-                /*currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
-                ? currentTemp
-                : device.thermostat.current;
+                /*
+                currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
+                  ? currentTemp
+                  : device.thermostat.current;
               
-              targetTemp = (device.thermostat.target === 'on' || device.thermostat.target === 'off')
-                ? targetTemp
-                : device.thermostat.target;*/
+                targetTemp = (device.thermostat.target === 'on' || device.thermostat.target === 'off')
+                  ? targetTemp
+                  : device.thermostat.target;
+                */
 
-                if (device.temperature) {
+                if (device.externTemperatureSensor) {
                   currentTemp = device.temperature.value || currentTemp;
                 }
 

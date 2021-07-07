@@ -18,6 +18,7 @@ const Config = (smarthomeConfig) => {
     energy: smarthomeConfig.energy || false,
     startValue: parseInt(smarthomeConfig.startValue) > 0 ? parseInt(smarthomeConfig.startValue) : false,
     temperature: smarthomeConfig.temperature || false,
+    externTemperatureSensor: smarthomeConfig.externTemperatureSensor || false,
     humidity: smarthomeConfig.humidity || false,
     window: smarthomeConfig.window || false,
     openWindow: smarthomeConfig.openWindow || false,

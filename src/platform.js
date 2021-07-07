@@ -22,6 +22,7 @@ const {
   SHBlindAccessory,
   SHButtonAccessory,
   SHContactAccessory,
+  SHHumidityAccessory,
   SHLightbulbAccessory,
   SHOutletAccessory,
   SHOutletLightbulbAccessory,
@@ -193,6 +194,8 @@ FritzPlatform.prototype = {
           new SHOutletAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-switch' && !device.energy)
           new SHSwitchAccessory(this.api, accessory, this.accessories, this.meshMaster);
+        else if (device.subtype === 'smarthome-humidity')
+          new SHHumidityAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-temperature')
           new SHTemperatureAccessory(this.api, accessory, this.accessories, this.meshMaster, HistoryService);
         else if (device.subtype === 'smarthome-thermostat')

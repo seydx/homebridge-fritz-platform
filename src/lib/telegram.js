@@ -57,14 +57,17 @@ class Telegram {
         if (err) {
           logger.error('An error occured during sending telegram message!');
           logger.error(err);
+          return;
         }
 
-        if (res.statusCode < 200 || res.statusCode > 200) {
-          logger.error('A response error occured during sending telegram message!');
-          logger.error({
-            code: res.statusCode,
-            message: res.statusMessage,
-          });
+        if (res) {
+          if (res.statusCode < 200 || res.statusCode > 200) {
+            logger.error('A response error occured during sending telegram message!');
+            logger.error({
+              code: res.statusCode,
+              message: res.statusMessage,
+            });
+          }
         }
       });
     } else {

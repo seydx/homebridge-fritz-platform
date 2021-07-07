@@ -1,75 +1,103 @@
 # Changelog
 
+# v6.0.12 - 2021-07-08
+
+## Notable Changes
+- **Smarthome**
+  - Changed "Humidity Sensor" from built-in sensor to a separate humidity sensor accessory
+  - Added new `externTemperatureSensor` option for thermostat accessories to use the temperature value from the external temperature sensor setted up in the FritzBox GUI
+
+## Other Changes
+- Reduced minimum polling timer to `1`
+
+## Bugfixes
+- Fixed an issue where enabling temperature or humidity doesnt work for several smarthome accessories
+- Fixed an issue where receiving an error during sending a telegram message caused homebridge to crash
+- Fixed an issue where thermostat `open window switch` caused a warning on startup
+- Minor bug fixes
+
 # v6.0.11 - 2021-07-04
 
 ## Other Changes
-- Fixed an issue where buttons with 4 channels didnt work properly
 - Updated dependencies
+  
+## Bugfixes
+- Fixed an issue where buttons with 4 channels didnt work properly
 
 # v6.0.10 - 2021-06-28
 
-## Other Changes
+## Bugfixes
 - Fixed an issue where authentication with a complex password didnt work
 
 # v6.0.9 - 2021-06-28
 
-## Other Changes
+## Bugfixes
 - Fixed an issue where changing lightbulb color didnt work
 
 # v6.0.8 - 2021-06-27
 
-## Other Changes
+## Bugfixes
 - Fixed an issue where restarting a router failed
 - Minor bug fixes
 
 # v6.0.7 - 2021-06-27
 
-## Other Changes
+## Bugfixes
 - Fixed an issue where presence user throw an erorr if it could not be found manually or in the hosts list
 - Minor bug fixes
   
 # v6.0.6 - 2021-06-27
 
 ## Other Changes
-- Fixed an issue where broadband received wrong state/value
 - Updated dependencies
+
+## Bugfixes
+- Fixed an issue where restarting a router failed
+- Minor bug fixes
 
 # v6.0.5 - 2021-06-23
 
 ## Other Changes
-- Fixed an issue where callmonitor (outgoing) not triggered correctly
 - Improved logging
+
+## Bugfixes
+- Fixed an issue where callmonitor (outgoing) not triggered correctly
   
 # v6.0.4 - 2021-06-22
 
-## Other Changes
-- Bug fixes
-
+## Bugfixes
+- Minor bug fixes
+  
 # v6.0.3 - 2021-06-22
 
 ## Notable Changes
-- **Log**: Added multiple logging functions to config to allow adjusting the logging output.
+- **Log**: 
+  - Added multiple logging functions to config to allow adjusting the logging output.
 - **Smarthome**:
   - **Buttons**: Added support for Telekom Wandtaster
 - **Config**:
   - **Buttons**: Added `longPress` option to smarthome buttons
 
 ## Other Changes
+- Updated dependencies
+
+## Bugfixes
 - Fixed an issue where presence devices with an ip address in the config could not be exposed to HomeKit.
 - Minor bug fixes
-- Updated dependencies
 
 # v6.0.2 - 2021-06-22
 
 ## Other Changes
 - Better error handling in the backend
+
+## Bugfixes
 - Fixed an issue where extra characteristics was not polling
 - Fixed an issue with Telegram where also the subtypes of an accessory was shown in the message
 - Minor bug fixes
 
 # v6.0.1 - 2021-06-21
 
-## Other Changes
+## Bugfixes
 - Minor bug fixes
 - Cleaned up config.schema.json
 
@@ -120,8 +148,10 @@ This update is by far the biggest update for `homebridge-fritz-platform`. To mak
 ## Other Changes
 - The code has been refactored (again)
 - Adjusted config.schema.json to reflect the changes mentioned above
-- Bug fixes
 - Updated dependencies
+
+## Bugfixes
+- Minor bug fixes
 
 # v5.1.2 - 2021-05-30
 - Fix CreateUrlSID for DECT

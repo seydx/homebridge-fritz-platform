@@ -538,6 +538,14 @@
             "description": "Current power consumption when the device is active. Used for notification via telegram when started (current power consumption above this value) or ended (current power consumption below this value).",
             "minimum": 1
           },
+          "externTemperatureSensor": {
+            "title": "Use Extern Temperature Sensor",
+            "type": "boolean",
+            "condition": {
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat';"
+            },
+            "description": "Enable this, if you want to show the temperature value from the extern temperature sensor setted up in your FritzBox GUI as the current temperature."
+          },
           "temperature": {
             "title": "Temperature Sensor",
             "type": "boolean",
@@ -552,7 +560,7 @@
             "condition": {
               "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'button' || model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch' || model.smarthome[arrayIndices[0]].accTypeGroup === 'switch-lightbulb';"
             },
-            "description": "Enable this, if the device(s) has a built in humidity sensor. This adds an additional humidity sensor to the temperature sensor."
+            "description": "Enable this, if the device(s) has a built in humidty sensor. This exposes an additional humidty sensor as an accessory to HomeKit."
           },
           "window": {
             "title": "Window Sensor",
@@ -1738,6 +1746,7 @@
                 "smarthome[].readOnly",
                 "smarthome[].energy",
                 "smarthome[].startValue",
+                "smarthome[].externTemperatureSensor",
                 "smarthome[].temperature",
                 "smarthome[].humidity",
                 "smarthome[].window",
