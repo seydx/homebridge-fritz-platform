@@ -1,5 +1,10 @@
 # Changelog
 
+# v6.0.14 - 2021-07-08
+
+## Bugfixes
+- Fixed an issue where thermostats do not display the temperature value of the external temperature when `externTemperatureSensor` is enabled
+
 # v6.0.13 - 2021-07-08
 
 ## Bugfixes

@@ -1019,7 +1019,7 @@ class Handler {
                   : device.thermostat.target;
                 */
 
-                if (device.externTemperatureSensor) {
+                if (accessory.context.config.externTemperatureSensor) {
                   currentTemp = device.temperature.value || currentTemp;
                 }
 
