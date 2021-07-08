@@ -1,5 +1,10 @@
 # Changelog
 
+# v6.0.13 - 2021-07-08
+
+## Bugfixes
+- Fixed an issue where changing color of smarthome lightbulbs showed wrong color/saturation
+
 # v6.0.12 - 2021-07-08
 
 ## Notable Changes
