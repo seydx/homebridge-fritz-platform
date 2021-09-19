@@ -1,9 +1,20 @@
 # Changelog
 
+# v6.0.15 - 2021-09-19
+
+## Other Changes
+- Updated dependencies
+
+## Bugfixes
+- Fixed an issue where smarthome thermostat groups did not display the average current temperature
+- Fixed an issue where smarthome buttons did not work properly
+- Fixed an issue where router led state did not work properly
+- Minor bug fixes
+
 # v6.0.14 - 2021-07-08
 
 ## Bugfixes
-- Fixed an issue where thermostats do not display the temperature value of the external temperature when `externTemperatureSensor` is enabled
+- Fixed an issue where thermostats did not display the temperature value of the external temperature when `externTemperatureSensor` is enabled
 
 # v6.0.13 - 2021-07-08
 

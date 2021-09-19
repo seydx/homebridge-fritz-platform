@@ -111,7 +111,10 @@ class Handler {
 
   async poll() {
     try {
-      const accessories = this.accessories.filter((accessory) => accessory.context.config.type === 'childlock');
+      const accessories = this.accessories.filter(
+        (accessory) =>
+          accessory && accessory.context && accessory.context.config && accessory.context.config.type === 'childlock'
+      );
 
       for (const accessory of accessories) {
         await this.get(accessory);

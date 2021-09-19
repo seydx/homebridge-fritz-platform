@@ -758,7 +758,10 @@ class Handler {
     ];
 
     try {
-      const accessories = this.accessories.filter((accessory) => accessory.context.config.type === 'extra');
+      const accessories = this.accessories.filter(
+        (accessory) =>
+          accessory && accessory.context && accessory.context.config && accessory.context.config.type === 'extra'
+      );
 
       for (const accessory of accessories) {
         if (!this.polling.exclude.includes(accessory.context.config.subtype)) {

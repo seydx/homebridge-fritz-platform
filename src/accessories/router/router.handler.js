@@ -362,12 +362,12 @@ class Handler {
           logger.debug(body, `${accessory.displayName} (${subtype})`);
 
           if (body && body.data && body.data.ledSettings) {
-            state = parseInt(body.data.ledSettings.ledDisplay) === 0;
-          }
-
-          //old fw
-          if (body && body.data) {
-            state = parseInt(body.data.led_display) === 0;
+            if (body.data.ledSettings) {
+              state = parseInt(body.data.ledSettings.ledDisplay) === 0;
+            } else {
+              //old fw
+              state = parseInt(body.data.led_display) === 0;
+            }
           }
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
@@ -960,7 +960,10 @@ class Handler {
       };
 
       const validUUIDs = Object.keys(characteristics).map((uuid) => uuid);
-      const accessories = this.accessories.filter((accessory) => accessory.context.config.type === 'router');
+      const accessories = this.accessories.filter(
+        (accessory) =>
+          accessory && accessory.context && accessory.context.config && accessory.context.config.type === 'router'
+      );
 
       for (const accessory of accessories) {
         if (!this.polling.exclude.includes(accessory.displayName)) {
