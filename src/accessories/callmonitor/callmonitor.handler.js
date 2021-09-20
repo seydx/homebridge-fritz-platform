@@ -192,8 +192,8 @@ class Handler {
           called: data[4],
         };
 
-        let called = message.called.replace(/\D/g, '');
-        let caller = message.caller.replace(/\D/g, '');
+        let called = message.called.replace(/\+/g, '00').replace(/\D/g, '');
+        let caller = message.caller.replace(/\+/g, '00').replace(/\D/g, '');
 
         this.callerNr = caller;
         this.callerName = false;

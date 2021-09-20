@@ -349,7 +349,14 @@ class Handler {
                         let telnr = number._;
 
                         // eslint-disable-next-line no-useless-escape
-                        telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                        /*telnr = telnr
+                          .replace(/\s/g, '')
+                          .replace(/\-/g, '')
+                          .replace(/\–/g, '')
+                          .replace(/\(/g, '')
+                          .replace(/\)/g, '');*/
+
+                        telnr = telnr.replace(/\+/g, '00').replace(/\D/g, '');
                         telNumbers.push(telnr);
 
                         if (telnr.startsWith(lkz1) || telnr.startsWith(lkz2)) {
@@ -411,7 +418,14 @@ class Handler {
                       let telnr = numbers._;
 
                       // eslint-disable-next-line no-useless-escape
-                      telnr = telnr.replace(/\s/g, '').replace(/\-/g, '').replace(/\–/g, '');
+                      /*telnr = telnr
+                        .replace(/\s/g, '')
+                        .replace(/\-/g, '')
+                        .replace(/\–/g, '')
+                        .replace(/\(/g, '')
+                        .replace(/\)/g, '');*/
+
+                      telnr = telnr.replace(/\+/g, '00').replace(/\D/g, '');
                       telNumbers.push(telnr);
 
                       if (telnr.startsWith(lkz1) || telnr.startsWith(lkz2)) {
