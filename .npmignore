@@ -65,3 +65,4 @@ example-config.json
 .eslintrc.js
 docs
 cmd
+test.js

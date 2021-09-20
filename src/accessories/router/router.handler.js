@@ -778,19 +778,28 @@ class Handler {
 
           if (parseInt(data.NewNumberOfDeflections)) {
             try {
-              logger.debug(
-                `Service: urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1 - Command: SetDeflectionEnable - Actions: ${JSON.stringify(
-                  {
-                    NewDeflectionId: 0,
-                    NewEnable: state ? 1 : 0,
-                  }
-                )}`,
-                `${accessory.displayName} (${subtype})`
-              );
-              await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'SetDeflectionEnable', {
-                NewDeflectionId: 0,
-                NewEnable: state ? 1 : 0,
-              });
+              const amountDeflections = parseInt(data.NewNumberOfDeflections);
+              const deflectionIds = [];
+
+              for (let i = 0; i < amountDeflections; i++) {
+                deflectionIds.push(i);
+              }
+
+              for (const id of deflectionIds) {
+                logger.debug(
+                  `Service: urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1 - Command: SetDeflectionEnable - Actions: ${JSON.stringify(
+                    {
+                      NewDeflectionId: id,
+                      NewEnable: state ? 1 : 0,
+                    }
+                  )}`,
+                  `${accessory.displayName} (${subtype})`
+                );
+                await fritzbox.exec('urn:X_AVM-DE_OnTel-com:serviceId:X_AVM-DE_OnTel1', 'SetDeflectionEnable', {
+                  NewDeflectionId: id,
+                  NewEnable: state ? 1 : 0,
+                });
+              }
             } catch (err) {
               logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
               logger.error(err, `${accessory.displayName} (${subtype})`);
