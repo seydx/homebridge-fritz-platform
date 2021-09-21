@@ -1,5 +1,16 @@
 # Changelog
 
+# v6.0.16 - 2021-09-21
+
+## Notable Changes
+- **Presence**
+  - Guest Wifi Presence: Occupancy/Motion sensor which will be triggered if someone is connected to the guest wifi (master device)
+
+## Bugfixes
+- Fixed an issue where number lookup didnt work properly (callmonitor)
+- Fixed an issue where turning on the deflection affected only the first deflection in the list
+- Minor Bugfixes
+
 # v6.0.15 - 2021-09-19
 
 ## Other Changes

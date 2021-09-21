@@ -2,13 +2,19 @@
 
 const logger = require('../../../utils/logger');
 const Handler = require('../presence.handler');
+const GuestHandler = require('../presence_guest.handler');
 
 class Accessory {
   constructor(api, accessory, accessories, meshMaster) {
     this.api = api;
     this.accessory = accessory;
 
-    this.handler = Handler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    if (accessory.displayName === 'Guest') {
+      this.handler = GuestHandler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    } else {
+      this.handler = Handler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    }
+
     this.getService();
   }
 

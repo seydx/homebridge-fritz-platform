@@ -32,6 +32,7 @@ const Setup = (devices, routerConfig, extrasConfig, optionsConfig, meshMaster) =
           meshMaster.config = device;
           meshMaster.configured = true;
           meshMaster.fritzbox = device.fritzbox;
+          meshMaster.wifiUnits = device.wifiUnits;
 
           delete meshMaster.config.fritzbox;
         }

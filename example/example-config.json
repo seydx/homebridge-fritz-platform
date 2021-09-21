@@ -279,6 +279,7 @@
                 },
                 "presence": {
                     "anyone": true,
+                    "guest": true,
                     "accType": "occupancy"
                 },
                 "reboot": {
@@ -295,7 +296,9 @@
                         "user_in": "Welcome at home @",
                         "user_out": "Bye Bye @",
                         "anyone_in": "Someone is at home!",
-                        "anyone_out": "Nobody at home!"
+                        "anyone_out": "Nobody at home!",
+                        "guest_in": "Someone is at home!",
+                        "guest_out": "Nobody at home!"
                     },
                     "callmonitor": {
                         "incoming": "Incoming call from @",

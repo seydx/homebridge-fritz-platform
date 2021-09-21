@@ -94,7 +94,12 @@ class Handler {
 
     if (accessory.displayName === 'Anyone') {
       const states = this.accessories
-        .filter((accessory) => accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone')
+        .filter(
+          (accessory) =>
+            accessory.context.config.type === 'presence' &&
+            accessory.displayName !== 'Anyone' &&
+            accessory.displayName !== 'Guest'
+        )
         .map((accessory) => {
           const service2 =
             accessory.context.config.subtype === 'motion'
@@ -232,7 +237,10 @@ class Handler {
 
       if (this.hosts.length) {
         const userAccessories = this.accessories.filter(
-          (accessory) => accessory.context.config.type === 'presence' && accessory.displayName !== 'Anyone'
+          (accessory) =>
+            accessory.context.config.type === 'presence' &&
+            accessory.displayName !== 'Anyone' &&
+            accessory.displayName !== 'Guest'
         );
 
         for (const accessory of userAccessories) {

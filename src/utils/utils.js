@@ -40,6 +40,7 @@ exports.generateConfig = (config) => {
       },
       presence: {
         anyone: config.options && config.options.presence && config.options.presence.anyone ? true : false,
+        guest: config.options && config.options.presence && config.options.presence.guest ? true : false,
         accType:
           config.options && config.options.presence && config.options.presence.accType
             ? config.options.presence.accType

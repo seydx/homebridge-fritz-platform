@@ -1233,6 +1233,11 @@
               "description": "Exposes Anyone Sensor to Apple Home.",
               "type": "boolean"
             },
+            "guest": {
+              "title": "Guest Sensor",
+              "description": "Exposes Guest Sensor to Apple Home.",
+              "type": "boolean"
+            },
             "accType": {
               "title": "Accessory Type",
               "type": "string",
@@ -1246,7 +1251,7 @@
                   "enum": ["motion"]
                 }
               ],
-              "description": "The accessory type of the anyone sensor."
+              "description": "The accessory type of the anyone/guest sensor."
             }
           }
         },
@@ -1351,6 +1356,16 @@
                   "title": "Anyone Not Detected",
                   "type": "string",
                   "description": "Message if nobody detected."
+                },
+                "guest_in": {
+                  "title": "Guest Detected",
+                  "type": "string",
+                  "description": "Message if someone connected to guest wlan."
+                },
+                "guest_out": {
+                  "title": "Guest Not Detected",
+                  "type": "string",
+                  "description": "Message if no one connected to guest wlan."
                 }
               }
             },
@@ -1847,7 +1862,7 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": ["options.presence.anyone", "options.presence.accType"]
+          "items": ["options.presence.anyone", "options.presence.guest", "options.presence.accType"]
         },
         {
           "key": "options",
@@ -1912,7 +1927,9 @@
                 "telegram.messages.presence.user_in",
                 "telegram.messages.presence.user_out",
                 "telegram.messages.presence.anyone_in",
-                "telegram.messages.presence.anyone_out"
+                "telegram.messages.presence.anyone_out",
+                "telegram.messages.presence.guest_in",
+                "telegram.messages.presence.guest_out"
               ]
             },
             {

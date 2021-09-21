@@ -3,6 +3,7 @@
 const moment = require('moment');
 const logger = require('../../../utils/logger');
 const Handler = require('../presence.handler');
+const GuestHandler = require('../presence_guest.handler');
 
 const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -13,7 +14,12 @@ class Accessory {
     this.accessories = accessories;
     this.HistoryService = HistoryService;
 
-    this.handler = Handler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    if (accessory.displayName === 'Guest') {
+      this.handler = GuestHandler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    } else {
+      this.handler = Handler.configure(api, accessories, accessory.context.config.polling, meshMaster);
+    }
+
     this.getService();
   }
 

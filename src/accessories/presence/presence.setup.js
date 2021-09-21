@@ -66,6 +66,29 @@ const Setup = (devices, presenceConfig, presenceOptions) => {
       devices.set(uuid, anyoneConfig);
     }
   }
+
+  if (presenceOptions.guest) {
+    const validTypes = ['occupancy', 'motion'];
+
+    const guestConfig = {
+      name: 'Guest',
+      type: 'presence',
+      subtype: validTypes.find((el) => el === presenceOptions.accType) || 'occupancy',
+      accType: validTypes.find((el) => el === presenceOptions.accType) || 'occupancy',
+    };
+
+    const uuid = UUIDgenerate(guestConfig.name);
+
+    if (devices.has(uuid)) {
+      logger.warn(
+        'Multiple devices are configured with this name. Duplicate devices will be skipped.',
+        guestConfig.name
+      );
+    } else {
+      logger.debug('New device added!', guestConfig.name);
+      devices.set(uuid, guestConfig);
+    }
+  }
 };
 
 module.exports = Setup;

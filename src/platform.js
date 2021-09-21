@@ -70,6 +70,7 @@ function FritzPlatform(log, config, api) {
     configured: false,
     cityPrefix: this.config.callmonitor.cityPrefix || false,
     countryPrefix: this.config.callmonitor.countryPrefix || false,
+    wifiUnits: 2,
     fritzbox: null,
   };
 
@@ -92,7 +93,7 @@ function FritzPlatform(log, config, api) {
     SHSetup(this.devices, this.config.smarthome);
   }
 
-  if (this.config.presence) {
+  if (this.config.presence || this.config.options.presence.guest) {
     PresenceSetup(this.devices, this.config.presence, this.config.options.presence);
   }
 
