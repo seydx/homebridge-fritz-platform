@@ -1587,18 +1587,28 @@ class Handler {
                  * leads to problems.
                  */
 
+                if (accessory.context.hkrTimeout) {
+                  clearTimeout(accessory.context.hkrTimeout);
+                  accessory.context.hkrTimeout = null;
+                }
+
                 accessory.context.hkrTimeout = setTimeout(async () => {
-                  logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
-                  let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
+                  try {
+                    logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
+                    let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
 
-                  cmd = {
-                    ...cmd,
-                    switchcmd: 'sethkrtsoll',
-                    param: temp,
-                  };
+                    cmd = {
+                      ...cmd,
+                      switchcmd: 'sethkrtsoll',
+                      param: temp,
+                    };
 
-                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                  await requestAHA(this.fritzbox.url.hostname, cmd);
+                    logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
+                    await requestAHA(this.fritzbox.url.hostname, cmd);
+                  } catch (err) {
+                    logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);
+                    logger.error(err, `${accessory.displayName} (${subtype})`);
+                  }
                 }, 100);
               } else {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);

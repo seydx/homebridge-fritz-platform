@@ -81,6 +81,7 @@ This plugin allows almost full control of **AVM** hardware like:
   - FakeGato support
 - **Presence**
   - Detect occupancy through wifi,
+  - Detect occupancy through guest wifi,
   - Fakegato support
 - **Watch Network**
   - Control devices if connected or disconnected from network

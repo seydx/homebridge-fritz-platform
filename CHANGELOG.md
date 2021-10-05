@@ -1,5 +1,10 @@
 # Changelog
 
+# v6.0.18 - 2021-10-06
+
+## Bugfixes
+- Minor Bugfixes
+
 # v6.0.17 - 2021-10-06
 
 ## Other Changes
