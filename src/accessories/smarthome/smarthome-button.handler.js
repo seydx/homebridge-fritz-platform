@@ -295,7 +295,7 @@ class Handler {
       //logger.debug(this.smarthomeList, 'Smarthome');
 
       const accessories = this.accessories.filter(
-        (accessory) => accessory.context.config.subtype === 'smarthome-button'
+        (accessory) => accessory && accessory.context && accessory.context.config.subtype === 'smarthome-button'
       );
 
       for (const accessory of accessories) {

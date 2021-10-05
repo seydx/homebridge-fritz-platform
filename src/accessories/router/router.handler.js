@@ -262,7 +262,7 @@ class Handler {
           );
           logger.debug(response, `${accessory.displayName} (${subtype})`);
 
-          state = response['NewX_AVM-DE_WPSStatus'] === 'on';
+          state = response['NewX_AVM-DE_WPSStatus'] !== 'off';
         } catch (err) {
           logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
           logger.error(err, `${accessory.displayName} (${subtype})`);
@@ -631,19 +631,19 @@ class Handler {
       }
       case 'wps': {
         logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
-        let status = state ? 'pbc' : 'stop';
+        let status = state ? '1' : '0';
 
         try {
           logger.debug(
-            `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration1 - Command: X_AVM-DE_SetWPSConfig - Actions: ${JSON.stringify(
+            `Service: urn:WLANConfiguration-com:serviceId:WLANConfiguration1 - Command: X_AVM-DE_SetWPSEnable - Actions: ${JSON.stringify(
               {
-                'NewX_AVM-DE_WPSMode': status,
+                'NewX_AVM-DE_WPSEnable': status,
               }
             )}`,
             `${accessory.displayName} (${subtype})`
           );
-          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'X_AVM-DE_SetWPSConfig', {
-            'NewX_AVM-DE_WPSMode': status,
+          await fritzbox.exec('urn:WLANConfiguration-com:serviceId:WLANConfiguration1', 'X_AVM-DE_SetWPSEnable', {
+            'NewX_AVM-DE_WPSEnable': status,
           });
         } catch (err) {
           logger.warn('An error occured during setting state!', `${accessory.displayName} (${subtype})`);

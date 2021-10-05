@@ -1,5 +1,17 @@
 # Changelog
 
+# v6.0.17 - 2021-10-06
+
+## Other Changes
+- Updated dependencies
+
+## Bugfixes
+- Fixed an issue where smarthome thermostat groups did not display the average current temperature
+- Fixed an issue where starting wps failed and showed wrong state
+- Fixed an issue where setting thermostat to max temperature (via FritzBox) displayed wrong state/temperature in HomeKit
+- Fixed an issue where scenes/automations do not work properly with Smarthome thermostats
+- Minor Bugfixes
+
 # v6.0.16 - 2021-09-21
 
 ## Notable Changes

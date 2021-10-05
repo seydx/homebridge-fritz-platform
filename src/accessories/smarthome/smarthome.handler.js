@@ -1009,6 +1009,10 @@ class Handler {
                 currentTemp = device.thermostat.current;
                 targetTemp = device.thermostat.target;
 
+                if (targetTemp === 'on') {
+                  targetTemp = 28;
+                }
+
                 /*
                 currentTemp = (device.thermostat.current === 'on' || device.thermostat.current === 'off')
                   ? currentTemp
@@ -1576,17 +1580,26 @@ class Handler {
 
             if (accessory.context.config.ain) {
               if (target === 'temperature') {
-                logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
-                let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
+                /*
+                 * Due to a bug in HomeKit regarding scenes/automations,
+                 * the command to change the temperature must be executed with a time delay.
+                 * Otherwise the "ON/OFF" value is sent AFTER the temperature setting and this
+                 * leads to problems.
+                 */
 
-                cmd = {
-                  ...cmd,
-                  switchcmd: 'sethkrtsoll',
-                  param: temp,
-                };
+                accessory.context.hkrTimeout = setTimeout(async () => {
+                  logger.info(`Temperature ${state}`, `${accessory.displayName} (${subtype})`);
+                  let temp = Math.round((Math.min(Math.max(state, 8), 28) - 8) * 2) + 16;
 
-                logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
-                await requestAHA(this.fritzbox.url.hostname, cmd);
+                  cmd = {
+                    ...cmd,
+                    switchcmd: 'sethkrtsoll',
+                    param: temp,
+                  };
+
+                  logger.debug(`Send CMD: ${JSON.stringify(cmd)}`, `${accessory.displayName} (${subtype})`);
+                  await requestAHA(this.fritzbox.url.hostname, cmd);
+                }, 100);
               } else {
                 logger.info(`${state ? 'ON' : 'OFF'}`, `${accessory.displayName} (${subtype})`);
 
@@ -1736,7 +1749,10 @@ class Handler {
         //buttons have its own handler
         const accessories = this.accessories.filter(
           (accessory) =>
-            accessory.context.config.type === 'smarthome' && accessory.context.config.subtype !== 'smarthome-button'
+            accessory &&
+            accessory.context &&
+            accessory.context.config.type === 'smarthome' &&
+            accessory.context.config.subtype !== 'smarthome-button'
         );
 
         for (const accessory of accessories) {

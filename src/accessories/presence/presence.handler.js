@@ -238,6 +238,8 @@ class Handler {
       if (this.hosts.length) {
         const userAccessories = this.accessories.filter(
           (accessory) =>
+            accessory &&
+            accessory.context &&
             accessory.context.config.type === 'presence' &&
             accessory.displayName !== 'Anyone' &&
             accessory.displayName !== 'Guest'
