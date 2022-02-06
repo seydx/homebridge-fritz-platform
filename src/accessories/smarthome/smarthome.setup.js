@@ -27,7 +27,7 @@ const Setup = (devices, smarthomeConfig) => {
           device.name
         );
         error = true;
-      } else if (device.accType === 'button' && !device.buttons) {
+      } else if (device.accType === 'button' && !device.buttons && !device.temperature && !device.humidity) {
         logger.warn(
           'There is no or no valid "buttons" configured for this SMARTHOME device. This device will be skipped.',
           device.name
