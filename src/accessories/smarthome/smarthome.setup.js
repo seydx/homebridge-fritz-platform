@@ -54,6 +54,8 @@ const Setup = (devices, smarthomeConfig) => {
 
       if (devices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
+      } else if (device.accType === 'button' && !device.buttons) {
+        logger.debug('Buttons disabled!', device.name);
       } else {
         logger.debug('New device added!', device.name);
         devices.set(uuid, device);
