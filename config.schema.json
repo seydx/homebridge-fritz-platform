@@ -650,7 +650,7 @@
             "title": "Battery",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact' || model.smarthome[arrayIndices[0]].accTypeGroup === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'button';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact' || model.smarthome[arrayIndices[0]].accTypeGroup === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'smoke' || model.smarthome[arrayIndices[0]].accType === 'button';"
             },
             "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
           },
@@ -772,6 +772,12 @@
                 "title": "Window",
                 "enum": [
                   "window"
+                ]
+              },
+              {
+                "title": "Smoke Detector",
+                "enum": [
+                  "smoke"
                 ]
               }
             ],

@@ -8,6 +8,7 @@ module.exports = {
   SHLightbulbAccessory: require('./lightbulb/lightbulb.accessory'),
   SHOutletAccessory: require('./outlet/outlet.accessory'),
   SHOutletLightbulbAccessory: require('./outlet-lightbulb/outlet-lightbulb.accessory'),
+  SHSmokeAccessory: require('./smoke/smoke.accessory'),
   SHSwitchAccessory: require('./switch/switch.accessory'),
   SHSwitchLightbulbAccessory: require('./switch-lightbulb/switch-lightbulb.accessory'),
   SHTemperatureAccessory: require('./temperature/temperature.accessory'),

@@ -37,7 +37,7 @@
 - [x] Fritz!DECT 210
 - [x] Fritz!DECT 200
 - [x] HAN-FUN Contact sensor
-
-
+- [x] Telekom smoke detector
+- [x] Telekom light bulb
 
 **Note:** The page is constantly updated. If your device is also supported, please contact me

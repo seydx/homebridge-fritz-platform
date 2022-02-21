@@ -1,7 +1,7 @@
 'use strict';
 
 const Config = (smarthomeConfig) => {
-  const validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window', 'blind', 'button'];
+  const validTypes = ['switch', 'contact', 'thermostat', 'lightbulb', 'temperature', 'window', 'blind', 'button', 'smoke'];
   const validTypesGroup = ['switch', 'lightbulb', 'thermostat', 'switch-lightbulb'];
   const validButtons = [1, 4];
 
