@@ -157,15 +157,21 @@
             "oneOf": [
               {
                 "title": "DSL",
-                "enum": ["dsl"]
+                "enum": [
+                  "dsl"
+                ]
               },
               {
                 "title": "Cable",
-                "enum": ["cable"]
+                "enum": [
+                  "cable"
+                ]
               },
               {
                 "title": "Repeater",
-                "enum": ["repeater"]
+                "enum": [
+                  "repeater"
+                ]
               }
             ],
             "required": true,
@@ -183,11 +189,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Wifi 2.4GHZ as Switch or Characteristic."
@@ -198,11 +208,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Wifi 5GHZ as Switch or Characteristic."
@@ -213,11 +227,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Wifi Guest as Switch or Characteristic."
@@ -231,11 +249,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables WPS as Switch or Characteristic. (Only for Master Device)"
@@ -249,11 +271,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables DECT as Switch or Characteristic. (Only for Master Device)"
@@ -267,11 +293,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Answering Machine as Switch or Characteristic. (Only for Master Device)"
@@ -285,11 +315,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Deflection as Switch or Characteristic. (Only for Master Device)"
@@ -300,11 +334,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables LED as Switch or Characteristic."
@@ -315,11 +353,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Device Lock as Switch or Characteristic."
@@ -333,7 +375,9 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   }
                 ],
                 "description": "Enables Broadband as Characteristic. (Only for Master Device)"
@@ -347,11 +391,15 @@
                 "oneOf": [
                   {
                     "title": "Characteristic",
-                    "enum": ["characteristic"]
+                    "enum": [
+                      "characteristic"
+                    ]
                   },
                   {
                     "title": "Switch",
-                    "enum": ["switch"]
+                    "enum": [
+                      "switch"
+                    ]
                   }
                 ],
                 "description": "Enables Reconnect as Characteristic."
@@ -401,11 +449,15 @@
             "oneOf": [
               {
                 "title": "Occupancy",
-                "enum": ["occupancy"]
+                "enum": [
+                  "occupancy"
+                ]
               },
               {
                 "title": "Motion",
-                "enum": ["motion"]
+                "enum": [
+                  "motion"
+                ]
               }
             ],
             "required": true,
@@ -598,7 +650,7 @@
             "title": "Battery",
             "type": "boolean",
             "condition": {
-              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact' || model.smarthome[arrayIndices[0]].accTypeGroup === 'thermostat';"
+              "functionBody": "return model.smarthome[arrayIndices[0]].accType === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'window' || model.smarthome[arrayIndices[0]].accType === 'temperature' || model.smarthome[arrayIndices[0]].accType === 'contact' || model.smarthome[arrayIndices[0]].accTypeGroup === 'thermostat' || model.smarthome[arrayIndices[0]].accType === 'button';"
             },
             "description": "Enable this, if the device has a built in battery sensor. This shows additional battery information within the accessory."
           },
@@ -612,11 +664,15 @@
             "oneOf": [
               {
                 "title": "1",
-                "enum": [1]
+                "enum": [
+                  1
+                ]
               },
               {
                 "title": "4",
-                "enum": [4]
+                "enum": [
+                  4
+                ]
               }
             ]
           },
@@ -637,19 +693,27 @@
             "oneOf": [
               {
                 "title": "Switch",
-                "enum": ["switch"]
+                "enum": [
+                  "switch"
+                ]
               },
               {
                 "title": "Lightbulb",
-                "enum": ["lightbulb"]
+                "enum": [
+                  "lightbulb"
+                ]
               },
               {
                 "title": "Thermostat",
-                "enum": ["thermostat"]
+                "enum": [
+                  "thermostat"
+                ]
               },
               {
                 "title": "Switch & Lightbulb",
-                "enum": ["switch-lightbulb"]
+                "enum": [
+                  "switch-lightbulb"
+                ]
               }
             ],
             "required": true,
@@ -664,35 +728,51 @@
             "oneOf": [
               {
                 "title": "Button",
-                "enum": ["button"]
+                "enum": [
+                  "button"
+                ]
               },
               {
                 "title": "Switch",
-                "enum": ["switch"]
+                "enum": [
+                  "switch"
+                ]
               },
               {
                 "title": "Blind",
-                "enum": ["blind"]
+                "enum": [
+                  "blind"
+                ]
               },
               {
                 "title": "Contact",
-                "enum": ["contact"]
+                "enum": [
+                  "contact"
+                ]
               },
               {
                 "title": "Thermostat",
-                "enum": ["thermostat"]
+                "enum": [
+                  "thermostat"
+                ]
               },
               {
                 "title": "Lightbulb",
-                "enum": ["lightbulb"]
+                "enum": [
+                  "lightbulb"
+                ]
               },
               {
                 "title": "Temperature",
-                "enum": ["temperature"]
+                "enum": [
+                  "temperature"
+                ]
               },
               {
                 "title": "Window",
-                "enum": ["window"]
+                "enum": [
+                  "window"
+                ]
               }
             ],
             "required": true,
@@ -920,11 +1000,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -968,11 +1052,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -1023,11 +1111,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -1065,11 +1157,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -1115,11 +1211,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -1154,19 +1254,27 @@
               "oneOf": [
                 {
                   "title": "Internet access via mobile active",
-                  "enum": [1]
+                  "enum": [
+                    1
+                  ]
                 },
                 {
                   "title": "Fallback Mode for DSL",
-                  "enum": [2]
+                  "enum": [
+                    2
+                  ]
                 },
                 {
                   "title": "Fallback Mode for DSL/WAN",
-                  "enum": [3]
+                  "enum": [
+                    3
+                  ]
                 },
                 {
                   "title": "Internet access via mobile deactive",
-                  "enum": [4]
+                  "enum": [
+                    4
+                  ]
                 }
               ],
               "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned on OR when the status 'ON' should be detected."
@@ -1180,19 +1288,27 @@
               "oneOf": [
                 {
                   "title": "Internet access via mobile active",
-                  "enum": [1]
+                  "enum": [
+                    1
+                  ]
                 },
                 {
                   "title": "Fallback Mode for DSL",
-                  "enum": [2]
+                  "enum": [
+                    2
+                  ]
                 },
                 {
                   "title": "Fallback Mode for DSL/WAN",
-                  "enum": [3]
+                  "enum": [
+                    3
+                  ]
                 },
                 {
                   "title": "Internet access via mobile deactive",
-                  "enum": [4]
+                  "enum": [
+                    4
+                  ]
                 }
               ],
               "description": "Because Fritzbox provides 4 options how to handle fallback, you can enter here a user defined option (1 = Internet access via mobile active, 2 = Fallback Mode for DSL, 3 = Fallback Mode for DSL/WAN, 4 = Internet access via mobile deactive) what should happen when the switch is turned off OR when the status 'OFF' should be detected."
@@ -1206,11 +1322,15 @@
               "oneOf": [
                 {
                   "title": "Switch",
-                  "enum": ["switch"]
+                  "enum": [
+                    "switch"
+                  ]
                 },
                 {
                   "title": "Characteristic",
-                  "enum": ["characteristic"]
+                  "enum": [
+                    "characteristic"
+                  ]
                 }
               ],
               "required": true,
@@ -1244,11 +1364,15 @@
               "oneOf": [
                 {
                   "title": "Occupancy",
-                  "enum": ["occupancy"]
+                  "enum": [
+                    "occupancy"
+                  ]
                 },
                 {
                   "title": "Motion",
-                  "enum": ["motion"]
+                  "enum": [
+                    "motion"
+                  ]
                 }
               ],
               "description": "The accessory type of the anyone/guest sensor."
@@ -1467,7 +1591,12 @@
       "expandable": true,
       "expanded": false,
       "type": "section",
-      "items": ["debug", "warn", "error", "extendedError"]
+      "items": [
+        "debug",
+        "warn",
+        "error",
+        "extendedError"
+      ]
     },
     {
       "title": "Devices",
@@ -1497,7 +1626,10 @@
               "condition": {
                 "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
               },
-              "items": ["devices[].username", "devices[].password"]
+              "items": [
+                "devices[].username",
+                "devices[].password"
+              ]
             },
             {
               "key": "devices[]",
@@ -1527,7 +1659,11 @@
               "condition": {
                 "functionBody": "try { return model.devices[arrayIndices[0]].active } catch(e){ return false }"
               },
-              "items": ["devices[].manufacturer", "devices[].model", "devices[].serialNumber"]
+              "items": [
+                "devices[].manufacturer",
+                "devices[].model",
+                "devices[].serialNumber"
+              ]
             },
             {
               "key": "devices[]",
@@ -1570,7 +1706,12 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": ["extras.alarm.active", "extras.alarm.telNr", "extras.alarm.duration", "extras.alarm.accType"]
+          "items": [
+            "extras.alarm.active",
+            "extras.alarm.telNr",
+            "extras.alarm.duration",
+            "extras.alarm.accType"
+          ]
         },
         {
           "key": "extras",
@@ -1579,7 +1720,12 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": ["extras.wakeup.active", "extras.wakeup.internNr", "extras.wakeup.duration", "extras.wakeup.accType"]
+          "items": [
+            "extras.wakeup.active",
+            "extras.wakeup.internNr",
+            "extras.wakeup.duration",
+            "extras.wakeup.accType"
+          ]
         },
         {
           "key": "extras",
@@ -1613,7 +1759,9 @@
               "expandable": true,
               "expanded": true,
               "buttonText": "Add Blacklist",
-              "items": ["extras.phoneBook.blacklists[]"]
+              "items": [
+                "extras.phoneBook.blacklists[]"
+              ]
             }
           ]
         },
@@ -1677,7 +1825,10 @@
               "condition": {
                 "functionBody": "try { return model.presence[arrayIndices[0]].active } catch(e){ return false }"
               },
-              "items": ["presence[].ping", "presence[].threshold"]
+              "items": [
+                "presence[].ping",
+                "presence[].threshold"
+              ]
             }
           ]
         }
@@ -1706,7 +1857,9 @@
               "expandable": true,
               "expanded": true,
               "buttonText": "Add IP",
-              "items": ["childLock[].ips[]"]
+              "items": [
+                "childLock[].ips[]"
+              ]
             }
           ]
         }
@@ -1724,7 +1877,11 @@
           "type": "array",
           "orderable": false,
           "buttonText": "Add WOL Device",
-          "items": ["wol[].active", "wol[].name", "wol[].address"]
+          "items": [
+            "wol[].active",
+            "wol[].name",
+            "wol[].address"
+          ]
         }
       ]
     },
@@ -1801,7 +1958,9 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": ["callmonitor.incomingFrom[]"]
+              "items": [
+                "callmonitor.incomingFrom[]"
+              ]
             },
             {
               "key": "callmonitor.incomingTo",
@@ -1810,7 +1969,9 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": ["callmonitor.incomingTo[]"]
+              "items": [
+                "callmonitor.incomingTo[]"
+              ]
             },
             {
               "key": "callmonitor.outgoingFrom",
@@ -1819,7 +1980,9 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add Number",
-              "items": ["callmonitor.outgoingFrom[]"]
+              "items": [
+                "callmonitor.outgoingFrom[]"
+              ]
             }
           ]
         }
@@ -1862,7 +2025,11 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": ["options.presence.anyone", "options.presence.guest", "options.presence.accType"]
+          "items": [
+            "options.presence.anyone",
+            "options.presence.guest",
+            "options.presence.accType"
+          ]
         },
         {
           "key": "options",
@@ -1871,7 +2038,10 @@
           "expandable": true,
           "expanded": false,
           "orderable": false,
-          "items": ["options.reboot.on", "options.reboot.off"]
+          "items": [
+            "options.reboot.on",
+            "options.reboot.off"
+          ]
         },
         {
           "key": "options",
@@ -1890,7 +2060,9 @@
               "expandable": true,
               "expanded": false,
               "buttonText": "Add",
-              "items": ["options.polling.exclude[]"]
+              "items": [
+                "options.polling.exclude[]"
+              ]
             }
           ]
         }
@@ -1952,7 +2124,10 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": ["telegram.messages.alarm.activated", "telegram.messages.alarm.deactivated"]
+              "items": [
+                "telegram.messages.alarm.activated",
+                "telegram.messages.alarm.deactivated"
+              ]
             },
             {
               "key": "telegram",
@@ -1961,7 +2136,10 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": ["telegram.messages.reboot.start", "telegram.messages.reboot.finish"]
+              "items": [
+                "telegram.messages.reboot.start",
+                "telegram.messages.reboot.finish"
+              ]
             },
             {
               "key": "telegram",
@@ -1970,7 +2148,10 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": ["telegram.messages.network.on", "telegram.messages.network.off"]
+              "items": [
+                "telegram.messages.network.on",
+                "telegram.messages.network.off"
+              ]
             },
             {
               "key": "telegram",
@@ -1979,7 +2160,10 @@
               "expandable": true,
               "expanded": false,
               "orderable": false,
-              "items": ["telegram.messages.outlet.started", "telegram.messages.outlet.finished"]
+              "items": [
+                "telegram.messages.outlet.started",
+                "telegram.messages.outlet.finished"
+              ]
             }
           ]
         }

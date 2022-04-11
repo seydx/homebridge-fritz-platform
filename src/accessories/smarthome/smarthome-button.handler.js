@@ -46,6 +46,8 @@ class Handler {
     const buttons = accessory.context.config.buttons;
 
     switch (buttons) {
+      case false:
+        break;
       case 1:
         try {
           let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));

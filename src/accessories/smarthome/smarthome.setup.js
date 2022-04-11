@@ -27,7 +27,7 @@ const Setup = (devices, smarthomeConfig) => {
           device.name
         );
         error = true;
-      } else if (device.accType === 'button' && !device.buttons) {
+      } else if (device.accType === 'button' && !device.buttons && !device.temperature && !device.humidity) {
         logger.warn(
           'There is no or no valid "buttons" configured for this SMARTHOME device. This device will be skipped.',
           device.name
@@ -54,6 +54,8 @@ const Setup = (devices, smarthomeConfig) => {
 
       if (devices.has(uuid)) {
         logger.warn('Multiple devices are configured with this name. Duplicate devices will be skipped.', device.name);
+      } else if (device.accType === 'button' && !device.buttons) {
+        logger.debug('Buttons disabled!', device.name);
       } else {
         logger.debug('New device added!', device.name);
         devices.set(uuid, device);
