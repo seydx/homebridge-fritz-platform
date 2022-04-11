@@ -30,6 +30,7 @@
 
 ## Fritz!DECT Smart Home
 - [x] Fritz!DECT 500
+- [x] Fritz!DECT 440 
 - [x] Fritz!DECT 404
 - [x] Fritz!DECT 400
 - [x] Fritz!DECT 301
