@@ -1,6 +1,8 @@
 # Tested devices & OS version
 
 ## Fritz!OS
+
+- [x] Fritz!OS 7.39 Beta
 - [x] Fritz!OS 7.27
 - [x] Fritz!OS 7.21
 - [x] Fritz!OS 7.2
@@ -15,6 +17,7 @@
 - [x] Fritz!Box 7430
 - [x] Fritz!Box 7390 WLAN
 - [x] Fritz!Box 7360 WLAN
+- [x] Fritz!Box 6690 Cable
 - [x] Fritz!Box 6660 Cable
 - [x] Fritz!Box 6591 Cable
 - [x] Fritz!Box 6590 Cable
