@@ -203,6 +203,12 @@ class Handler {
         }
         case 'smarthome-blind':
           break;
+        case 'smarthome-smoke': {
+          if (historyService) {
+            historyService.addEntry({ time: moment().unix(), status: context.newValue ? 1 : 0 });
+          }
+          break;
+        }
         default:
           logger.warn(
             `Can not handle CHANGE event. Unknown accessory subtype (${subtype})`,
@@ -1175,6 +1181,70 @@ class Handler {
 
         return state;
       }
+      case 'smarthome-smoke': {
+        let state = accessory
+          .getService(this.api.hap.Service.SmokeSensor)
+          .getCharacteristic(this.api.hap.Characteristic.SmokeDetected).value;
+
+        try {
+          let device = this.smarthomeList.devices.find((device) => device.ain.includes(accessory.context.config.ain));
+          logger.debug(device, `${accessory.displayName} (${subtype})`);
+
+          if (device) {
+            accessory.context.config.ain = device.ain;
+
+            if (device.online) {
+              if (device.alert) {
+                state = device.alert.state || 0;
+              } else {
+                logger.warn(
+                  'Can not find alert data - "accType" and/or options correct?',
+                  `${accessory.displayName} (${subtype})`
+                );
+              }
+
+              if (accessory.context.config.battery) {
+                if (device.battery) {
+                  let batteryLevel = device.battery.value || 0;
+                  let lowBattery = device.battery.low || 0;
+
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.BatteryLevel)
+                    .updateValue(batteryLevel);
+
+                  accessory
+                    .getService(this.api.hap.Service.BatteryService)
+                    .getCharacteristic(this.api.hap.Characteristic.StatusLowBattery)
+                    .updateValue(lowBattery);
+                } else {
+                  logger.warn(
+                    'Can not find battery data - "accType" and/or options correct?',
+                    `${accessory.displayName} (${subtype})`
+                  );
+                }
+              }
+            } else {
+              logger.warn('Device offline!', `${accessory.displayName} (${subtype})`);
+            }
+          } else {
+            logger.warn(
+              `Can not find device with AIN: ${accessory.context.config.ain}`,
+              `${accessory.displayName} (${subtype})`
+            );
+          }
+        } catch (err) {
+          logger.warn('An error occured during getting state!', `${accessory.displayName} (${subtype})`);
+          logger.error(err, `${accessory.displayName} (${subtype})`);
+        }
+
+        accessory
+          .getService(this.api.hap.Service.SmokeSensor)
+          .getCharacteristic(this.api.hap.Characteristic.SmokeDetected)
+          .updateValue(state);
+
+        return state;
+      }
       default:
         logger.warn(
           `Can not handle GET event. Unknown accessory subtype (${subtype})`,
@@ -1740,6 +1810,9 @@ class Handler {
               .updateValue(2);
           }
         }
+        break;
+      case 'smarthome-smoke':
+        // no SET event
         break;
       default:
         logger.warn(
